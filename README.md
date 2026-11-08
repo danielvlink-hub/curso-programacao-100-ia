@@ -6,7 +6,8 @@ FacilAppPlanilha. Todo o desenvolvimento é feito com o Claude Code.
 
 ## Instalar
 
-Baixe o instalador na página **[Releases](../../releases/latest)** e execute como administrador (Windows 10/11, 64 bits).
+**[Baixar o instalador](../../raw/main/instalador/FacilApp-Curso-Programacao-100-IA-Setup-0.2.0-x64.exe)** (pasta `instalador/`)
+e execute como administrador (Windows 10/11, 64 bits).
 
 O instalador:
 

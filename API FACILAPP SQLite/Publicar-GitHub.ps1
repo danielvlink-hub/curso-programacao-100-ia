@@ -9,7 +9,7 @@ $curso = Split-Path -Parent $project
 $api = Join-Path $curso 'API FACILAPP SQLite'
 New-Item -ItemType Directory -Force -Path $Destino | Out-Null
 
-$xd = @("$curso\Telas", "$curso\.claude", "$api\bin", "$api\obj", "$api\staging", "$api\saida", "$api\Backups",
+$xd = @("$curso\Telas", "$curso\.claude", 'instalador', "$api\bin", "$api\obj", "$api\staging", "$api\saida", "$api\Backups",
         "$api\Mcp\bin", "$api\Mcp\obj", "$api\Tray\bin", "$api\Tray\obj", '.git', '.claude')
 $xf = @("$curso\CLAUDE.md", "$curso\README.md", '*.pdb', '*.db', 'Thumbs.db', 'desktop.ini',
         "$curso\HTML\DASHBOARDS\js\facilflow.js", "$curso\HTML\DASHBOARDS\js\db_pedidos.js")
@@ -17,6 +17,14 @@ robocopy $curso $Destino /MIR /R:1 /W:1 /NFL /NDL /NJH /NP /XD @xd /XF @xf | Out
 if ($LASTEXITCODE -ge 8) { throw "robocopy falhou ($LASTEXITCODE)" }
 Copy-Item -LiteralPath (Join-Path $project 'Installers\CLAUDE-publico.md') -Destination (Join-Path $Destino 'CLAUDE.md') -Force
 Copy-Item -LiteralPath (Join-Path $project 'Installers\README-publico.md') -Destination (Join-Path $Destino 'README.md') -Force
+# Instalador junto dos fontes (Daniel, 08/11/2026: "publica lá como os fontes"). Fica só o mais novo; limite do GitHub: 100 MB.
+$inst = Join-Path $Destino 'instalador'; New-Item -ItemType Directory -Force -Path $inst | Out-Null
+$exe = Get-ChildItem -LiteralPath (Join-Path $project 'saida') -Filter 'FacilApp-Curso-Programacao-100-IA-Setup-*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if ($exe) {
+  if ($exe.Length -ge 100MB) { throw "Instalador com $([math]::Round($exe.Length/1MB,1)) MB: passa do limite de 100 MB do GitHub" }
+  Get-ChildItem -LiteralPath $inst -Filter '*.exe' | Where-Object Name -ne $exe.Name | Remove-Item -Force
+  Copy-Item -LiteralPath $exe.FullName -Destination $inst -Force
+}
 @'
 # gerados no build / dados locais (nunca publicar)
 API FACILAPP SQLite/bin/
