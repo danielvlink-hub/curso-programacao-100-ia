@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FastPousada · Menu do curso</title>
+  <style>
+    :root{font-family:Segoe UI,Arial,sans-serif;color:#15263d;background:#eef3f7}
+    *{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer}
+    header{height:64px;background:#0c1931;color:#fff;display:flex;align-items:center;gap:24px;padding:0 20px}
+    .brand{font-size:20px;font-weight:800;white-space:nowrap}.brand b{color:#f7c638}
+    .top{display:flex;gap:5px;flex:1;overflow:auto}.top button,.logout{border:0;border-radius:7px;background:transparent;color:#cbd6e9;padding:9px 12px;white-space:nowrap}
+    .top button:hover,.top button.selected,.logout:hover{background:#244a87;color:#fff}
+    .who{font-size:13px;color:#d1def0;white-space:nowrap}
+    .layout{display:grid;grid-template-columns:256px minmax(0,1fr);min-height:calc(100vh - 64px)}
+    aside{background:#fff;border-right:1px solid #dbe4ec;padding:18px 12px;overflow:auto}
+    aside h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#61748e;margin:8px 10px 15px}
+    .group{margin:0 0 18px}.group h3{font-size:13px;color:#2c5284;margin:0 10px 5px}
+    .item{width:100%;display:block;text-align:left;border:0;background:transparent;border-radius:8px;padding:10px;color:#273e5a}
+    .item:hover:not(:disabled),.item.selected{background:#e9f1ff;color:#17448d}
+    .item:disabled{cursor:not-allowed;color:#9ca9b8}.item small{display:block;color:#8e9bac;font-size:10px;margin-top:2px}
+    main{min-width:0;display:flex;flex-direction:column}.dashbar{height:46px;background:#fff;border-bottom:1px solid #dbe4ec;padding:6px 16px;display:flex;align-items:center;gap:8px}
+    .dashbar button{border:1px solid #d2deec;background:#eef4fb;border-radius:8px;padding:7px 14px;color:#204b85}
+    .dashbar button.selected{background:#204b85;color:#fff}
+    #view{flex:1;width:100%;border:0;background:#eef3f7;min-height:400px}
+    #error{display:none;padding:12px 18px;background:#fff0ed;color:#a63d2c}
+    @media(max-width:760px){header{gap:8px;padding:0 10px}.who{display:none}.layout{grid-template-columns:170px minmax(0,1fr)}aside{padding:12px 5px}.brand{font-size:16px}.top button{padding:7px}}
+  </style>
+</head>
+<body>
+  <header><div class="brand">Facil<b>App</b> · FastPousada</div><nav class="top" id="top" aria-label="Menu superior"></nav><span class="who" id="who"></span><button class="logout" id="logout" type="button">Sair</button></header>
+  <div id="error" role="alert"></div>
+  <div class="layout"><aside><h2>Menu do curso</h2><div id="side"></div></aside><main><nav class="dashbar" id="dashbar" aria-label="Dashboards"></nav><iframe id="view" title="Tela de trabalho"></iframe></main></div>
+  <script>
+  (async function(){
+    const api = sessionStorage.getItem('fastpousada_api_url') || 'http://127.0.0.1:7777';
+    const token = sessionStorage.getItem('fastpousada_token');
+    const sair = () => { sessionStorage.removeItem('fastpousada_token'); sessionStorage.removeItem('fastpousada_usuario'); location.replace('login_Geral.html'); };
+    document.getElementById('logout').addEventListener('click', sair);
+    if (!token) { sair(); return; }
+    const mostrarErro = msg => { const el=document.getElementById('error'); el.textContent=msg; el.style.display='block'; };
+    const abrir = (item, button) => {
+      if (!item.ativo || item.disable || !item.path) return;
+      document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+      button.classList.add('selected');
+      if (item.path === 'api-console') { window.open(api + '/', '_blank', 'noopener'); return; }
+      if (!/^[A-Za-z0-9_./-]+\.html$/.test(item.path) || item.path.includes('..')) { mostrarErro('Destino de menu inválido.'); return; }
+      document.getElementById('view').src = item.path;
+    };
+    const botao = (item, cls) => {
+      const el=document.createElement('button'); el.type='button'; el.className=cls;
+      el.textContent=item.title; el.disabled=!item.ativo || !!item.disable || !item.path;
+      if(el.disabled){const small=document.createElement('small');small.textContent='Tela prevista para uma próxima aula';el.appendChild(small)}
+      else el.addEventListener('click',()=>abrir(item,el));
+      return el;
+    };
+    try {
+      const perfilResposta=await fetch(api+'/auth/me',{headers:{Authorization:'Bearer '+token}});
+      if(perfilResposta.status===401){sair();return}
+      if(!perfilResposta.ok)throw new Error('Falha ao consultar o usuário.');
+      const perfil=await perfilResposta.json();
+      document.getElementById('who').textContent=perfil.nome||perfil.login||'';
+      const response=await fetch(api+'/api/menu',{headers:{Authorization:'Bearer '+token}});
+      if(response.status===401){sair();return}
+      if(!response.ok)throw new Error('Falha ao carregar o menu do SQLite.');
+      const result=await response.json(), menu=result.dados;
+      if(!result.ok || !menu)throw new Error('Catálogo de menu não disponível.');
+      const top=document.getElementById('top');
+      (menu.superior||[]).filter(x=>!x.hide).forEach(item=>{
+        const el=botao(item,'');
+        if(!item.path){el.disabled=false;el.querySelector('small')?.remove();el.addEventListener('click',()=>Array.from(document.querySelectorAll('.group')).find(group=>group.dataset.module===item.module)?.scrollIntoView({behavior:'smooth'}));}
+        top.appendChild(el);
+      });
+      const side=document.getElementById('side'), groups=new Map();
+      (menu.lateral||[]).filter(x=>!x.hide).forEach(item=>{
+        let group=groups.get(item.module);
+        if(!group){group=document.createElement('section');group.className='group';group.dataset.module=item.module;const h=document.createElement('h3');h.textContent=item.module;group.appendChild(h);groups.set(item.module,group);side.appendChild(group)}
+        group.appendChild(botao(item,'item'));
+      });
+      const dashbar=document.getElementById('dashbar');
+      (menu.dashboards||[]).filter(x=>!x.hide).forEach(item=>dashbar.appendChild(botao(item,'')));
+      const inicio=(menu.dashboards||[]).find(x=>x.ativo&&x.path&&!x.hide);
+      if(inicio)abrir(inicio,dashbar.firstElementChild);
+    } catch(error){mostrarErro(String(error&&error.message||error));}
+  })();
+  </script>
+</body>
+</html>

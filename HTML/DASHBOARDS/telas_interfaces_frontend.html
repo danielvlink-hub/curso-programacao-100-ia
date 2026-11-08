@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Módulo III — Telas, Interfaces e Front-end</title>
+  <script>
+    /** Resolve os recursos compartilhados quando a aula é exibida no menu do curso. */
+    function arquivoDashboard(endereco) {
+      try {
+        if (window.parent && typeof window.parent.FacilAppResolverArquivoLocal === 'function') {
+          return window.parent.FacilAppResolverArquivoLocal('DASHBOARDS/' + endereco);
+        }
+      } catch (erro) {}
+      return endereco;
+    }
+    document.write('<script src="' + arquivoDashboard('js/TemaFacilApp.js').replace(/&/g, '&amp;') + '"><\/script>');
+  </script>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--fa-bg,#f4f6ef);color:var(--fa-text,#17210e)}body{padding:18px}.curso{max-width:1440px;margin:auto}
+    .hero{position:relative;overflow:hidden;border-radius:18px;padding:27px 31px;background:linear-gradient(125deg,#263807,#415715 62%,#566d1e);color:#fff;box-shadow:0 18px 45px rgba(38,56,7,.18)}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#f2b313;text-transform:uppercase}.hero h1{font-size:34px;line-height:1.08;margin:9px 0 8px}.hero p{max-width:920px;margin:0;color:#dce9c5;font-size:15px;line-height:1.55}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700}
+    .section-head{display:flex;align-items:end;justify-content:space-between;margin:22px 2px 11px}.section-head h2{margin:0;font-size:22px;color:var(--fa-primary,#35470e)}.section-head span{font-size:12px;color:var(--fa-muted,#65705c)}.grade{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.lesson-link{min-height:126px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:12px;padding:14px;text-decoration:none;color:inherit;transition:.18s ease}.lesson-link:hover{transform:translateY(-2px);border-color:#6f8a28;box-shadow:0 8px 20px rgba(53,71,14,.09)}.lesson-link .n{width:34px;height:34px;border-radius:9px;background:#dce9c5;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.lesson-link h3{font-size:13px;margin:10px 0 5px;color:var(--fa-primary,#35470e)}.lesson-link p{font-size:11px;line-height:1.38;margin:0;color:var(--fa-muted,#65705c)}
+    .aula{scroll-margin-top:12px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:14px;margin-top:11px;overflow:hidden;box-shadow:0 7px 22px rgba(23,33,14,.045)}.aula-head{display:flex;gap:12px;align-items:center;padding:15px 18px;background:var(--fa-panel-alt,#e6efd8);border-bottom:1px solid var(--fa-border,#d8ddcf)}.aula-head .n{flex:0 0 38px;height:38px;border-radius:10px;background:#f2b313;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.aula-head h3{margin:0;color:var(--fa-primary,#35470e);font-size:19px}.aula-head p{margin:3px 0 0;font-size:12px;color:var(--fa-muted,#65705c)}.conteudo{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:17px}.bloco{border-left:4px solid #6f8a28;background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:13px}.bloco h4{margin:0 0 7px;color:var(--fa-primary,#35470e);font-size:14px}.bloco p,.bloco li{font-size:12px;line-height:1.48;color:var(--fa-muted,#65705c)}.bloco p{margin:0}.bloco ul,.bloco ol{margin:0;padding-left:19px}.bloco li+li{margin-top:4px}.modelo{grid-column:1/-1;border:1px dashed #9daf79;border-radius:10px;background:#fbfcf8;padding:13px}.modelo b{display:block;color:#35470e;font-size:12px;margin-bottom:7px}.modelo pre{white-space:pre-wrap;margin:0;font:12px/1.5 Consolas,"Courier New",monospace;color:#253015}.atividade{border-color:#f2b313;background:#fffaf0}
+    .wireframe{grid-column:1/-1;display:grid;grid-template-columns:180px 1fr;grid-template-rows:48px 150px;gap:7px;padding:10px;border:1px dashed #9daf79;border-radius:10px;background:#fbfcf8}.wireframe div{border:1px solid var(--fa-border,#cbd5bc);border-radius:8px;background:var(--fa-panel,#fff);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#52613a}.wireframe .topo{grid-column:1/-1}.wireframe .menu{grid-row:2}.wireframe .principal{grid-column:2}.componentes{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.componentes div{background:var(--fa-panel,#fff);border:1px solid var(--fa-border,#d8ddcf);border-radius:8px;padding:9px;text-align:center;font-size:11px}.componentes b{display:block;color:#35470e;margin-bottom:3px}.breakpoints{grid-column:1/-1;display:grid;grid-template-columns:1.5fr 1fr .75fr;gap:8px}.device{min-height:86px;border:1px solid var(--fa-border,#d8ddcf);border-radius:10px;background:var(--fa-panel-alt,#f7f5ea);padding:12px}.device b{display:block;color:#35470e;margin-bottom:5px}.device span{font-size:11px;color:var(--fa-muted,#65705c)}.rodape{padding:18px 4px 2px;font-size:11px;color:var(--fa-muted,#65705c);display:flex;justify-content:space-between;gap:12px}
+    @media(max-width:1000px){.grade{grid-template-columns:repeat(2,1fr)}.componentes{grid-template-columns:repeat(3,1fr)}}@media(max-width:720px){body{padding:10px}.hero{padding:22px}.hero h1{font-size:27px}.grade,.conteudo,.componentes,.breakpoints{grid-template-columns:1fr}.modelo,.wireframe{grid-column:auto}.wireframe{grid-template-columns:1fr;grid-template-rows:auto}.wireframe .topo,.wireframe .menu,.wireframe .principal{grid-column:auto;grid-row:auto;min-height:55px}.section-head{align-items:start;gap:4px;flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="curso">
+  <section class="hero">
+    <!-- Remasterizado em 04/11/2026: exemplos com as telas do FastPousada e o padrão de tela do Gourmet (tema --fa-*, browse + update). --><div class="eyebrow">Módulo III</div>
+    <h1>Telas, Interfaces e Front-end</h1>
+    <p>Da descrição de uma necessidade a uma interface organizada, bonita e preparada para evoluir.</p>
+    <div class="meta"><span class="chip">4 aulas</span><span class="chip">HTML + CSS + JavaScript</span><span class="chip">Cadastros e dashboards</span><span class="chip">Telas do FastPousada</span></div>
+  </section>
+
+  <div class="section-head"><h2>Programa do módulo</h2><span>Clique em uma aula para ir ao conteúdo</span></div>
+  <nav class="grade" aria-label="Aulas do Módulo III">
+    <a class="lesson-link" href="#aula1"><span class="n">1</span><h3>Estrutura de uma tela</h3><p>Menu, conteúdo, ações e hierarquia visual.</p></a>
+    <a class="lesson-link" href="#aula2"><span class="n">2</span><h3>Cadastros e listagens</h3><p>Filtros, tabelas, formulários e operações.</p></a>
+    <a class="lesson-link" href="#aula3"><span class="n">3</span><h3>Front-end com IA</h3><p>Como orientar a criação em HTML, CSS e JavaScript.</p></a>
+    <a class="lesson-link" href="#aula4"><span class="n">4</span><h3>Dashboards responsivos</h3><p>Indicadores para computador, tablet e celular.</p></a>
+  </nav>
+
+  <section class="aula" id="aula1">
+    <header class="aula-head"><span class="n">1</span><div><h3>Estrutura de uma tela</h3><p>Menu, conteúdo, ações e hierarquia visual trabalham juntos para orientar o usuário.</p></div></header>
+    <div class="conteudo">
+      <div class="wireframe"><div class="topo">Cabeçalho e contexto</div><div class="menu">Menu e ações</div><div class="principal">Conteúdo principal</div></div>
+      <div class="bloco"><h4>Hierarquia visual</h4><ul><li>Título identifica a tarefa atual.</li><li>Ações principais ficam fáceis de localizar.</li><li>Informações relacionadas permanecem agrupadas.</li><li>Cores e tamanhos indicam prioridade, não decoração.</li></ul></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Desenhe um wireframe simples de uma tela do FastPousada, como o mapa de ocupação dos quartos. Marque título, navegação, ações, dados principais e feedback de erro ou sucesso.</p></div>
+      <div class="modelo"><b>PROMPT DE ESTRUTURA</b><pre>Crie o wireframe do mapa de ocupação do FastPousada. Ele deve ter cabeçalho com o mês e a pousada, menu de ações com
+Nova reserva, Check-in e Check-out, área principal com os quartos nas linhas e os dias nas colunas, e feedback
+operacional. Priorize Nova reserva. Não escolha cores ainda; primeiro valide a hierarquia e o fluxo.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula2">
+    <header class="aula-head"><span class="n">2</span><div><h3>Cadastros, listagens, filtros, tabelas e formulários</h3><p>Uma interface de dados precisa deixar claro o que está selecionado e o que cada ação fará.</p></div></header>
+    <div class="conteudo">
+      <div class="modelo"><b>COMPONENTES ESSENCIAIS</b><div class="componentes"><div><b>Busca</b>Localiza registros</div><div><b>Grade</b>Ordena e seleciona</div><div><b>Ações</b>Inclui, altera e exclui</div><div><b>Formulário</b>Valida e grava</div><div><b>Exportação</b>Imprime, CSV e XLSX</div></div></div>
+      <div class="bloco"><h4>Regras de um bom browse</h4><ul><li>Uma única linha selecionada por vez.</li><li>Botões dependentes ficam desabilitados sem seleção.</li><li>Filtros não eliminam os dados originais.</li><li>Paginação, ordenação e exportação trabalham sobre o mesmo conjunto.</li></ul></div>
+      <div class="bloco"><h4>Regras de um bom formulário</h4><ul><li>Rótulos claros e campos na ordem da tarefa.</li><li>Validação próxima do campo com problema.</li><li>Salvar somente depois da confirmação da API.</li><li>Preservar valores antigos quando uma atualização falha.</li></ul></div>
+      <div class="modelo"><b>PROMPT DE CADASTRO</b><pre>Crie o browse de Hóspedes do FastPousada com busca, seleção única, paginação e botões Atualizar, Inserir, Alterar,
+Excluir, Imprimir, CSV, Excel e Colunas. O update deve abrir em modal centralizado e móvel. Preserve a seleção e mostre
+mensagens operacionais. Use as cores do tema (variáveis --fa-*) e os dados pela FacilApp API SQL. Teste inserir,
+alterar, excluir e exportar.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula3">
+    <header class="aula-head"><span class="n">3</span><div><h3>Guiando a IA a criar um front-end web</h3><p>Separe estrutura, apresentação e comportamento para tornar o código legível e evolutivo.</p></div></header>
+    <div class="conteudo">
+      <div class="bloco"><h4>HTML</h4><p>Descreva regiões, títulos, campos, tabelas, botões e relações semânticas. A estrutura deve continuar compreensível sem o acabamento visual.</p></div>
+      <div class="bloco"><h4>CSS</h4><p>Defina tema, espaçamento, tipografia, estados e responsividade por seletores compartilhados. Evite corrigir cada tela com cores e medidas locais.</p></div>
+      <div class="bloco"><h4>JavaScript</h4><p>Explique eventos, estado, integração com API, validações e mensagens. Cada função deve ter uma responsabilidade clara e ser testável.</p></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Peça à IA uma primeira versão estrutural. Em seguida, solicite o tema e, por último, a integração. Compare o resultado com um pedido que tenta fazer tudo de uma vez.</p></div>
+      <div class="modelo"><b>PROMPT EM ETAPAS</b><pre>Etapa 1: crie somente o HTML semântico da tela descrita.
+Etapa 2: aplique o tema compartilhado e valide em 1280 × 768.
+Etapa 3: implemente os eventos e a integração com a API.
+Etapa 4: clique em cada ação, registre os erros e corrija sem alterar o que já foi aprovado.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula4">
+    <header class="aula-head"><span class="n">4</span><div><h3>Dashboards, indicadores e responsividade</h3><p>O mesmo dado precisa continuar legível e útil em diferentes tamanhos de tela.</p></div></header>
+    <div class="conteudo">
+      <div class="breakpoints"><div class="device"><b>Computador</b><span>Mais contexto simultâneo, filtros laterais e comparações em colunas.</span></div><div class="device"><b>Tablet</b><span>Grade reduzida, controles reorganizados e toque confortável.</span></div><div class="device"><b>Celular</b><span>Uma coluna, prioridade ao essencial e navegação direta.</span></div></div>
+      <div class="bloco"><h4>Indicadores úteis</h4><ul><li>Respondem a uma pergunta operacional.</li><li>Exibem unidade, período e origem do dado.</li><li>Usam cor acompanhada de texto ou símbolo.</li><li>Permitem chegar ao detalhe quando necessário.</li></ul></div>
+      <div class="bloco"><h4>Responsividade real</h4><p>Não basta diminuir tudo. Reorganize a ordem, o número de colunas, os controles e a densidade. Teste conteúdo longo, poucos dados, muitos dados e estados de erro.</p></div>
+      <div class="modelo"><b>PROMPT DE DASHBOARD</b><pre>Crie um dashboard da ocupação do FastPousada no mês com os indicadores taxa de ocupação, diária média, hóspedes na
+casa hoje e faturamento do mês; filtros por mês e por tipo de quarto; e gráficos de ocupação por dia e faturamento por
+tipo de quarto. Em computador use 4 cartões no topo e os 2 gráficos lado a lado; em tablet reorganize para 2 cartões
+por linha e os gráficos um embaixo do outro; em celular priorize ocupação de hoje e as chegadas do dia. Informe período
+e unidade dos números, trate ausência de dados e valide nas três larguras.</pre></div>
+      <div class="bloco atividade"><h4>Projeto final do módulo</h4><p>Transforme uma necessidade do FastPousada em wireframe, browse ou dashboard (ex.: Hóspedes ou painel de ocupação). Gere o front-end em etapas, conecte dados de teste e valide o resultado em computador, tablet e celular.</p></div>
+    </div>
+  </section>
+
+  <footer class="rodape"><span>FacilApp API SQL · Curso Programação 100% IA</span><span>Módulo III · Telas, Interfaces e Front-end</span></footer>
+</main>
+</body>
+</html>

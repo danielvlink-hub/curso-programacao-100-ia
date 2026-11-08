@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Curso Programação 100% IA — Módulo I</title>
+  <script>
+    function arquivoDashboard(endereco) {
+      try {
+        if (window.parent && typeof window.parent.FacilAppResolverArquivoLocal === 'function') {
+          return window.parent.FacilAppResolverArquivoLocal('DASHBOARDS/' + endereco);
+        }
+      } catch (erro) {}
+      return endereco;
+    }
+    document.write('<script src="' + arquivoDashboard('js/TemaFacilApp.js').replace(/&/g,'&amp;') + '"><\/script>');
+  </script>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--fa-bg,#f4f6ef);color:var(--fa-text,#17210e)}
+    body{padding:22px}.curso{max-width:1440px;margin:auto}.hero{position:relative;overflow:hidden;border-radius:18px;padding:28px 32px;background:linear-gradient(125deg,#263807,#415715 62%,#566d1e);color:#fff;box-shadow:0 18px 45px rgba(38,56,7,.18)}
+
+    .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#f2b313;text-transform:uppercase}.hero h1{font-size:34px;line-height:1.08;margin:9px 0 8px}.hero p{max-width:820px;margin:0;color:#dce9c5;font-size:15px;line-height:1.55}.hero-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700}
+    .section-head{display:flex;align-items:end;justify-content:space-between;margin:24px 2px 12px}.section-head h2{margin:0;font-size:22px;color:var(--fa-primary,#35470e)}.section-head span{font-size:12px;color:var(--fa-muted,#65705c)}
+    .aula-destaque{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-bottom:18px}.aula-card,.material-card{border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(23,33,14,.06)}
+    .aula-numero{display:inline-flex;background:#f2b313;color:#35470e;border-radius:8px;padding:6px 9px;font-size:12px;font-weight:900}.aula-card h3{margin:12px 0 7px;color:var(--fa-primary,#35470e);font-size:21px}.aula-card p,.material-card p{margin:0;color:var(--fa-muted,#65705c);line-height:1.48}
+    .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}.tool{border-left:4px solid #6f8a28;background:var(--fa-panel-alt,#f7f5ea);padding:11px;border-radius:9px}.tool b{display:block;color:var(--fa-primary,#35470e);margin-bottom:4px}.tool small{color:var(--fa-muted,#65705c);line-height:1.35}
+    .material-card{display:flex;flex-direction:column;justify-content:center;background:linear-gradient(145deg,#fff8dd,#f7f5ea)}.material-card h3{margin:0 0 8px;color:#35470e}.api-note{margin-top:12px;padding:11px 12px;border-left:4px solid #6f8a28;border-radius:8px;background:rgba(255,255,255,.62)}.api-note b{display:block;margin-bottom:4px;color:#35470e;font-size:12px}.api-note span{font-size:11px;line-height:1.4;color:#65705c}.actions{display:flex;gap:9px;margin-top:16px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border-radius:8px;padding:10px 13px;font-size:12px;font-weight:800;border:1px solid #35470e;color:#35470e;background:#fff}.btn.primary{background:#35470e;color:#fff}.btn:hover{filter:brightness(.96)}
+    .grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.lesson{min-height:108px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:12px;padding:15px;display:flex;gap:12px;transition:.18s ease}.lesson:hover{transform:translateY(-2px);border-color:#6f8a28;box-shadow:0 8px 20px rgba(53,71,14,.08)}.lesson .n{flex:0 0 35px;height:35px;border-radius:9px;background:#dce9c5;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.lesson.active{border-color:#f2b313;background:#fffaf0}.lesson.active .n{background:#f2b313}.lesson h4{font-size:14px;margin:1px 0 5px;color:var(--fa-primary,#35470e)}.lesson p{font-size:12px;line-height:1.35;margin:0;color:var(--fa-muted,#65705c)}
+    .rodape{padding:18px 4px 2px;font-size:11px;color:var(--fa-muted,#65705c);display:flex;justify-content:space-between;gap:12px}
+    @media(max-width:980px){.aula-destaque{grid-template-columns:1fr}.grade{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){body{padding:12px}.hero{padding:22px}.hero h1{font-size:27px}.tools,.grade{grid-template-columns:1fr}.section-head{align-items:start;gap:4px;flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="curso">
+  <section class="hero">
+    <!-- Remasterizado em 04/11/2026 (Daniel: "melhorar mantendo o layout e ajustando os dados que fazem sentido"):
+         programa do Módulo I segue o ebook; desenvolvimento só com Claude Code (Codex/Antigravity só como panorama);
+         backend chamado FacilApp API SQL. -->
+    <div class="eyebrow">FacilApp apresenta</div>
+    <h1>Curso Programação 100% IA</h1>
+    <p>Do ambiente de projeto à primeira tela funcionando: organização, Claude Code, ambiente de testes, FacilApp API SQL e banco de dados, já dentro do FastPousada, o sistema que você constrói ao longo do curso.</p>
+    <div class="hero-meta"><span class="chip">Módulo I</span><span class="chip">6 aulas</span><span class="chip">Claude Code + C# + SQL + HTML/CSS</span><span class="chip">Projeto prático FastPousada</span></div>
+  </section>
+
+  <div class="section-head"><h2>Aula em destaque</h2><span>Material preparado para condução em sala</span></div>
+  <section class="aula-destaque">
+    <article class="aula-card">
+      <span class="aula-numero">AULA 3</span>
+      <h3>Claude Code: a ferramenta do curso</h3>
+      <p>Todo o desenvolvimento das aulas é feito com o Claude Code. Você vai ver o que ele faz, o que não faz e como trabalhar com regras para que ele ajude sem estragar o que já funciona.</p>
+      <div class="tools">
+        <div class="tool"><b>Claude Code</b><small>Lê o projeto, edita arquivos, roda comandos e testa, sempre pedindo permissão para o que é sensível.</small></div>
+        <div class="tool"><b>Regras do projeto</b><small>O arquivo CLAUDE.md diz o que pode mudar, o que está travado e exige backup antes de alterar.</small></div>
+        <div class="tool"><b>Outras IAs</b><small>Codex, Antigravity e outras: panorama do mercado. Conhecer é útil; no curso usamos só o Claude.</small></div>
+      </div>
+    </article>
+    <aside class="material-card">
+      <h3>Checklist da Aula 3</h3>
+      <p>Uma página com “O que o Claude Code faz” e “O que ele não faz”, e o primeiro CLAUDE.md do seu projeto.</p>
+      <div class="api-note">
+        <b>Por que a FacilApp API SQL é essencial</b>
+        <span>Ela separa as interfaces do banco, centraliza autenticação e operações SQL, documenta o contrato no Swagger e permite que HTMLs, aplicativos e IAs usem os dados sem receber as credenciais do servidor. No curso ela roda no seu computador, na porta 7777, com SQLite.</span>
+      </div>
+      <div class="actions">
+        <a id="abrirPdfApiSql" class="btn primary" href="Ebook_IA_Aplicada_ao_Desenvolvimento_de_Sistemas.docx" target="_blank" rel="noopener">Abrir ebook</a>
+      </div>
+    </aside>
+  </section>
+
+  <div class="section-head"><h2>Programa do Módulo I</h2><span>6 aulas</span></div>
+  <section class="grade">
+    <article class="lesson"><div class="n">1</div><div><h4>Boas-vindas</h4><p>O novo jeito de desenvolver com IA: contexto, regras e validação.</p></div></article>
+    <article class="lesson"><div class="n">2</div><div><h4>Materiais e organização</h4><p>Pastas, backups, LEIA-ME e arquivo de contexto do projeto.</p></div></article>
+    <article class="lesson active"><div class="n">3</div><div><h4>Claude Code</h4><p>A ferramenta do curso, suas regras e um panorama das outras IAs.</p></div></article>
+    <article class="lesson"><div class="n">4</div><div><h4>Ambiente de desenvolvimento e teste</h4><p>Versões, portas e um teste mínimo de tela, API e banco.</p></div></article>
+    <article class="lesson"><div class="n">5</div><div><h4>Primeira tela</h4><p>Gerar, revisar e avaliar: funcional, visual e integração.</p></div></article>
+    <article class="lesson"><div class="n">6</div><div><h4>FacilApp API SQL e banco de dados</h4><p>SQLite na porta 7777, Swagger e integração do SQL Server Express na API.</p></div></article>
+  </section>
+  <footer class="rodape"><span>FacilApp API SQL · Curso Programação 100% IA</span><span>Módulo I</span></footer>
+</main>
+</body>
+</html>

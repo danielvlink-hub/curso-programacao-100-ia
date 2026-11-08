@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerenciador de Acessos</title>
+<!--
+  ACESSOS — CATÁLOGO DO MENU DO FASTPOUSADA
+  Daniel, 03/11/2026: "trazer o acessos.html e acessos_update.html" / "usar a API 7777 para criar o cadastro de menus
+  igual está no SQL". Adaptado do acessos.html do Gourmet (C:\COWORK-CHATGPT\Gourmet WEB\acessos.html).
+  O QUE FAZ: mantém a tabela menu_catalogo_itens (o menu que EXISTE no sistema): módulos e itens do menu principal,
+  atalhos do menu superior e as abas da faixa de dashboards. Para cada item: Liberado / Desabilitado / Oculto, ordem,
+  coluna do módulo, editar (acessos_update.html em janela) e excluir.
+  NÃO TRATA permissão de usuário: isso é menu_usuarios, na tela de Usuários (igual ao Gourmet).
+  COMO GRAVA: cada mudança vai na hora para a FacilApp API SQL (ApiCurso.alterarItemMenu / excluirItemMenu) e avisa o
+  index (FACILAPP_MENU_ALTERADO) para reler o menu.
+  REGRAS: só administrador (a API recusa os demais). O item "Acessos" (adm_acessos) nunca pode ficar oculto, desabilitado
+  nem ser excluído — senão ninguém volta a esta tela (erro no menu tranca o usuário fora).
+-->
+<script>
+  // Tema: o mesmo do menu (localStorage do Gourmet) e troca ao vivo pelo postMessage do index.
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) {
+        document.documentElement.setAttribute('data-theme', t);
+        var f = document.querySelector('#janelaUpdate iframe'); if (f && f.contentWindow) f.contentWindow.postMessage(m, '*');
+      }
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<script src="assets/js/ApiCurso.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: transparent !important; color: var(--fa-text, #1e293b);
+    font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  body { padding: 4px; }
+  .access-page { position: fixed; inset: 6px; display: grid; grid-template-rows: 35px auto minmax(0,1fr); background: var(--fa-panel, #fff);
+    border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.18); overflow: hidden; }
+  .header-panel { display: flex; align-items: center; justify-content: space-between; padding: 0 10px 0 14px; background: var(--fa-panel-alt, #f1f5f9);
+    border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .header-title { display: flex; align-items: center; gap: 8px; }
+  .header-title h1 { font-size: 14px; font-weight: 700; color: var(--fa-text, #1e293b); }
+  .header-title small { font-size: 11px; font-weight: 500; color: var(--fa-muted, #64748b); margin-left: 6px; }
+  .btn-fechar { width: 26px; height: 26px; border: 1px solid var(--fa-primary-dark, #35470e); border-radius: 6px; background: var(--fa-primary, #4b5a32);
+    color: var(--fa-button-text, #fff); font: 700 18px/1 Arial, sans-serif; cursor: pointer; }
+  .access-side { display: flex; align-items: center; gap: 12px; padding: 6px 14px; border-bottom: 1px solid var(--fa-border, #d8ddcf); flex-wrap: wrap; }
+  .grupo-acoes { display: flex; align-items: center; gap: 6px; }
+  .btn { height: 22px; padding: 0 9px; border: 0; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex;
+    align-items: center; gap: 5px; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn .material-icons { font-size: 15px; }
+  .btn-sucesso { background: var(--fa-accent, #6f8a28); }
+  .access-content { min-height: 0; display: grid; grid-template-rows: 34px minmax(0,1fr); gap: 0; padding: 4px 14px 10px; }
+  /* ABAS no modelo de browse do Gourmet (contas_receber.html: .browse-tabs/.browse-tab/.tab-count) — Daniel, 04/11/2026:
+     "dá uma olhada no modelo das abas, altura etc. do Gourmet". Faixa 34px, aba 29px, ativa 32px na cor primária. */
+  .browse-tabs { height: 34px; display: flex; align-items: flex-end; gap: 4px; padding: 0 4px; border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .browse-tab { height: 29px; min-width: 125px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 13px;
+    border: 1px solid var(--fa-border, #d8ddcf); border-bottom: 0; border-radius: 6px 6px 0 0; background: var(--fa-field-bg, #f8fafc);
+    color: var(--fa-muted, #64748b); font: 800 12px 'Roboto', sans-serif; cursor: pointer; }
+  .browse-tab .material-icons { font-size: 16px; }
+  .browse-tab.active { height: 32px; background: var(--fa-primary, #4b5a32); border-color: var(--fa-primary-dark, #35470e); color: var(--fa-button-text, #fff); }
+  .tab-count { min-width: 18px; height: 18px; display: inline-grid; place-items: center; padding: 0 5px; border-radius: 9px;
+    background: color-mix(in srgb, currentColor 15%, transparent); font-size: 9px; }
+  .config-container { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
+  .browse-columns { display: grid; grid-template-columns: minmax(260px,1fr) 354px 116px; align-items: center; min-height: 26px; padding: 0 10px;
+    background: var(--fa-panel-alt, #f1f5f9); border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px 6px 0 0;
+    font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--fa-muted, #64748b); }
+  .browse-columns span:nth-child(n+2) { text-align: center; }
+  .group-card { background: var(--fa-panel, #fff); border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; overflow: hidden; flex: 0 0 auto; }
+  .group-header { display: flex; align-items: center; justify-content: space-between; padding: 0 10px; min-height: 30px; font-weight: 700; font-size: 13px;
+    background: var(--fa-panel-alt, #eef3e6); border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .group-header .titulo { display: flex; align-items: center; gap: 8px; }
+  .right-tools { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; }
+  .right-tools select { height: 22px; font-size: 11px; padding: 0 4px; background: var(--fa-field-bg, #fff); color: var(--fa-text, #1e293b);
+    border: 1px solid var(--fa-border, #d8ddcf); border-radius: 4px; }
+  .item-row { display: grid; grid-template-columns: minmax(260px,1fr) 354px 116px; align-items: center; min-height: 26px; padding: 2px 10px;
+    border-bottom: 1px solid var(--fa-border, #e5e7eb); }
+  .item-row:last-child { border-bottom: 0; }
+  .item-row:hover { background: var(--fa-panel-alt, #f8fafc); }
+  .item-row.oculto { opacity: .55; }
+  .item-info { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .item-info .material-icons { font-size: 16px; color: var(--fa-muted, #64748b); }
+  .item-info strong { font-size: 12px; display: block; line-height: 1.2; }
+  .item-info span.destino { font-size: 11px; color: var(--fa-muted, #64748b); }
+  .estado-lista { display: flex; justify-content: center; }
+  .estado-lista label { display: flex; align-items: center; gap: 5px; width: 118px; font-size: 11px; font-weight: 700; color: var(--fa-muted, #64748b); cursor: pointer; }
+  .estado-lista label.marcado-liberado { color: #2f6b23; }
+  .estado-lista label.marcado-desabilitado { color: #8a6d1f; }
+  .estado-lista label.marcado-oculto { color: #b91c1c; }
+  .acoes { display: flex; gap: 3px; justify-content: center; }
+  .acao-linha { width: 22px; height: 22px; padding: 0; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 5px; background: var(--fa-primary, #4b5a32);
+    color: var(--fa-button-text, #fff); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .acao-linha .material-icons { font-size: 15px; }
+  .acao-linha.excluir:hover { background: #b3261e; border-color: #b3261e; }
+  .acao-linha:disabled { opacity: .35; cursor: not-allowed; }
+  .switch { position: relative; display: inline-block; width: 38px; height: 20px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 20px; cursor: pointer; transition: .2s; }
+  .slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+  input:checked + .slider { background: var(--fa-accent, #6f8a28); }
+  input:checked + .slider:before { transform: translateX(18px); }
+  .vazio { padding: 18px; text-align: center; color: var(--fa-muted, #64748b); }
+  /* Janela do update (acessos_update.html), como no Gourmet: fundo escuro + caixa centralizada. */
+  #janelaUpdate { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.42); }
+  #janelaUpdate.aberta { display: flex; }
+  #janelaUpdate .caixa { width: min(620px, calc(100vw - 24px)); height: min(430px, calc(100vh - 24px)); background: var(--fa-panel, #fff);
+    border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px; overflow: hidden; display: grid; grid-template-rows: 35px 1fr; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  #janelaUpdate .barra { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 14px; background: var(--fa-panel-alt, #f1f5f9);
+    border-bottom: 1px solid var(--fa-border, #d8ddcf); font-weight: 700; font-size: 13px; }
+  #janelaUpdate iframe { width: 100%; height: 100%; border: 0; background: transparent; }
+</style>
+</head>
+<body>
+<div class="access-page">
+  <div class="header-panel">
+    <div class="header-title">
+      <span class="material-icons" style="font-size:20px;color:var(--fa-primary);">admin_panel_settings</span>
+      <h1>Gerenciador de Acessos <small id="lblResumo">Catálogo do menu do sistema</small></h1>
+    </div>
+    <button type="button" class="btn-fechar" title="Fechar" onclick="sairAcessos()">×</button>
+  </div>
+
+  <div class="access-side">
+    <div class="grupo-acoes">
+      <button class="btn" onclick="carregarCatalogo()"><span class="material-icons">refresh</span>Atualizar</button>
+      <button class="btn" onclick="ordenarAbaAZ()" title="Ordena os itens de cada grupo em ordem alfabética"><span class="material-icons">sort_by_alpha</span>Ordenar A→Z</button>
+    </div>
+    <div class="grupo-acoes">
+      <button class="btn btn-sucesso" onclick="abrirUpdate()"><span class="material-icons">add</span>Inserir Menu</button>
+    </div>
+    <div class="grupo-acoes">
+      <button class="btn" onclick="marcarTodos('liberado')"><span class="material-icons">check_circle</span>Liberar Todos</button>
+      <button class="btn" onclick="marcarTodos('oculto')"><span class="material-icons">cancel</span>Bloquear Todos</button>
+    </div>
+    <div class="grupo-acoes" style="margin-left:auto; font-size:11px; color:var(--fa-muted);">Permissão por usuário fica no cadastro de Usuários</div>
+  </div>
+
+  <main class="access-content">
+    <nav class="browse-tabs" aria-label="Partes do menu">
+      <button type="button" class="browse-tab active" data-aba="lateral" onclick="alternarAba('lateral')"><span class="material-icons">menu_open</span>Menu Principal <span class="tab-count" id="contLateral">0</span></button>
+      <button type="button" class="browse-tab" data-aba="superior" onclick="alternarAba('superior')"><span class="material-icons">web_asset</span>Menu Superior <span class="tab-count" id="contSuperior">0</span></button>
+      <button type="button" class="browse-tab" data-aba="dashboard" onclick="alternarAba('dashboard')"><span class="material-icons">space_dashboard</span>Dashboards <span class="tab-count" id="contDashboard">0</span></button>
+    </nav>
+    <div class="config-container" id="configContainer"><div class="vazio">Carregando o catálogo…</div></div>
+  </main>
+</div>
+
+<div id="janelaUpdate">
+  <div class="caixa">
+    <div class="barra"><span id="tituloUpdate">Cadastro de Menu de Acesso</span><button type="button" class="btn-fechar" title="Fechar" onclick="fecharUpdate()">×</button></div>
+    <iframe title="Cadastro de Menu de Acesso"></iframe>
+  </div>
+</div>
+
+<script>
+  /* ===========================================================================
+   * ESTADO DA TELA
+   * catalogo = linhas de menu_catalogo_itens (como a API devolve). abaAtiva = 'lateral' | 'superior' | 'dashboard'.
+   * =========================================================================== */
+  let catalogo = [];
+  let abaAtiva = 'lateral';
+  const CODIGO_PROTEGIDO = 'adm_acessos';   // esta tela: nunca oculta/desabilita/exclui
+
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const aviso = (msg) => (window.FacilAppAviso ? FacilAppAviso(msg) : console.log(msg));
+
+  /** estadoDoItem(item) — 'liberado' | 'desabilitado' | 'oculto' a partir de ativo_padrao/desabilitado_padrao. */
+  function estadoDoItem(i) {
+    if (Number(i.ativo_padrao) === 0) return 'oculto';
+    return Number(i.desabilitado_padrao) === 1 ? 'desabilitado' : 'liberado';
+  }
+
+  /** Corpo do PUT a partir da linha do catálogo, com mudanças opcionais. */
+  function corpoDoItem(i, mudar) {
+    return Object.assign({
+      tipo_menu: i.tipo_menu, id_pai: i.id_pai, codigo: i.codigo, rotulo: i.rotulo, icone: i.icone, icone_tipo: i.icone_tipo,
+      coluna: i.coluna, ordem: i.ordem, arquivo_destino: i.arquivo_destino, button_id: i.button_id || null,
+      ativo_padrao: i.ativo_padrao, desabilitado_padrao: i.desabilitado_padrao
+    }, mudar || {});
+  }
+
+  /** Avisa o index para reler o menu (bloqueio/liberação vale na hora). */
+  function avisarMenuAlterado() { try { window.parent.postMessage({ origem: 'FACILAPP_MENU_ALTERADO' }, '*'); } catch (e) {} }
+
+  /* ---------------------------------------------------------------- leitura */
+  async function carregarCatalogo() {
+    try {
+      catalogo = await ApiCurso.listarCatalogo();
+      renderizar();
+    } catch (erro) {
+      document.getElementById('configContainer').innerHTML = '<div class="vazio">' + esc(erro.message) + '</div>';
+    }
+  }
+
+  function alternarAba(aba) {
+    abaAtiva = aba;
+    document.querySelectorAll('.browse-tab').forEach(t => t.classList.toggle('active', t.dataset.aba === aba));
+    renderizar();
+  }
+
+  const porOrdem = (a, b) => (Number(a.ordem) || 0) - (Number(b.ordem) || 0) || a.id_item - b.id_item;
+
+  /** Grupos da aba: no Menu Principal cada módulo é um grupo; nas outras abas, um grupo só. */
+  function gruposDaAba() {
+    if (abaAtiva === 'lateral') {
+      return catalogo.filter(i => i.tipo_menu === 'lateral' && i.id_pai == null).sort(porOrdem)
+        .map(m => ({ modulo: m, itens: catalogo.filter(i => i.tipo_menu === 'lateral' && i.id_pai === m.id_item).sort(porOrdem) }));
+    }
+    const titulo = abaAtiva === 'superior' ? 'Atalhos da Barra Superior' : 'Abas da Faixa de Dashboards';
+    return [{ modulo: null, titulo, itens: catalogo.filter(i => i.tipo_menu === abaAtiva).sort(porOrdem) }];
+  }
+
+  /* ---------------------------------------------------------------- desenho */
+  function renderizar() {
+    const cont = document.getElementById('configContainer');
+    cont.innerHTML = '';
+    const total = catalogo.filter(i => i.id_pai != null || i.tipo_menu !== 'lateral').length;
+    document.getElementById('lblResumo').textContent = 'Catálogo do menu do sistema • ' + total + ' itens';
+    document.getElementById('contLateral').textContent = catalogo.filter(i => i.tipo_menu === 'lateral' && i.id_pai != null).length;
+    document.getElementById('contSuperior').textContent = catalogo.filter(i => i.tipo_menu === 'superior').length;
+    document.getElementById('contDashboard').textContent = catalogo.filter(i => i.tipo_menu === 'dashboard').length;
+    cont.insertAdjacentHTML('beforeend', '<div class="browse-columns"><span>Menu / destino</span><span>Estado no menu</span><span>Ações</span></div>');
+    const grupos = gruposDaAba();
+    if (!grupos.length || (grupos.length === 1 && !grupos[0].itens.length)) {
+      cont.insertAdjacentHTML('beforeend', '<div class="vazio">Nenhum item nesta aba. Use "Inserir Menu".</div>');
+      return;
+    }
+    grupos.forEach(g => cont.appendChild(cartaoDoGrupo(g)));
+  }
+
+  function cartaoDoGrupo(g) {
+    const card = document.createElement('div');
+    card.className = 'group-card';
+    const cab = document.createElement('div');
+    cab.className = 'group-header';
+    if (g.modulo) {
+      const m = g.modulo;
+      const ativo = Number(m.ativo_padrao) !== 0;
+      cab.innerHTML =
+        '<div class="titulo"><span class="material-icons" style="font-size:18px;">folder</span><span>' + esc(m.rotulo) + '</span></div>' +
+        '<div class="right-tools">' +
+          '<label title="Em qual coluna do mega menu este módulo aparece">Coluna <select>' +
+            [0, 1, 2, 3, 4].map(c => '<option value="' + c + '"' + (Number(m.coluna) === c ? ' selected' : '') + '>' + (c || 'Auto') + '</option>').join('') +
+          '</select></label>' +
+          '<span>Módulo:</span><label class="switch" title="Desligado = o módulo inteiro some do menu"><input type="checkbox"' + (ativo ? ' checked' : '') + '><span class="slider"></span></label>' +
+          '<button type="button" class="acao-linha" title="Subir módulo" data-a="subir"><span class="material-icons">arrow_upward</span></button>' +
+          '<button type="button" class="acao-linha" title="Descer módulo" data-a="descer"><span class="material-icons">arrow_downward</span></button>' +
+          '<button type="button" class="acao-linha" title="Editar módulo" data-a="editar"><span class="material-icons">edit</span></button>' +
+          '<button type="button" class="acao-linha excluir" title="' + (g.itens.length ? 'Só exclui módulo vazio' : 'Excluir módulo vazio') + '" data-a="excluir"' + (g.itens.length ? ' disabled' : '') + '><span class="material-icons">close</span></button>' +
+        '</div>';
+      cab.querySelector('select').addEventListener('change', e => gravar(m, { coluna: Number(e.target.value) }));
+      cab.querySelector('input[type=checkbox]').addEventListener('change', e => gravar(m, { ativo_padrao: e.target.checked ? 1 : 0 }));
+      cab.querySelector('[data-a=subir]').addEventListener('click', () => mover(m, -1, gruposDaAba().map(x => x.modulo)));
+      cab.querySelector('[data-a=descer]').addEventListener('click', () => mover(m, 1, gruposDaAba().map(x => x.modulo)));
+      cab.querySelector('[data-a=editar]').addEventListener('click', () => abrirUpdate(m.id_item));
+      cab.querySelector('[data-a=excluir]').addEventListener('click', () => excluir(m));
+    } else {
+      cab.innerHTML = '<div class="titulo"><span class="material-icons" style="font-size:18px;">' + (abaAtiva === 'superior' ? 'web_asset' : 'space_dashboard') + '</span><span>' + esc(g.titulo) + '</span></div>';
+    }
+    card.appendChild(cab);
+    g.itens.forEach(item => card.appendChild(linhaDoItem(item, g.itens)));
+    return card;
+  }
+
+  function linhaDoItem(item, irmaos) {
+    const estado = estadoDoItem(item);
+    const protegido = item.codigo === CODIGO_PROTEGIDO;
+    const row = document.createElement('div');
+    row.className = 'item-row' + (estado === 'oculto' ? ' oculto' : '');
+    const opc = (val, rotulo, dica) =>
+      '<label class="' + (estado === val ? 'marcado-' + val : '') + '" title="' + dica + '"><input type="checkbox" data-estado="' + val + '"' +
+      (estado === val ? ' checked' : '') + (protegido && val !== 'liberado' ? ' disabled' : '') + '> ' + rotulo + '</label>';
+    row.innerHTML =
+      '<div class="item-info"><span class="material-icons">' + esc(item.icone || 'chevron_right') + '</span><div>' +
+        '<strong>' + esc(item.rotulo) + '</strong><span class="destino">' + esc(item.arquivo_destino || '— tela prevista (sem arquivo)') + '</span></div></div>' +
+      '<div class="estado-lista">' +
+        opc('liberado', 'LIBERADO', 'Aparece no menu e funciona normalmente.') +
+        opc('desabilitado', 'DESABILITADO', 'Não abre para ninguém. Tela sem arquivo aparece cinza como prevista; com arquivo, some.') +
+        opc('oculto', 'OCULTO', 'Some do menu.') +
+      '</div>' +
+      '<div class="acoes">' +
+        '<button type="button" class="acao-linha" title="Subir" data-a="subir"><span class="material-icons">arrow_upward</span></button>' +
+        '<button type="button" class="acao-linha" title="Descer" data-a="descer"><span class="material-icons">arrow_downward</span></button>' +
+        '<button type="button" class="acao-linha" title="Editar" data-a="editar"><span class="material-icons">edit</span></button>' +
+        '<button type="button" class="acao-linha excluir" title="' + (protegido ? 'Acessos não pode ser excluído' : 'Excluir') + '" data-a="excluir"' + (protegido ? ' disabled' : '') + '><span class="material-icons">delete</span></button>' +
+      '</div>';
+    row.querySelectorAll('input[data-estado]').forEach(ch => ch.addEventListener('change', () => definirEstado(item, ch.dataset.estado)));
+    row.querySelector('[data-a=subir]').addEventListener('click', () => mover(item, -1, irmaos));
+    row.querySelector('[data-a=descer]').addEventListener('click', () => mover(item, 1, irmaos));
+    row.querySelector('[data-a=editar]').addEventListener('click', () => abrirUpdate(item.id_item));
+    row.querySelector('[data-a=excluir]').addEventListener('click', () => excluir(item));
+    return row;
+  }
+
+  /* ---------------------------------------------------------------- gravação */
+  /**
+   * gravar(item, mudanca) — PUT do item com a mudança; recarrega o catálogo e avisa o menu.
+   * ERRO: mostra a mensagem da API e redesenha (a tela volta ao estado gravado).
+   */
+  async function gravar(item, mudanca, silencioso) {
+    try {
+      await ApiCurso.alterarItemMenu(item.id_item, corpoDoItem(item, mudanca));
+      if (!silencioso) { await carregarCatalogo(); avisarMenuAlterado(); }
+      return true;
+    } catch (erro) { aviso('Não foi possível gravar: ' + erro.message); await carregarCatalogo(); return false; }
+  }
+
+  function definirEstado(item, estado) {
+    if (item.codigo === CODIGO_PROTEGIDO && estado !== 'liberado') { aviso('O item Acessos precisa ficar liberado.'); renderizar(); return; }
+    gravar(item, {
+      ativo_padrao: estado === 'oculto' ? 0 : 1,
+      desabilitado_padrao: estado === 'desabilitado' ? 1 : 0
+    });
+  }
+
+  /** mover(item, passo, lista) — troca a ordem com o vizinho (renumera a lista de 10 em 10 para não empatar). */
+  async function mover(item, passo, lista) {
+    const ordenada = lista.filter(Boolean).slice().sort(porOrdem);
+    const i = ordenada.findIndex(x => x.id_item === item.id_item);
+    const j = i + passo;
+    if (i < 0 || j < 0 || j >= ordenada.length) return;
+    [ordenada[i], ordenada[j]] = [ordenada[j], ordenada[i]];
+    await renumerar(ordenada);
+  }
+
+  async function renumerar(lista) {
+    for (let k = 0; k < lista.length; k++) {
+      const nova = (k + 1) * 10;
+      if (Number(lista[k].ordem) !== nova) await gravar(lista[k], { ordem: nova }, true);
+    }
+    await carregarCatalogo();
+    avisarMenuAlterado();
+  }
+
+  /** Ordenar A→Z: itens de cada grupo da aba (e os módulos, no Menu Principal) em ordem alfabética. */
+  async function ordenarAbaAZ() {
+    const ok = await FacilAppConfirmar('Ordenar os itens desta aba em ordem alfabética?', { confirmar: 'Ordenar' });
+    if (!ok) return;
+    const az = l => l.slice().sort((a, b) => String(a.rotulo).localeCompare(String(b.rotulo), 'pt-BR'));
+    const grupos = gruposDaAba();
+    for (const g of grupos) await renumerar(az(g.itens));
+    if (abaAtiva === 'lateral') await renumerar(az(grupos.map(g => g.modulo)));
+  }
+
+  /** Liberar/Bloquear todos da aba. O item Acessos nunca é bloqueado. */
+  async function marcarTodos(estado) {
+    const nome = estado === 'liberado' ? 'LIBERAR' : 'BLOQUEAR (ocultar)';
+    const ok = await FacilAppConfirmar(nome + ' todos os itens desta aba?', { confirmar: 'Confirmar' });
+    if (!ok) return;
+    const itens = gruposDaAba().flatMap(g => g.itens).filter(i => !(i.codigo === CODIGO_PROTEGIDO && estado !== 'liberado'));
+    for (const i of itens) {
+      await gravar(i, { ativo_padrao: estado === 'oculto' ? 0 : 1, desabilitado_padrao: 0 }, true);
+    }
+    await carregarCatalogo();
+    avisarMenuAlterado();
+  }
+
+  async function excluir(item) {
+    if (item.codigo === CODIGO_PROTEGIDO) { aviso('O item Acessos não pode ser excluído.'); return; }
+    const ok = await FacilAppConfirmar('Excluir "' + item.rotulo + '" do menu? As permissões de usuários ligadas a ele também saem.', { confirmar: 'Excluir' });
+    if (!ok) return;
+    try { await ApiCurso.excluirItemMenu(item.id_item); await carregarCatalogo(); avisarMenuAlterado(); }
+    catch (erro) { aviso('Não foi possível excluir: ' + erro.message); }
+  }
+
+  /* ---------------------------------------------------------------- update (janela) */
+  /** abrirUpdate(id) — abre acessos_update.html na janela; sem id = inclusão na aba atual. */
+  function abrirUpdate(id) {
+    const janela = document.getElementById('janelaUpdate');
+    document.getElementById('tituloUpdate').textContent = id ? 'Alterar Menu de Acesso' : 'Inserir Menu de Acesso';
+    janela.querySelector('iframe').src = 'acessos_update.html?' + (id ? 'id=' + encodeURIComponent(id) : 'tipo=' + abaAtiva) + '&_v=' + Date.now();
+    janela.classList.add('aberta');
+  }
+  function fecharUpdate() {
+    const janela = document.getElementById('janelaUpdate');
+    janela.classList.remove('aberta');
+    janela.querySelector('iframe').src = 'about:blank';
+  }
+  window.addEventListener('message', e => {
+    const o = (e.data || {}).origem;
+    if (o === 'FACILAPP_ACESSOS_GRAVADO') { fecharUpdate(); carregarCatalogo(); avisarMenuAlterado(); }
+    if (o === 'FACILAPP_ACESSOS_CANCELADO') fecharUpdate();
+  });
+
+  /** Fechar: padrão do Gourmet — o index recebe FACILAPP_FECHAR_* e volta para a tela inicial. */
+  function sairAcessos() {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_ACESSOS' }, '*'); } catch (e) {}
+    if (window.parent === window) history.back();
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!ApiCurso.token()) { ApiCurso.sair('sessao'); return; }
+    if (!ApiCurso.ehAdministrador()) {
+      document.getElementById('configContainer').innerHTML = '<div class="vazio">Somente o administrador acessa o cadastro de menus.</div>';
+      return;
+    }
+    carregarCatalogo();
+  });
+</script>
+</body>
+</html>

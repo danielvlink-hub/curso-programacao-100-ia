@@ -1,0 +1,2130 @@
+/* 18/09/2026: tema jotape recebeu o tom do tema verde-claro do FacilApp Cereais
+   (so as cores; estrutura e variaveis --fa-* do Gourmet mantidas).
+   default e dark-tech tambem receberam as cores do Cereais; codex-dark, deep-teal e
+   obsidian-gold ja eram iguais. Versao anterior: assets/css/TemaFacilApp_jotape_antigo_180926.css */
+/* ========================================================================== */
+/* TemaFacilApp.css - deve ficar em EXE\MENU\TemaFacilApp.css               */
+/* Paletas compartilhadas: menu2 e dashboards.                               */
+/* ========================================================================== */
+
+/* ========================================================================== */
+/* OCULTAÇÃO AUTOMÁTICA DA TOPBAR QUANDO DENTRO DE IFRAME                    */
+/* O menu principal (index.html) gerencia a barra superior oficial.           */
+/* ========================================================================== */
+body.in-iframe .GOURMET-topbar,
+body.in-iframe .gourmet-topbar,
+body.in-iframe header.gourmet-topbar,
+body.in-iframe header.GOURMET-topbar,
+html.in-iframe .gourmet-topbar,
+html.in-iframe header.gourmet-topbar,
+.in-iframe .gourmet-topbar,
+.in-iframe .top-bar,
+.in-iframe .mega-menu-overlay,
+.in-iframe .mega-menu-backdrop {
+  display: none !important;
+}
+
+/* RESET OFICIAL PARA TODOS OS POPOVERS (CAIXA, TEMAS, USUÁRIO) - 100% BRANCO LIMPO */
+.caixa-popover-menu,
+#popoverCaixa,
+#popoverUsuario,
+.tema-selector-popover,
+#popoverSeletorTemas {
+  background: #ffffff !important;
+  color: #374151 !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.caixa-popover-menu .caixa-action-item,
+#popoverCaixa .caixa-action-item,
+#popoverUsuario .caixa-action-item,
+button.caixa-action-item,
+.tema-selector-popover .tema-opt-btn,
+#popoverSeletorTemas .tema-opt-btn,
+button.tema-opt-btn {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #374151 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.caixa-popover-menu .caixa-action-item:hover,
+#popoverCaixa .caixa-action-item:hover,
+#popoverUsuario .caixa-action-item:hover,
+button.caixa-action-item:hover,
+.tema-selector-popover .tema-opt-btn:hover,
+#popoverSeletorTemas .tema-opt-btn:hover,
+button.tema-opt-btn:hover {
+  background: #f3f4f6 !important;
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+.caixa-popover-menu .caixa-action-item .material-symbols-rounded,
+.caixa-popover-menu .caixa-action-item .material-icons,
+#popoverCaixa .caixa-action-item .material-symbols-rounded,
+#popoverCaixa .caixa-action-item .material-icons {
+  color: #4b5563 !important;
+}
+
+.caixa-popover-menu .caixa-action-item:hover .material-symbols-rounded,
+.caixa-popover-menu .caixa-action-item:hover .material-icons,
+#popoverCaixa .caixa-action-item:hover .material-symbols-rounded,
+#popoverCaixa .caixa-action-item:hover .material-icons {
+  color: #111827 !important;
+}
+
+body.in-iframe {
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow-y: auto !important;
+}
+
+body.in-iframe .workspace-GOURMET,
+body.in-iframe .main-container,
+body.in-iframe .pdv-workspace,
+body.in-iframe .caixa-workspace {
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+/* Transição do Palco Principal: elimina o risco/vazamento entre o menu e o Cardápio */
+.GOURMET-topbar,
+.gourmet-topbar,
+header.GOURMET-topbar,
+header.gourmet-topbar {
+  border-bottom: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.stage-container {
+  margin-top: 45px !important;
+  height: calc(100vh - 45px) !important;
+  background: var(--fa-background) !important;
+}
+.stage-container::after {
+  background: var(--fa-background) !important;
+  transition: opacity 0.15s ease;
+}
+
+:root, html[data-theme="default"], body[data-theme="default"] {
+  --fa-primary:#0369a1; --fa-primary-dark:#024d77; --fa-accent:#94b5d6;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#fff;
+  --fa-background:#dbe7f2; --fa-panel:#ffffff; --fa-panel-alt:#edf4fb; --fa-border:#b8cde2;
+  --fa-field-bg:#f5f9fd;
+  --fa-text:#0f243a; --fa-muted:#577594; --fa-danger:#c62828;
+}
+/* Contrato unico para qualquer dashboard, modal ou tela filha.
+   As paginas novas devem usar estas variaveis e nunca cores fixas. */
+:root {
+  --panel:var(--fa-panel); --panel-alt:var(--fa-panel-alt,var(--fa-panel)); --background:var(--fa-background);
+  --border:var(--fa-border); --text:var(--fa-text); --text-dim:var(--fa-muted);
+  --primary:var(--fa-primary); --primary-dark:var(--fa-primary-dark); --accent:var(--fa-accent);
+  --primary-soft:var(--fa-panel-alt,var(--fa-panel)); --accent-soft:color-mix(in srgb,var(--fa-accent) 15%,var(--fa-panel));
+  --danger:var(--fa-danger); --danger-soft:color-mix(in srgb,var(--fa-danger) 15%,var(--fa-panel)); --warning:#f59e0b;
+  --text-muted:var(--fa-muted); --shadow-sm:0 2px 8px color-mix(in srgb,var(--fa-primary) 8%,transparent);
+  --shadow-md:0 4px 12px color-mix(in srgb,var(--fa-primary) 10%,transparent);
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+  --fa-selection-bg:color-mix(in srgb,var(--fa-accent) 18%,var(--fa-panel));
+  --fa-selection-text:var(--fa-text);
+  --fa-row-hover-bg:color-mix(in srgb,var(--fa-accent) 10%,var(--fa-panel));
+  --fa-row-hover-text:var(--fa-text);
+  --dashboard-bg:var(--fa-background); --dashboard-panel:var(--fa-panel);
+  --dashboard-panel-alt:var(--fa-panel-alt,var(--fa-panel)); --dashboard-border:var(--fa-border);
+  --dashboard-text:var(--fa-text); --dashboard-muted:var(--fa-muted);
+}
+/* Jotapê: paleta institucional compartilhada pelo menu, browses, updates e impressão. */
+html[data-theme="jotape"], body[data-theme="jotape"] {
+  --fa-primary:#506b3d; --fa-primary-dark:#3d5630; --fa-accent:#789b6c;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#eef2e5;
+  --fa-background:#bfd4b7; --fa-panel:#d6ead1; --fa-panel-alt:#c5ddbf; --fa-border:#9eb993;
+  --fa-field-bg:#eef5e5; --fa-kanban-surface:#f1f7eb; --fa-modal-header-bg:#bfd4b7; --fa-modal-header-text:#1e3120; --fa-text:#1e3120; --fa-muted:#607562; --fa-danger:#a63232;
+  --fa-selection-bg:#506b3d; --fa-selection-text:#ffffff;
+  --fa-row-hover-bg:color-mix(in srgb,#789b6c 12%,#d6ead1); --fa-row-hover-text:#1e3120;
+  --primary:#506b3d; --primary-dark:#3d5630; --primary-soft:#c5ddbf; --accent:#789b6c;
+  --background:#bfd4b7; --panel:#d6ead1; --panel-alt:#c5ddbf; --border:#9eb993;
+  --text:#1e3120; --text-dim:#607562; --sidebar-bg:#eef5e5; --sidebar-border:#9eb993;
+  --sidebar-text:#3d5630; --sidebar-text-muted:#607562; --sidebar-text-hover:#ffffff;
+  --sidebar-group-title:#607562; --sidebar-item-active-bg:#506b3d; --sidebar-item-active-text:#ffffff;
+  --sidebar-item-hover-bg:#506b3d; --search-bg:#eef5e5; --search-border:#9eb993; --search-text:#1e3120;
+  --header-bg:#c5ddbf; --azul:#506b3d; --azul-escuro:#3d5630; --fundo:#bfd4b7;
+  --painel:#d6ead1; --borda:#9eb993; --texto:#1e3120; --muted:#607562;
+  --bg:#bfd4b7; --card:#d6ead1; --line:#9eb993; --txt:#1e3120; --mut:#607562;
+  --blue:#506b3d; --blue2:#3d5630; --blue-dark:#3d5630; --soft:#c5ddbf;
+  --panel2:#c5ddbf; --field:#eef5e5; --texto2:#3d5630;
+}
+
+/* Fundo exclusivo de combos editáveis do tema Jotapê.
+   Esta classe não deve herdar a cor verde-oliva dos botões de ação. */
+html[data-theme="jotape"] .jotape-combo-fundo,
+body[data-theme="jotape"] .jotape-combo-fundo,
+html[data-theme="jotape"] .jotape-combo-fundo .combo-option,
+body[data-theme="jotape"] .jotape-combo-fundo .combo-option {
+  background:#f1f7eb !important;
+  color:#18200f !important;
+}
+html[data-theme="jotape"] .jotape-combo-fundo .combo-option:hover,
+html[data-theme="jotape"] .jotape-combo-fundo .combo-option.active,
+body[data-theme="jotape"] .jotape-combo-fundo .combo-option:hover,
+body[data-theme="jotape"] .jotape-combo-fundo .combo-option.active {
+  background:#dfeeca !important;
+  color:#18200f !important;
+}
+/* V1 - Cyberpunk: Roxo Opaco elegante e Rosa Bebê suave */
+html[data-theme="v1-cyberpunk"], body[data-theme="v1-cyberpunk"] {
+  --fa-primary:#5e439b; --fa-primary-dark:#d87093; --fa-accent:#f4a6c8;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:#4d3580;
+  --fa-button-hover-bg:#7254b7; --fa-button-hover-border:#8161cc; --fa-button-text:#fff;
+  --fa-background:#080b18; --fa-panel:#0e132c; --fa-panel-alt:#161d3f; --fa-border:#232b50;
+  --fa-field-bg:#121838;
+  --fa-text:#e9ecff; --fa-muted:#8a96b8; --fa-danger:#f472b6;
+  --primary:#5e439b; --primary-dark:#d87093; --primary-soft:#1c1538; --accent:#f4a6c8;
+  --background:#080b18; --panel:#0e132c; --border:#232b50;
+  --text:#e9ecff; --text-dim:#8a96b8; --sidebar-bg:#0e132c;
+  --sidebar-border:#232b50; --sidebar-text:#e9ecff; --sidebar-text-muted:#8a96b8;
+  --sidebar-text-hover:#f4a6c8; --sidebar-group-title:#8a96b8;
+  --sidebar-item-active-bg:#221b44; --sidebar-item-active-text:#f4a6c8;
+  --sidebar-item-hover-bg:rgba(244,166,200,.12); --search-bg:#121838; --search-border:#232b50;
+  --search-text:#e9ecff; --header-bg:#080b18;
+  --azul:#5e439b; --azul-escuro:#d87093; --fundo:#080b18; --painel:#0e132c;
+  --borda:#232b50; --texto:#e9ecff; --muted:#8a96b8;
+  --sombra:0 4px 20px rgba(94,67,155,.25);
+  --bg:#080b18; --card:#0e132c; --line:#232b50; --txt:#e9ecff; --mut:#8a96b8;
+  --blue:#5e439b; --blue2:#d87093; --blue-dark:#4d3580; --soft:#161d3f;
+  --panel2:#121838; --field:#121838; --texto2:#d2d9f2;
+}
+html[data-theme="dark-tech"], body[data-theme="dark-tech"] {
+  --fa-primary:#0284c7; --fa-primary-dark:#0f4f7f; --fa-accent:#385175;
+  /* V2: normal = antigo hover V2; hover = hover do tema Padrão. */
+  --fa-button-bg:var(--fa-primary-dark); --fa-button-border:var(--fa-primary-dark);
+  --fa-button-hover-bg:#145f97; --fa-button-hover-border:#145f97; --fa-button-text:#fff;
+  --fa-background:#0d131d; --fa-panel:#141e2d; --fa-panel-alt:#1c2a3f; --fa-border:#25364f;
+  --header-bg:#172235;
+  --fa-field-bg:#0f1723;
+  --fa-text:#f1f5f9; --fa-muted:#64748b; --fa-danger:#f87171;
+  --fa-selection-bg:#0284c7; --fa-selection-text:#ffffff;
+  --fa-row-hover-bg:#203552; --fa-row-hover-text:#f1f5f9;
+  --fa-combo-selection-bg:#1e293b; --fa-combo-selection-text:#38bdf8;
+}
+html[data-theme="obsidian-gold"], body[data-theme="obsidian-gold"] {
+  --fa-primary:#b48c48; --fa-primary-dark:#8c6a30; --fa-accent:#b48c48;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#fff;
+  --fa-background:#0d1117; --fa-panel:#161b22; --fa-panel-alt:#1d232b; --fa-border:#30363d;
+  --fa-field-bg:#1c2229;
+  --fa-text:#c9d1d9; --fa-muted:#8b949e; --fa-danger:#e06c75;
+}
+html[data-theme="deep-teal"], body[data-theme="deep-teal"] {
+  --fa-primary:#0d9488; --fa-primary-dark:#0f766e; --fa-accent:#0d9488;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#fff;
+  --fa-background:#06141b; --fa-panel:#11212d; --fa-panel-alt:#172c39; --fa-border:#253e4b;
+  --fa-field-bg:#142b37;
+  --fa-text:#cbd5e1; --fa-muted:#94a3b8; --fa-danger:#f87171;
+}
+html[data-theme="codex-dark"], body[data-theme="codex-dark"] {
+  /* V8: ações neutras; o azul é usado apenas como acento/hover, sem brilho. */
+  --fa-primary:#0873b9; --fa-primary-dark:#065a91; --fa-accent:#0873b9;
+  /* Base azul-acinzentada: destaca a ação sem competir com o acento azul do hover. */
+  /* Igual ao item selecionado do menu V8: unidade visual entre navegação e ações. */
+  --fa-button-bg:#2a3641; --fa-button-border:#40515e;
+  --fa-button-hover-bg:#334552; --fa-button-hover-border:#0873b9; --fa-button-text:#f0f0f0;
+  --fa-background:#1b1b1b; --fa-panel:#222222; --fa-panel-alt:#282828; --fa-border:#383838;
+  --fa-field-bg:#252525;
+  --fa-text:#e7e7e7; --fa-muted:#a6a6a6; --fa-danger:#e06c75;
+  --primary:#0873b9; --primary-dark:#065a91; --primary-soft:#263442; --accent:#0873b9;
+  --background:#1b1b1b; --panel:#222222; --border:#383838;
+  --text:#e7e7e7; --text-dim:#a6a6a6; --sidebar-bg:#1e1e1e;
+  --sidebar-border:#383838; --sidebar-text:#e7e7e7; --sidebar-text-muted:#a6a6a6;
+  --sidebar-text-hover:#ffffff; --sidebar-group-title:#d0d0d0;
+  --sidebar-item-active-bg:#2a3641; --sidebar-item-active-text:#0873b9;
+  --sidebar-item-hover-bg:#2a2a2a; --search-bg:#252525; --search-border:#464646;
+  --search-text:#e7e7e7; --header-bg:#1e1e1e;
+  --azul:#0873b9; --azul-escuro:#065a91; --fundo:#1b1b1b; --painel:#222222;
+  --borda:#383838; --texto:#e7e7e7; --muted:#a6a6a6;
+  --sombra:0 4px 16px rgba(0,0,0,.28);
+  --bg:#1b1b1b; --card:#222222; --line:#383838; --txt:#e7e7e7; --mut:#a6a6a6;
+  --blue:#0873b9; --blue2:#065a91; --blue-dark:#065a91; --soft:#263442;
+  --panel2:#262626; --field:#252525; --texto2:#cfcfcf;
+}
+/* GOURMET Orange: Laranja Gourmet vibrante com superfícies limpas */
+html[data-theme="GOURMET-orange"], body[data-theme="GOURMET-orange"] {
+  --fa-primary:#ff5722; --fa-primary-dark:#e64a19; --fa-accent:#ff5722;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#fff;
+  --fa-background:#f4f6f9; --fa-panel:#ffffff; --fa-panel-alt:#fef5ee; --fa-border:#e2e8f0;
+  --fa-field-bg:#ffffff;
+  --fa-text:#1e293b; --fa-muted:#64748b; --fa-danger:#ef4444;
+  --primary:#ff5722; --primary-dark:#e64a19; --primary-soft:#fef5ee; --accent:#ff5722;
+  --background:#f4f6f9; --panel:#ffffff; --border:#e2e8f0;
+  --text:#1e293b; --text-dim:#64748b;
+}
+/* GOURMET Dark Flame: Cyber Gourmet com Preto Ônix e Laranja Flamejante */
+html[data-theme="GOURMET-dark"], body[data-theme="GOURMET-dark"] {
+  --fa-primary:#ff5e00; --fa-primary-dark:#d94800; --fa-accent:#ff8800;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#fff;
+  --fa-background:#080c16; --fa-panel:#0f172a; --fa-panel-alt:#18233c; --fa-border:#1e293b;
+  --fa-field-bg:#141d33;
+  --fa-text:#f8fafc; --fa-muted:#94a3b8; --fa-danger:#ff3366;
+  --primary:#ff5e00; --primary-dark:#d94800; --primary-soft:#241610; --accent:#ff8800;
+  --background:#080c16; --panel:#0f172a; --border:#1e293b;
+  --text:#f8fafc; --text-dim:#94a3b8;
+}
+/* Neon Matrix: Verde Esmeralda Cyberpunk sobre fundo Ultra-Dark */
+html[data-theme="neon-matrix"], body[data-theme="neon-matrix"] {
+  --fa-primary:#00ff88; --fa-primary-dark:#00cc6a; --fa-accent:#00ffaa;
+  --fa-button-bg:#00cc6a; --fa-button-border:#00ff88;
+  --fa-button-hover-bg:#00ff88; --fa-button-hover-border:#00ffaa; --fa-button-text:#04150c;
+  --fa-background:#020a06; --fa-panel:#05170d; --fa-panel-alt:#0a2616; --fa-border:#0f3f24;
+  --fa-field-bg:#071f12;
+  --fa-text:#d1fae5; --fa-muted:#6ee7b7; --fa-danger:#ff4d6d;
+  --primary:#00ff88; --primary-dark:#00cc6a; --primary-soft:#0a2616; --accent:#00ffaa;
+  --background:#020a06; --panel:#05170d; --border:#0f3f24;
+  --text:#d1fae5; --text-dim:#6ee7b7;
+}
+
+/* ========================================================================== */
+/* COMPATIBILIDADE DE BOTÕES LEGADOS                                          */
+/* Páginas antigas usam --blue/--azul. Mantenha estas variáveis apontadas     */
+/* para a paleta ativa; nunca fixe azul dentro das dashboards.                */
+/* Assim V5 usa dourado, V2 azul, V7 verde-azulado e os demais temas também. */
+/* ========================================================================== */
+:root,
+html[data-theme],
+body[data-theme]{
+  --blue:var(--fa-primary);
+  --blue2:var(--fa-primary-dark);
+  --blue-dark:var(--fa-primary-dark);
+  --azul:var(--fa-primary);
+  --azul-escuro:var(--fa-primary-dark);
+}
+
+/* ========================================================================== */
+/* COMPONENTES COMPARTILHADOS                                                  */
+/* Regra unica para dashboards, consultas e janelas HTML. As paginas devem    */
+/* definir somente tamanho e posicao; cor vem sempre do tema ativo.            */
+/* ========================================================================== */
+html[data-theme] .btn:not(.category-tab-btn):not(.mesa-btn-box):not(.btn-foot-pagar):not(.btn-foot-voltar):not(.btn-foot-enviar):not(.channel-btn):not(.prod-card):not(.modal-tab-btn),
+body[data-theme] .btn:not(.category-tab-btn):not(.mesa-btn-box):not(.btn-foot-pagar):not(.btn-foot-voltar):not(.btn-foot-enviar):not(.channel-btn):not(.prod-card):not(.modal-tab-btn),
+html[data-theme] button:not(.category-tab-btn):not(.mesa-btn-box):not(.btn-foot-pagar):not(.btn-foot-voltar):not(.btn-foot-enviar):not(.channel-btn):not(.prod-card):not(.card-btn-bottom):not(.btn-view-toggle):not(.modal-tab-btn):not(.rail-btn):not(.linha-endereco-popover):not(.popover-cliente-acao),
+body[data-theme] button:not(.category-tab-btn):not(.mesa-btn-box):not(.btn-foot-pagar):not(.btn-foot-voltar):not(.btn-foot-enviar):not(.channel-btn):not(.prod-card):not(.card-btn-bottom):not(.btn-view-toggle):not(.modal-tab-btn):not(.rail-btn):not(.linha-endereco-popover):not(.popover-cliente-acao),
+html[data-theme] .action-btn,
+body[data-theme] .action-btn,
+html[data-theme] .filter-buttons button,
+body[data-theme] .filter-buttons button,
+html[data-theme] .actions button,
+body[data-theme] .actions button,
+html[data-theme] .print-toolbar button,
+body[data-theme] .print-toolbar button{
+  color:var(--fa-button-text) !important;
+  background:var(--fa-button-bg) !important;
+  border-color:var(--fa-button-border) !important;
+  font-weight:400 !important;
+  box-shadow:none !important;
+}
+
+/* V2: o rotulo interno dos botoes acompanha o peso normal do componente. */
+html[data-theme="dark-tech"] button span,
+html[data-theme="dark-tech"] .btn span,
+body[data-theme="dark-tech"] button span,
+body[data-theme="dark-tech"] .btn span {
+  font-weight:400 !important;
+}
+
+/* V2: modelo unico dos combos, baseado no seletor Situação do Pagar. */
+html[data-theme="dark-tech"] select,
+body[data-theme="dark-tech"] select {
+  color-scheme:dark;
+  font-size:11px;
+  font-weight:400;
+}
+html[data-theme="dark-tech"] select option,
+body[data-theme="dark-tech"] select option {
+  background:var(--fa-panel);
+  color:var(--fa-text);
+  font-size:11px;
+  font-weight:400;
+}
+html[data-theme="dark-tech"] select option:hover,
+body[data-theme="dark-tech"] select option:hover,
+html[data-theme="dark-tech"] select option:focus,
+body[data-theme="dark-tech"] select option:focus,
+html[data-theme="dark-tech"] select option:checked,
+body[data-theme="dark-tech"] select option:checked {
+  background:var(--fa-combo-selection-bg) linear-gradient(0deg,var(--fa-combo-selection-bg) 0 0);
+  box-shadow:inset 0 0 0 100px var(--fa-combo-selection-bg);
+  color:var(--fa-combo-selection-text);
+}
+
+html[data-theme] .btn:not(.category-tab-btn):not(.mesa-btn-box):not(.btn-foot-pagar):not(.btn-foot-voltar):not(.btn-foot-enviar):not(.channel-btn):not(.prod-card):not(.modal-tab-btn):hover,
+body[data-theme] .btn:not(.category-tab-btn):not(.mesa-btn-box):not(.btn-foot-pagar):not(.btn-foot-voltar):not(.btn-foot-enviar):not(.channel-btn):not(.prod-card):not(.modal-tab-btn):hover,
+html[data-theme] button:not(.category-tab-btn):not(.mesa-btn-box):not(.btn-foot-pagar):not(.btn-foot-voltar):not(.btn-foot-enviar):not(.channel-btn):not(.prod-card):not(.card-btn-bottom):not(.btn-view-toggle):not(.modal-tab-btn):not(.rail-btn):not(.linha-endereco-popover):not(.popover-cliente-acao):hover,
+body[data-theme] button:not(.category-tab-btn):not(.mesa-btn-box):not(.btn-foot-pagar):not(.btn-foot-voltar):not(.btn-foot-enviar):not(.channel-btn):not(.prod-card):not(.card-btn-bottom):not(.btn-view-toggle):not(.modal-tab-btn):not(.rail-btn):not(.linha-endereco-popover):not(.popover-cliente-acao):hover,
+html[data-theme] .action-btn:hover,
+body[data-theme] .action-btn:hover,
+html[data-theme] .filter-buttons button:hover,
+body[data-theme] .filter-buttons button:hover,
+html[data-theme] .actions button:hover,
+body[data-theme] .actions button:hover,
+html[data-theme] .print-toolbar button:hover,
+body[data-theme] .print-toolbar button:hover{
+  color:var(--fa-button-text) !important;
+  background:var(--fa-button-hover-bg) !important;
+  border-color:var(--fa-button-hover-border) !important;
+  font-weight:400 !important;
+  filter:brightness(1.12) !important;
+  box-shadow:none !important;
+}
+
+/* ========================================================================== */
+/* PADRÃO OFICIAL UNIFICADO DE ABAS (TABS) PARA TODAS AS TELAS E MODAIS       */
+/* ========================================================================== */
+.modal-tabs-header,
+.tabs-header,
+.tabs-header-pill,
+.fiscal-inner-tabs,
+.inner-tabs-container,
+.nav-tabs,
+.tab-group,
+.channel-tab-pills,
+.gourmet-tabs-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px !important;
+  background: var(--fa-field-bg, #f8fafc) !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--fa-border, #e2e8f0) !important;
+}
+
+.modal-tab-btn,
+.tab-btn,
+.tab-btn-pill,
+.inner-tab-btn,
+.nav-tab,
+.tab-item,
+.pill-tab {
+  flex: 1 !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--fa-muted, #64748b) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  outline: none !important;
+  user-select: none !important;
+  box-shadow: none !important;
+}
+
+.modal-tab-btn:hover,
+.tab-btn:hover,
+.tab-btn-pill:hover,
+.inner-tab-btn:hover,
+.nav-tab:hover,
+.tab-item:hover,
+.pill-tab:hover {
+  color: var(--fa-text, #1e293b) !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.modal-tab-btn.active,
+.tab-btn.active,
+.tab-btn-pill.active,
+.inner-tab-btn.active,
+.nav-tab.active,
+.tab-item.active,
+.pill-tab.active {
+  color: #ffffff !important;
+  background: var(--fa-primary, #0284c7) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-theme],
+html[data-theme] *,
+body[data-theme],
+body[data-theme] *{
+  scrollbar-color:var(--fa-primary-dark) var(--fa-panel);
+}
+
+html[data-theme]::-webkit-scrollbar,
+body[data-theme]::-webkit-scrollbar,
+html[data-theme] ::-webkit-scrollbar,
+body[data-theme] ::-webkit-scrollbar{
+  width:8px;
+  height:8px;
+  background:var(--fa-panel);
+}
+
+html[data-theme]::-webkit-scrollbar-track,
+body[data-theme]::-webkit-scrollbar-track,
+html[data-theme] ::-webkit-scrollbar-track,
+body[data-theme] ::-webkit-scrollbar-track,
+html[data-theme]::-webkit-scrollbar-corner,
+body[data-theme]::-webkit-scrollbar-corner,
+html[data-theme] ::-webkit-scrollbar-corner,
+body[data-theme] ::-webkit-scrollbar-corner{
+  background:var(--fa-panel) !important;
+  border-color:var(--fa-border) !important;
+}
+
+html[data-theme]::-webkit-scrollbar-thumb,
+body[data-theme]::-webkit-scrollbar-thumb,
+html[data-theme] ::-webkit-scrollbar-thumb,
+body[data-theme] ::-webkit-scrollbar-thumb{
+  background:var(--fa-primary-dark) !important;
+  border-color:var(--fa-panel) !important;
+  border-radius:4px;
+}
+
+html[data-theme]::-webkit-scrollbar-thumb:hover,
+body[data-theme]::-webkit-scrollbar-thumb:hover,
+html[data-theme] ::-webkit-scrollbar-thumb:hover,
+body[data-theme] ::-webkit-scrollbar-thumb:hover{
+  background:var(--fa-accent) !important;
+}
+
+/* CONTRATO GLOBAL DO BROWSE: cobre a base inteira do Tabulator.
+   Nenhuma tela filha deve definir cores próprias para grade ou paginação. */
+.tabulator{
+  border-color:var(--fa-border)!important;
+  background:var(--fa-panel)!important;
+  color:var(--fa-text)!important;
+}
+.tabulator .tabulator-header,
+.tabulator .tabulator-footer{
+  border-color:var(--fa-border)!important;
+  background:var(--fa-panel-alt,var(--fa-panel))!important;
+  color:var(--fa-text)!important;
+}
+.tabulator .tabulator-header .tabulator-col,
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable,
+.tabulator .tabulator-footer .tabulator-paginator{
+  border-color:var(--fa-border)!important;
+  background:var(--fa-panel-alt,var(--fa-panel))!important;
+  color:var(--fa-text)!important;
+}
+.tabulator .tabulator-tableholder,
+.tabulator .tabulator-table,
+.tabulator .tabulator-row,
+.tabulator .tabulator-row.tabulator-row-even,
+.tabulator .tabulator-row.tabulator-row-odd{
+  background:var(--fa-panel)!important;
+  color:var(--fa-text)!important;
+}
+.tabulator .tabulator-row{
+  border-color:var(--fa-border)!important;
+}
+.tabulator .tabulator-cell{
+  border-color:var(--fa-border)!important;
+  background:transparent!important;
+  color:inherit!important;
+}
+.tabulator .tabulator-footer .tabulator-page,
+.tabulator .tabulator-footer .tabulator-page-size{
+  border-color:var(--fa-button-border)!important;
+  background:var(--fa-button-bg)!important;
+  color:var(--fa-button-text)!important;
+}
+.tabulator .tabulator-footer .tabulator-page:not(.disabled):hover,
+.tabulator .tabulator-footer .tabulator-page.active{
+  border-color:var(--fa-button-hover-border)!important;
+  background:var(--fa-button-hover-bg)!important;
+  color:var(--fa-button-text)!important;
+}
+.tabulator .tabulator-footer .tabulator-page.disabled{opacity:.45!important}
+.tabulator .tabulator-footer .tabulator-page-counter,
+.tabulator .tabulator-footer .tabulator-paginator label{
+  color:var(--fa-muted)!important;
+}
+/* BROWSE WEB: seleção única e opaca para grades Tabulator.
+   Usa somente o contrato global do tema, sem cor definida pela página. */
+html[data-theme] body .tabulator .tabulator-row.tabulator-selected,
+html[data-theme] body .tabulator .tabulator-row.tabulator-selected:hover,
+body[data-theme] .tabulator .tabulator-row.tabulator-selected,
+body[data-theme] .tabulator .tabulator-row.tabulator-selected:hover{
+  background:var(--fa-selection-bg) !important;
+  color:var(--fa-selection-text) !important;
+}
+html[data-theme] body .tabulator .tabulator-row.tabulator-selected .tabulator-cell,
+body[data-theme] .tabulator .tabulator-row.tabulator-selected .tabulator-cell{
+  color:var(--fa-selection-text) !important;
+}
+/* O tema pode chegar ao iframe antes do atributo data-theme.
+   Este seletor atinge diretamente o estado nativo do Tabulator. */
+.tabulator .tabulator-row.tabulator-selected,
+.tabulator .tabulator-row.tabulator-selected:hover{
+  background-color:var(--fa-selection-bg) !important;
+  color:var(--fa-selection-text) !important;
+}
+.tabulator .tabulator-row.tabulator-selected .tabulator-cell{
+  background-color:transparent !important;
+  color:var(--fa-selection-text) !important;
+}
+.tabulator .tabulator-row:not(.tabulator-selected):hover{
+  background-color:var(--fa-row-hover-bg) !important;
+  color:var(--fa-row-hover-text) !important;
+}
+
+/* ABAS: o item ativo herda o mesmo destaque opaco da selecao do tema. */
+.tabs .tab.active,
+.tab.active{
+  background:var(--fa-selection-bg);
+  color:var(--fa-selection-text);
+  border-color:var(--fa-border);
+}
+.tabulator .tabulator-row:not(.tabulator-selected):hover .tabulator-cell{
+  background-color:transparent !important;
+  color:var(--fa-row-hover-text) !important;
+}
+
+/* BROWSE WEB: o Tabulator possui hover branco nativo nas colunas ordenáveis.
+   O cabeçalho deve permanecer opaco e seguir exclusivamente o tema ativo. */
+.tabulator .tabulator-header .tabulator-col:hover,
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable:hover{
+  background:var(--fa-row-hover-bg) !important;
+  color:var(--fa-row-hover-text) !important;
+}
+.tabulator .tabulator-header .tabulator-col:hover .tabulator-col-content,
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable:hover .tabulator-col-content{
+  background:transparent !important;
+  color:inherit !important;
+}
+
+/* CONFIRMACAO TEMATICA: substitui confirm() nativo, que ignora o tema. */
+.fa-confirm-modal{
+  position:fixed;inset:0;z-index:20000;display:none;
+  align-items:center;justify-content:center;padding:12px;
+  background:rgba(0,0,0,.72);
+}
+.fa-confirm-modal.open{display:flex}
+.fa-confirm-box{
+  width:min(420px,100%);overflow:hidden;
+  border:1px solid var(--fa-border);border-radius:8px;
+  background:var(--fa-panel);color:var(--fa-text);
+  box-shadow:0 12px 34px rgba(0,0,0,.38);
+}
+.fa-confirm-title{
+  min-height:34px;display:flex;align-items:center;padding:5px 9px;
+  border-bottom:1px solid var(--fa-border);
+  background:var(--dashboard-panel-alt);color:var(--fa-text);
+  font-size:12px;font-weight:700;
+}
+.fa-confirm-body{padding:10px;color:var(--fa-text);font-size:11px;line-height:1.55}
+.fa-confirm-message{margin-bottom:8px;color:var(--fa-text)}
+.fa-confirm-details{
+  padding:7px;border:1px solid var(--fa-border);border-radius:6px;
+  background:var(--dashboard-panel-alt);color:var(--fa-text);
+}
+.fa-confirm-actions{
+  display:flex;justify-content:flex-end;gap:5px;padding:5px 7px;
+  border-top:1px solid var(--fa-border);background:var(--dashboard-panel-alt);
+}
+
+/* BOTÃO CARDÁPIO DIGITAL NO TOPO (ESTILO GOMER) */
+.btn-cardapio-digital-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: #fff7ed !important;
+  border: 1.5px solid #fdba74 !important;
+  color: #c2410c !important;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  white-space: nowrap;
+}
+.btn-cardapio-digital-top:hover {
+  background: #ffedd5 !important;
+  border-color: #fb923c !important;
+  color: #9a3412 !important;
+  transform: translateY(-1px);
+}
+
+/* RELATORIOS: componente unico, compartilhado por todas as paginas HTML.
+   A visualizacao herda o tema. Apenas a impressao fisica usa papel branco. */
+html[data-theme] .print-modal,body[data-theme] .print-modal{
+  position:fixed!important;inset:0!important;z-index:10000!important;
+  display:none;padding:18px!important;background:rgba(0,0,0,.72)!important;
+}
+html[data-theme] .print-modal.open,
+body[data-theme] .print-modal.open{
+  display:block!important;
+}
+html[data-theme] .print-box,body[data-theme] .print-box{
+  height:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;
+  border:1px solid var(--fa-border)!important;border-radius:10px!important;
+  background:var(--fa-panel)!important;color:var(--fa-text)!important;
+}
+html[data-theme] .print-toolbar,body[data-theme] .print-toolbar{
+  flex:0 0 auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
+  padding:10px 14px!important;border-bottom:1px solid var(--fa-border)!important;
+  background:var(--fa-panel-2,var(--fa-panel))!important;color:var(--fa-text)!important;
+}
+html[data-theme] .print-toolbar strong,body[data-theme] .print-toolbar strong{font-size:16px}
+html[data-theme] .print-toolbar .right,body[data-theme] .print-toolbar .right{display:flex;gap:8px}
+html[data-theme] .print-area,body[data-theme] .print-area{
+  flex:1!important;overflow:auto!important;padding:22px!important;
+  background:var(--fa-panel)!important;color:var(--fa-text)!important;
+}
+html[data-theme] .print-area h1,body[data-theme] .print-area h1{font-size:20px;margin:0 0 6px;color:var(--fa-text)}
+html[data-theme] .print-area .info,body[data-theme] .print-area .info{line-height:1.5;margin-bottom:12px;color:var(--fa-muted)}
+html[data-theme] .print-area table,body[data-theme] .print-area table{width:100%;border-collapse:collapse;margin-top:8px;white-space:normal}
+html[data-theme] .print-area th,html[data-theme] .print-area td,
+body[data-theme] .print-area th,body[data-theme] .print-area td{
+  padding:5px!important;border:1px solid var(--fa-border)!important;
+  background:var(--fa-panel)!important;color:var(--fa-text)!important;font-size:11px;
+}
+html[data-theme] .print-area th,body[data-theme] .print-area th{background:var(--fa-panel-2,var(--fa-panel))!important}
+html[data-theme] .print-area .rod,body[data-theme] .print-area .rod{
+  margin-top:12px;padding-top:6px;border-top:1px solid var(--fa-border);color:var(--fa-muted);font-size:11px;
+}
+@media print{
+  body *{visibility:hidden!important}
+  #printModal,#printModal *{visibility:visible!important}
+  #printModal{display:block!important;position:absolute!important;inset:0!important;padding:0!important;background:#fff!important}
+  .print-box{height:auto!important;border:0!important;border-radius:0!important;overflow:visible!important;background:#fff!important;color:#111!important}
+  .print-toolbar{display:none!important}
+  .print-area{overflow:visible!important;padding:10mm!important;background:#fff!important;color:#111!important}
+  .print-area h1,.print-area .info,.print-area th,.print-area td,.print-area .rod{background:#fff!important;color:#111!important;border-color:#777!important}
+}
+
+/* CONTRATO GLOBAL DOS MODULOS: layout visual baseado no Cadastro de Usuarios.
+   Telas filhas definem apenas a grade estrutural; cores, textos e componentes ficam aqui. */
+html[data-theme] body,
+body[data-theme]{font:11px Arial,sans-serif;color:var(--fa-text);background:var(--fa-background)}
+/* Mesmo padrão do seletor de Colunas do console: controles nativos usam
+   a cor principal do tema, sem azul fixo do navegador. */
+html[data-theme] input[type="checkbox"],
+html[data-theme] input[type="radio"],
+body[data-theme] input[type="checkbox"],
+body[data-theme] input[type="radio"]{accent-color:var(--fa-primary)}
+html[data-theme] body .toolbar,
+html[data-theme] body .browse,
+html[data-theme] body .statusbar,
+html[data-theme] body .action-group{
+  border:1px solid var(--fa-border);border-radius:7px;background:var(--fa-panel);color:var(--fa-text)
+}
+html[data-theme] body .toolbar h1{font-size:15px;line-height:26px;font-weight:600;color:var(--fa-text)}
+html[data-theme] body .side-actions{height:100%;min-height:0;display:flex;flex-direction:column;gap:5px}
+html[data-theme] body .side-actions .action-group{
+  min-height:58px;display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;padding:9px 8px;overflow:hidden
+}
+html[data-theme] body .side-actions .action-group:nth-child(2){flex:1}
+html[data-theme] body .side-actions button{
+  width:100%;height:38px;flex:0 0 38px;display:flex;align-items:center;gap:8px;text-align:left;padding:0 10px;font:11px Arial,sans-serif
+}
+html[data-theme] body .side-actions .action-icon{
+  width:17px;flex:0 0 17px;text-align:center;font:17px/1 "Segoe UI Symbol",Arial,sans-serif
+}
+html[data-theme] body .browse-head strong{font-size:11px;line-height:16px;letter-spacing:.2px;font-weight:700;text-transform:uppercase}
+html[data-theme] body .search,
+html[data-theme] body .search input,
+html[data-theme] body .statusbar{font:11px Arial,sans-serif}
+html[data-theme] body .tabulator{font:11px Arial,sans-serif!important}
+html[data-theme] body .tabulator .tabulator-header{font-size:10px!important}
+html[data-theme] body .tabulator .tabulator-header .tabulator-col{min-height:28px!important}
+html[data-theme] body .tabulator .tabulator-header .tabulator-col .tabulator-col-content{padding:5px 7px!important}
+html[data-theme] body .tabulator .tabulator-row{min-height:25px!important;font-size:11px!important}
+html[data-theme] body .tabulator .tabulator-row .tabulator-cell{height:25px!important;padding:5px 7px!important;font-size:11px!important}
+html[data-theme] body .tabulator .tabulator-footer,
+html[data-theme] body .tabulator .tabulator-footer button,
+html[data-theme] body .tabulator .tabulator-footer select{font:11px Arial,sans-serif!important}
+
+/* ========================================================================== */
+/* ESTILOS GOURMET CENTRALIZADOS NO CSS DE TEMAS                              */
+/* Garante que o menu superior, botões ativos, inputs e mapas acompanhem      */
+/* integralmente a paleta selecionada sem configurações locais nas telas.     */
+/* ========================================================================== */
+html[data-theme] .GOURMET-topbar,
+body[data-theme] .GOURMET-topbar,
+html[data-theme] .gourmet-topbar,
+body[data-theme] .gourmet-topbar {
+  background: var(--header-bg, var(--fa-primary));
+  color: var(--fa-text, #ffffff);
+  border-bottom: none !important;
+  border: none !important;
+}
+
+html[data-theme="default"] .GOURMET-topbar,
+body[data-theme="default"] .GOURMET-topbar,
+html[data-theme="default"] .gourmet-topbar,
+body[data-theme="default"] .gourmet-topbar {
+  background: #145f97;
+  color: #ffffff;
+}
+
+html[data-theme="jotape"] .GOURMET-topbar,
+body[data-theme="jotape"] .GOURMET-topbar,
+html[data-theme="jotape"] .gourmet-topbar,
+body[data-theme="jotape"] .gourmet-topbar {
+  background: #c5ddbf;
+  color: #3b4c19;
+  border-bottom: none !important;
+  border: none !important;
+}
+
+html[data-theme="jotape"] .facilapp-logo-img,
+body[data-theme="jotape"] .facilapp-logo-img,
+html[data-theme="jotape"] .login-modal-logo img,
+body[data-theme="jotape"] .login-modal-logo img {
+  content: url("../images/logo_facilapp_jotape.svg");  /* CSS mora em assets/css desde 18/09/2026 */
+}
+
+html[data-theme="jotape"] .GOURMET-topbar .btn-hamburguer,
+html[data-theme="jotape"] .GOURMET-topbar .channel-btn,
+html[data-theme="jotape"] .GOURMET-topbar .switch-aberto,
+html[data-theme="jotape"] .GOURMET-topbar .unit-selector {
+  color: #3b4c19 !important;
+}
+
+html[data-theme="jotape"] .channel-btn.active {
+  background: #506b3d !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="jotape"] .user-pill-btn {
+  background: #506b3d !important;
+  color: #ffffff !important;
+}
+
+/* Variáveis de Mesas por Tema */
+:root, html[data-theme="default"], body[data-theme="default"] {
+  --mesa-livre: #4caf50;
+  --mesa-livre-hover: #43a047;
+  --mesa-consumo: #2196f3;
+  --mesa-conta: #ff9800;
+  --mesa-text: #ffffff;
+}
+
+html[data-theme="jotape"], body[data-theme="jotape"] {
+  --mesa-livre: #7d8c42;
+  --mesa-livre-hover: #6c7a36;
+  --mesa-consumo: #5c7c8a;
+  --mesa-conta: #c98e4d;
+  --mesa-text: #ffffff;
+}
+
+/* V1 Cyberpunk: Roxo Opaco e Rosa Bebê suave */
+html[data-theme="v1-cyberpunk"], body[data-theme="v1-cyberpunk"] {
+  --mesa-livre: #26a69a;
+  --mesa-livre-hover: #2bbbad;
+  --mesa-consumo: #5e439b;
+  --mesa-conta: #f48fb1;
+  --mesa-text: #ffffff;
+}
+
+/* Dark Tech: estados escuros e suaves, integrados ao painel noturno. */
+html[data-theme="dark-tech"], body[data-theme="dark-tech"] {
+  --mesa-livre: #243b4a;
+  --mesa-livre-hover: #2d4a5d;
+  --mesa-consumo: #28536b;
+  --mesa-conta: #66532b;
+  --mesa-text: #dbe7ef;
+}
+/* Dark Tech: nunca reutilizar o contorno verde definido na tela base de mesas. */
+html[data-theme="dark-tech"] .mesa-btn-box,
+body[data-theme="dark-tech"] .mesa-btn-box {
+  border-color: var(--fa-border, #1f293d) !important;
+}
+
+html[data-theme="obsidian-gold"], body[data-theme="obsidian-gold"] {
+  --mesa-livre: #bda066;
+  --mesa-livre-hover: #a88c54;
+  --mesa-consumo: #60a5fa;
+  --mesa-conta: #facc15;
+  --mesa-text: #1e293b;
+}
+
+/* Deep Teal: Fundo Deep Teal (#0d9488 / #00796b) como a cor dos botões de mesa disponível */
+html[data-theme="deep-teal"], body[data-theme="deep-teal"] {
+  --mesa-livre: #0d9488;
+  --mesa-livre-hover: #0f766e;
+  --mesa-consumo: #0284c7;
+  --mesa-conta: #f59e0b;
+  --mesa-text: #ffffff;
+}
+
+/* Codex Dark: Tons de cinza ardósia / grafite elegante que não agridem os olhos */
+html[data-theme="codex-dark"], body[data-theme="codex-dark"] {
+  --mesa-livre: #2d333b;
+  --mesa-livre-hover: #373e47;
+  --mesa-consumo: #2d455b;
+  --mesa-conta: #5c432d;
+  --mesa-text: #e6edf3;
+}
+
+html[data-theme="codex-dark"] .mesa-btn-box,
+body[data-theme="codex-dark"] .mesa-btn-box {
+  border: 1px solid #444c56 !important;
+  color: #e6edf3 !important;
+}
+
+html[data-theme="codex-dark"] .mesa-btn-box.consumo,
+body[data-theme="codex-dark"] .mesa-btn-box.consumo {
+  border: 1px solid #388bfd66 !important;
+  color: #79c0ff !important;
+}
+
+html[data-theme="codex-dark"] .mesa-btn-box.conta,
+body[data-theme="codex-dark"] .mesa-btn-box.conta {
+  border: 1px solid #d2992266 !important;
+  color: #e3b341 !important;
+}
+
+html[data-theme] .mesa-btn-box,
+body[data-theme] .mesa-btn-box {
+  background: var(--mesa-livre, #4caf50) !important;
+  color: var(--mesa-text, #ffffff) !important;
+}
+
+html[data-theme] .mesa-btn-box:hover,
+body[data-theme] .mesa-btn-box:hover {
+  background: var(--mesa-livre-hover, #43a047) !important;
+}
+
+html[data-theme] .mesa-btn-box.consumo,
+body[data-theme] .mesa-btn-box.consumo {
+  background: var(--mesa-consumo, #2196f3) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme] .mesa-btn-box.conta,
+body[data-theme] .mesa-btn-box.conta {
+  background: var(--mesa-conta, #ff9800) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme] .dot-disponivel,
+body[data-theme] .dot-disponivel {
+  background: var(--mesa-livre, #4caf50) !important;
+}
+
+html[data-theme] .dot-consumo,
+body[data-theme] .dot-consumo {
+  background: var(--mesa-consumo, #2196f3) !important;
+}
+
+html[data-theme] .dot-conta,
+body[data-theme] .dot-conta {
+  background: var(--mesa-conta, #ff9800) !important;
+}
+
+/* PONTE DE CORES DO KANBAN: as telas filhas herdam somente o tema ativo. */
+html[data-theme], body[data-theme] {
+  --gourmet-blue-header: var(--fa-primary);
+  --gourmet-blue-btn: var(--fa-button-bg, var(--fa-primary));
+  --gourmet-blue-btn-hover: var(--fa-button-hover-bg, var(--fa-primary-dark));
+  --gourmet-green-btn: var(--fa-accent, var(--fa-primary));
+}
+
+html[data-theme] .btn-venda-balcao,
+body[data-theme] .btn-venda-balcao,
+html[data-theme] .pill-tab:not(.desmarcado),
+body[data-theme] .pill-tab:not(.desmarcado),
+html[data-theme] .btn-card-view,
+body[data-theme] .btn-card-view,
+html[data-theme] .btn-floating-support {
+  background: var(--fa-button-bg, var(--fa-primary)) !important;
+  border-color: var(--fa-button-border, var(--fa-primary)) !important;
+  color: var(--fa-button-text, #fff) !important;
+}
+
+html[data-theme] .btn-card-print,
+body[data-theme] .btn-card-print,
+html[data-theme] .btn-reload-circle,
+body[data-theme] .btn-reload-circle {
+  background: var(--fa-panel, #fff) !important;
+  border-color: var(--fa-border) !important;
+  color: var(--fa-primary) !important;
+}
+
+html[data-theme] .btn-card-receipt,
+body[data-theme] .btn-card-receipt,
+html[data-theme] .btn-roteirizar,
+body[data-theme] .btn-roteirizar {
+  background: var(--fa-accent, var(--fa-primary)) !important;
+  border-color: var(--fa-accent, var(--fa-primary)) !important;
+  color: var(--fa-button-text, #fff) !important;
+}
+/* GRUPO DE CANAIS DO KANBAN: sem moldura externa. */
+html[data-theme] .kanban-filters-bar .channel-tab-pills,
+body[data-theme] .kanban-filters-bar .channel-tab-pills {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+/* ÍCONE DE ENTREGA DOS CARDS: acompanha o tom de ação do tema. */
+html[data-theme] .badge-canal-moto,
+body[data-theme] .badge-canal-moto {
+  background: var(--fa-button-bg, var(--fa-primary)) !important;
+  color: var(--fa-button-text, #fff) !important;
+}
+/* Superfícies claras do Kanban: herdadas exclusivamente do tema ativo. */
+html[data-theme] .kanban-action-bar,
+html[data-theme] .kanban-filters-bar,
+html[data-theme] .kanban-col-head,
+html[data-theme] .order-kanban-card,
+html[data-theme] .field-filter,
+html[data-theme] .btn-reload-circle,
+body[data-theme] .kanban-action-bar,
+body[data-theme] .kanban-filters-bar,
+body[data-theme] .kanban-col-head,
+body[data-theme] .order-kanban-card,
+body[data-theme] .field-filter,
+body[data-theme] .btn-reload-circle {
+  background: var(--fa-kanban-surface, var(--fa-field-bg, var(--fa-panel))) !important;
+}
+/* TEXTO DOS CARTÕES DO KANBAN: acompanha contraste e superfícies do tema. */
+html[data-theme] .order-kanban-card,
+body[data-theme] .order-kanban-card {
+  color: var(--fa-text) !important;
+  border-color: var(--fa-border) !important;
+}
+
+html[data-theme] .order-kanban-card .card-title-left,
+html[data-theme] .order-kanban-card .card-pay-line,
+body[data-theme] .order-kanban-card .card-title-left,
+body[data-theme] .order-kanban-card .card-pay-line {
+  color: var(--fa-text) !important;
+}
+
+html[data-theme] .order-kanban-card .card-time-right,
+html[data-theme] .order-kanban-card .card-phone-line,
+html[data-theme] .order-kanban-card .card-address-line,
+html[data-theme] .order-kanban-card [style*="color"],
+body[data-theme] .order-kanban-card .card-time-right,
+body[data-theme] .order-kanban-card .card-phone-line,
+body[data-theme] .order-kanban-card .card-address-line,
+body[data-theme] .order-kanban-card [style*="color"] {
+  color: var(--fa-muted) !important;
+}
+
+html[data-theme] .order-kanban-card .card-bottom-actions,
+body[data-theme] .order-kanban-card .card-bottom-actions {
+  border-color: var(--fa-border) !important;
+}
+html[data-theme] .input-id-box,
+html[data-theme] .input-busca-cliente,
+body[data-theme] .input-id-box,
+body[data-theme] .input-busca-cliente {
+  color: var(--fa-text) !important;
+  border-color: var(--fa-border) !important;
+}
+
+html[data-theme] .input-id-box::placeholder,
+html[data-theme] .input-busca-cliente::placeholder,
+body[data-theme] .input-id-box::placeholder,
+body[data-theme] .input-busca-cliente::placeholder {
+  color: var(--fa-muted) !important;
+  opacity: 1;
+}
+html[data-theme] .input-id-box,
+html[data-theme] .input-busca-cliente,
+body[data-theme] .input-id-box,
+body[data-theme] .input-busca-cliente {
+  background: var(--fa-kanban-surface, var(--fa-field-bg, var(--fa-panel))) !important;
+}
+/* MODAIS FLUTUANTES DO KANBAN: superfície e contraste herdados do tema. */
+html[data-theme] .modal-backdrop .modal-box,
+body[data-theme] .modal-backdrop .modal-box {
+  background: var(--fa-panel, var(--fa-background)) !important;
+  color: var(--fa-text) !important;
+  border: 1px solid var(--fa-border) !important;
+}
+
+html[data-theme] .modal-backdrop .modal-head,
+body[data-theme] .modal-backdrop .modal-head {
+  background: var(--fa-modal-header-bg, var(--fa-primary)) !important;
+  color: var(--fa-modal-header-text, var(--fa-button-text, #fff)) !important;
+  cursor: move !important;
+  user-select: none;
+}
+
+html[data-theme] .modal-backdrop .modal-body,
+body[data-theme] .modal-backdrop .modal-body {
+  color: var(--fa-text) !important;
+  background: var(--fa-panel, var(--fa-background)) !important;
+}
+
+html[data-theme] .modal-backdrop .modal-foot,
+body[data-theme] .modal-backdrop .modal-foot {
+  background: var(--fa-panel-alt, var(--fa-panel)) !important;
+  border-color: var(--fa-border) !important;
+}
+
+html[data-theme] .modal-backdrop .modal-body > div,
+body[data-theme] .modal-backdrop .modal-body > div {
+  border-color: var(--fa-border) !important;
+  background: var(--fa-panel-alt, var(--fa-panel)) !important;
+}
+
+html[data-theme] .modal-backdrop .modal-body [style*="color"],
+body[data-theme] .modal-backdrop .modal-body [style*="color"] {
+  color: var(--fa-text) !important;
+}
+
+html[data-theme] .modal-backdrop .modal-body [style*="border-top"],
+html[data-theme] .modal-backdrop .modal-body [style*="border-bottom"],
+body[data-theme] .modal-backdrop .modal-body [style*="border-top"],
+body[data-theme] .modal-backdrop .modal-body [style*="border-bottom"] {
+  border-color: var(--fa-border) !important;
+}
+
+/* ========================================================================== */
+/* PADRONIZAÇÃO DE BROWSES (TABULATOR): BADGES DE STATUS E BOTÕES DE AÇÃO     */
+/* Harmonizados com o tema selecionado (evita fundos brancos/pastéis duros)    */
+/* ========================================================================== */
+html[data-theme] .badge-status,
+body[data-theme] .badge-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 6px;
+  height: 18px;
+  line-height: 16px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+html[data-theme] .badge-status.ativo,
+body[data-theme] .badge-status.ativo {
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: #166534 !important;
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
+}
+html[data-theme] .badge-status.inativo,
+body[data-theme] .badge-status.inativo {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #991b1b !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+}
+
+html[data-theme="v1-cyberpunk"] .badge-status.ativo,
+body[data-theme="v1-cyberpunk"] .badge-status.ativo,
+html[data-theme="dark-tech"] .badge-status.ativo,
+body[data-theme="dark-tech"] .badge-status.ativo,
+html[data-theme="obsidian-gold"] .badge-status.ativo,
+body[data-theme="obsidian-gold"] .badge-status.ativo,
+html[data-theme="deep-teal"] .badge-status.ativo,
+body[data-theme="deep-teal"] .badge-status.ativo,
+html[data-theme="codex-dark"] .badge-status.ativo,
+body[data-theme="codex-dark"] .badge-status.ativo {
+  color: #4ade80 !important;
+  background: rgba(74, 222, 128, 0.18) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+
+html[data-theme="v1-cyberpunk"] .badge-status.inativo,
+body[data-theme="v1-cyberpunk"] .badge-status.inativo,
+html[data-theme="dark-tech"] .badge-status.inativo,
+body[data-theme="dark-tech"] .badge-status.inativo,
+html[data-theme="obsidian-gold"] .badge-status.inativo,
+body[data-theme="obsidian-gold"] .badge-status.inativo,
+html[data-theme="deep-teal"] .badge-status.inativo,
+body[data-theme="deep-teal"] .badge-status.inativo,
+html[data-theme="codex-dark"] .badge-status.inativo,
+body[data-theme="codex-dark"] .badge-status.inativo {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+
+/* Botões de Ação na Tabela */
+html[data-theme] .row-action-btn,
+body[data-theme] .row-action-btn {
+  background: var(--fa-panel-alt, var(--fa-panel)) !important;
+  color: var(--fa-text) !important;
+  border-color: var(--fa-border) !important;
+}
+html[data-theme] .row-action-btn:hover,
+body[data-theme] .row-action-btn:hover {
+  background: var(--fa-primary) !important;
+  border-color: var(--fa-primary-dark) !important;
+  color: var(--fa-button-text, #ffffff) !important;
+}
+html[data-theme] .row-action-btn.delete:hover,
+body[data-theme] .row-action-btn.delete:hover {
+  background: var(--fa-danger, #c62828) !important;
+  border-color: var(--fa-danger, #c62828) !important;
+  color: #ffffff !important;
+}
+/* CAMPOS DE EDIÇÃO DO KANBAN DARK TECH: contorno visível e discreto. */
+html[data-theme="dark-tech"] .input-id-box,
+html[data-theme="dark-tech"] .input-busca-cliente,
+body[data-theme="dark-tech"] .input-id-box,
+body[data-theme="dark-tech"] .input-busca-cliente {
+  background: #172235 !important;
+  border: 1px solid rgba(148, 163, 184, 0.55) !important;
+}
+html[data-theme="dark-tech"] .input-id-box,
+body[data-theme="dark-tech"] .input-id-box {
+  color: rgba(148, 163, 184, 0.72) !important;
+}
+html[data-theme="dark-tech"] .input-id-box:focus,
+html[data-theme="dark-tech"] .input-busca-cliente:focus,
+body[data-theme="dark-tech"] .input-id-box:focus,
+body[data-theme="dark-tech"] .input-busca-cliente:focus {
+  border-color: rgba(148, 163, 184, 0.72) !important;
+  box-shadow: 0 0 0 1px rgba(79, 134, 166, 0.22) !important;
+}
+/* FILTROS DO KANBAN DARK TECH: mesmo contorno suave dos campos superiores. */
+html[data-theme="dark-tech"] .field-filter,
+body[data-theme="dark-tech"] .field-filter {
+  background: #172235 !important;
+  color: rgba(148, 163, 184, 0.82) !important;
+  border: 1px solid rgba(148, 163, 184, 0.55) !important;
+}
+html[data-theme="dark-tech"] .field-filter::placeholder,
+body[data-theme="dark-tech"] .field-filter::placeholder {
+  color: rgba(148, 163, 184, 0.72) !important;
+}
+html[data-theme="dark-tech"] .field-filter:focus,
+body[data-theme="dark-tech"] .field-filter:focus {
+  border-color: rgba(148, 163, 184, 0.72) !important;
+  box-shadow: 0 0 0 1px rgba(79, 134, 166, 0.22) !important;
+}
+/* BORDAS DO KANBAN DARK TECH: remover linhas claras herdadas do layout-base. */
+html[data-theme="dark-tech"] .kanban-action-bar,
+html[data-theme="dark-tech"] .kanban-filters-bar,
+body[data-theme="dark-tech"] .kanban-action-bar,
+body[data-theme="dark-tech"] .kanban-filters-bar {
+  border-bottom-color: rgba(148, 163, 184, 0.42) !important;
+}
+html[data-theme="dark-tech"] .kanban-col-head,
+body[data-theme="dark-tech"] .kanban-col-head {
+  border-bottom-width: 1px !important;
+  border-bottom-color: rgba(148, 163, 184, 0.42) !important;
+}
+/* CORREÇÃO FINAL DA TOPBAR DARK TECH: manter depois das regras genéricas. */
+html[data-theme="dark-tech"] body .GOURMET-topbar,
+body[data-theme="dark-tech"] .GOURMET-topbar,
+html[data-theme="dark-tech"] body .gourmet-topbar,
+body[data-theme="dark-tech"] .gourmet-topbar {
+  background: #172235 !important;
+  background-color: #172235 !important;
+  color: #cbd5e1 !important;
+  border-bottom-color: #1f293d !important;
+}
+/* BOTÕES DA TOPBAR DARK TECH: mesmo azul das mesas livres. */
+html[data-theme="dark-tech"] .GOURMET-topbar .btn-hamburguer,
+html[data-theme="dark-tech"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="dark-tech"] .GOURMET-topbar .user-pill-btn,
+body[data-theme="dark-tech"] .GOURMET-topbar .btn-hamburguer,
+body[data-theme="dark-tech"] .GOURMET-topbar .btn-imprimir-usuario,
+body[data-theme="dark-tech"] .GOURMET-topbar .user-pill-btn {
+  background: var(--mesa-livre, #243b4a) !important;
+  background-color: var(--mesa-livre, #243b4a) !important;
+  border-color: var(--fa-border, #1f293d) !important;
+  color: #dbe7ef !important;
+}
+html[data-theme="dark-tech"] .GOURMET-topbar .btn-hamburguer:hover,
+html[data-theme="dark-tech"] .GOURMET-topbar .btn-imprimir-usuario:hover,
+html[data-theme="dark-tech"] .GOURMET-topbar .user-pill-btn:hover,
+body[data-theme="dark-tech"] .GOURMET-topbar .btn-hamburguer:hover,
+body[data-theme="dark-tech"] .GOURMET-topbar .btn-imprimir-usuario:hover,
+body[data-theme="dark-tech"] .GOURMET-topbar .user-pill-btn:hover {
+  background: var(--mesa-livre-hover, #2d4a5d) !important;
+  border-color: var(--fa-border, #1f293d) !important;
+}
+/* BARRA LATERAL DARK TECH: mesma cor da barra superior. */
+html[data-theme="dark-tech"] .GOURMET-rail-sidebar,
+body[data-theme="dark-tech"] .GOURMET-rail-sidebar {
+  background: #172235 !important;
+  background-color: #172235 !important;
+  border-right-color: #1f293d !important;
+}
+/* ÍCONES LATERAIS DARK TECH: mesmo tratamento dos atalhos da barra superior. */
+html[data-theme="dark-tech"] .GOURMET-rail-sidebar .rail-btn,
+body[data-theme="dark-tech"] .GOURMET-rail-sidebar .rail-btn {
+  width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  color: #cbd5e1 !important;
+  opacity: .85;
+  box-shadow: none !important;
+}
+html[data-theme="dark-tech"] .GOURMET-rail-sidebar .rail-btn:hover,
+body[data-theme="dark-tech"] .GOURMET-rail-sidebar .rail-btn:hover {
+  background: rgba(255,255,255,.10) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  opacity: 1;
+}
+
+/* =============================================================================
+   TEMAS ADICIONAIS vindos do Cardapio Digital (20/09/2026) - somente ACRESCENTADOS; nenhum tema anterior foi alterado.
+   Formato igual ao do Deep Teal: paleta --fa-*, cores das mesas e selos de status. ids novos:
+   verde-escuro (verde escuro do Cardapio), gourmet-dark (azul escuro), gourmet-orange-escuro (laranja escuro).
+   ============================================================================= */
+html[data-theme="verde-escuro"], body[data-theme="verde-escuro"] {
+  --fa-primary:#59651f; --fa-primary-dark:#414b16; --fa-accent:#59651f;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#fff;
+  --fa-background:#13170e; --fa-panel:#1b2115; --fa-panel-alt:#232a1c; --fa-border:#34402a;
+  --fa-field-bg:#171e10;
+  --fa-text:#f1f7eb; --fa-muted:#9caf77; --fa-danger:#f87171;
+}
+html[data-theme="verde-escuro"], body[data-theme="verde-escuro"] {
+  --mesa-livre: #59651f; --mesa-livre-hover: #414b16; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+html[data-theme="gourmet-dark"], body[data-theme="gourmet-dark"] {
+  --fa-primary:#0288d1; --fa-primary-dark:#0277bd; --fa-accent:#0288d1;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#e3edf5;
+  --fa-background:#0f1015; --fa-panel:#171922; --fa-panel-alt:#1f222e; --fa-border:#2b2f3f;
+  --fa-field-bg:#13151c;
+  --fa-text:#f8fafc; --fa-muted:#94a3b8; --fa-danger:#f87171;
+}
+html[data-theme="gourmet-dark"], body[data-theme="gourmet-dark"] {
+  --mesa-livre: #0d9488; --mesa-livre-hover: #0f766e; --mesa-consumo: #0288d1; --mesa-conta: #f59e0b; --mesa-text: #e3edf5;
+}
+
+html[data-theme="gourmet-orange-escuro"], body[data-theme="gourmet-orange-escuro"] {
+  --fa-primary:#d9531e; --fa-primary-dark:#b84314; --fa-accent:#d9531e;
+  --fa-button-bg:var(--fa-primary); --fa-button-border:var(--fa-primary);
+  --fa-button-hover-bg:var(--fa-primary-dark); --fa-button-hover-border:var(--fa-primary-dark); --fa-button-text:#fff;
+  --fa-background:#121214; --fa-panel:#1a1a1e; --fa-panel-alt:#242429; --fa-border:#33333a;
+  --fa-field-bg:#18181b;
+  --fa-text:#ffffff; --fa-muted:#a1a1aa; --fa-danger:#f87171;
+}
+html[data-theme="gourmet-orange-escuro"], body[data-theme="gourmet-orange-escuro"] {
+  --mesa-livre: #d9531e; --mesa-livre-hover: #b84314; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+/* Selos de status dos temas escuros novos (mesmo padrao dos escuros existentes) */
+html[data-theme="verde-escuro"] .badge-status.ativo, body[data-theme="verde-escuro"] .badge-status.ativo,
+html[data-theme="gourmet-dark"] .badge-status.ativo, body[data-theme="gourmet-dark"] .badge-status.ativo,
+html[data-theme="gourmet-orange-escuro"] .badge-status.ativo, body[data-theme="gourmet-orange-escuro"] .badge-status.ativo {
+  color: #4ade80 !important;
+  background: rgba(74, 222, 128, 0.18) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+html[data-theme="verde-escuro"] .badge-status.inativo, body[data-theme="verde-escuro"] .badge-status.inativo,
+html[data-theme="gourmet-dark"] .badge-status.inativo, body[data-theme="gourmet-dark"] .badge-status.inativo,
+html[data-theme="gourmet-orange-escuro"] .badge-status.inativo, body[data-theme="gourmet-orange-escuro"] .badge-status.inativo {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+
+/* =============================================================================
+   GOURMET DARK: BARRA SUPERIOR ESCURA, BLOCO DO LOGO SUAVE (20/09/2026, variante C)
+   Base (index.html) pinta a barra com --fa-primary-dark (azul) e o cluster do logo com --fa-panel (escuro). Aqui inverte,
+   so' neste tema: barra no escuro do fundo do menu/cards (--fa-panel-alt = #1f222e); cluster do logo (hamburguer + FacilApp Gourmet + seletor de tema) no ESCURO do fundo do tema (#0f1015); so' o hamburguer fica azul.
+   ============================================================================= */
+html[data-theme="gourmet-dark"] body .GOURMET-topbar,
+body[data-theme="gourmet-dark"] .GOURMET-topbar,
+html[data-theme="gourmet-dark"] body .gourmet-topbar,
+body[data-theme="gourmet-dark"] .gourmet-topbar {
+  background: var(--fa-panel-alt) !important;
+  background-color: var(--fa-panel-alt) !important;
+  color: var(--fa-text) !important;
+  border-bottom-color: var(--fa-border) !important;
+}
+html[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster,
+body[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster {
+  background: var(--fa-panel) !important;
+  background-color: var(--fa-panel) !important;
+  border: 0.5px solid var(--fa-border) !important;
+  border-left: none !important;
+}
+/* dentro do bloco do logo: hamburguer so' com contorno azul, seletor de tema sem preenchimento, textos suaves */
+html[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+body[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .btn-hamburguer {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid #1e6fa0 !important;
+}
+html[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+body[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg {
+  fill: #1e6fa0 !important;
+}
+html[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+body[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text {
+  color: #e3edf5 !important;
+}
+html[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .unit-selector,
+body[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .unit-selector {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: var(--fa-border) !important;
+  color: #c9d1e0 !important;
+}
+html[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+body[data-theme="gourmet-dark"] .GOURMET-topbar .top-left-cluster .unit-selector svg {
+  fill: #c9d1e0 !important;
+}
+/* lado direito da barra escura: botao do usuario/caixa no azul do tema, como nos outros temas escuros */
+html[data-theme="gourmet-dark"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="gourmet-dark"] .GOURMET-topbar .user-pill-btn,
+body[data-theme="gourmet-dark"] .GOURMET-topbar .btn-imprimir-usuario,
+body[data-theme="gourmet-dark"] .GOURMET-topbar .user-pill-btn {
+  background: var(--fa-primary, #0288d1) !important;
+  background-color: var(--fa-primary, #0288d1) !important;
+  border-color: var(--fa-border) !important;
+  color: #e3edf5 !important;
+}
+
+
+/* =============================================================================
+   TEMAS DE LUXO (28/09/2026, Daniel: "adicione os seguintes temas") - somente ACRESCENTADOS; nenhum tema anterior alterado.
+   Paleta --fa-* exatamente como o Daniel mandou; cores das mesas e selos de status no mesmo padrao dos escuros de 20/09.
+   ids: emperor-24k, champagne-imperial, whiskey-brass.
+   ============================================================================= */
+/* TEMA: EMPEROR 24K NOIR (Ouro Puro Polido & Ébano Absoluto) */
+html[data-theme="emperor-24k"], body[data-theme="emperor-24k"] {
+  --fa-primary: #e6c158;
+  --fa-primary-dark: #b89324;
+  --fa-accent: #ffe285;
+  --fa-button-bg: linear-gradient(135deg, #e6c158 0%, #b89324 100%);
+  --fa-button-border: #fae08c;
+  --fa-button-hover-bg: linear-gradient(135deg, #fae08c 0%, #d4ad32 100%);
+  --fa-button-hover-border: #fff0a8;
+  --fa-button-text: #050507;
+  --fa-background: #050608;
+  --fa-panel: #0d0f14;
+  --fa-panel-alt: #13161f;
+  --fa-border: #352b12;
+  --fa-field-bg: #10121a;
+  --fa-kanban-surface: #08090d;
+  --fa-modal-header-bg: linear-gradient(135deg, #1f1a0b 0%, #2e2610 100%);
+  --fa-modal-header-text: #ffe285;
+  --fa-text: #ffffff;
+  --fa-muted: #a39985;
+  --fa-danger: #f87171;
+  --header-bg: #0d0f14;
+}
+html[data-theme="emperor-24k"], body[data-theme="emperor-24k"] {
+  --mesa-livre: #b89324; --mesa-livre-hover: #8a6d18; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #050507;
+}
+
+/* TEMA: CHAMPAGNE IMPERIAL & TRUFFLE (Champagne Brut & Trufa Negra) */
+html[data-theme="champagne-imperial"], body[data-theme="champagne-imperial"] {
+  --fa-primary: #ecd599;
+  --fa-primary-dark: #bfa563;
+  --fa-accent: #f7e8be;
+  --fa-button-bg: linear-gradient(135deg, #ecd599 0%, #bfa563 100%);
+  --fa-button-border: #f7e8be;
+  --fa-button-hover-bg: linear-gradient(135deg, #f7e8be 0%, #d4be7c 100%);
+  --fa-button-hover-border: #ffffff;
+  --fa-button-text: #0c0b08;
+  --fa-background: #090807;
+  --fa-panel: #141210;
+  --fa-panel-alt: #1c1a17;
+  --fa-border: #332d22;
+  --fa-field-bg: #161411;
+  --fa-kanban-surface: #0d0c0a;
+  --fa-modal-header-bg: linear-gradient(135deg, #211c13 0%, #30291c 100%);
+  --fa-modal-header-text: #f7e8be;
+  --fa-text: #fdfcf7;
+  --fa-muted: #9e9587;
+  --fa-danger: #f87171;
+  --header-bg: #141210;
+}
+html[data-theme="champagne-imperial"], body[data-theme="champagne-imperial"] {
+  --mesa-livre: #bfa563; --mesa-livre-hover: #9c864c; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #0c0b08;
+}
+
+/* TEMA: OLD HERITAGE BRASS & ONYX (Latão Nobre & Âmbar Whisky) */
+html[data-theme="whiskey-brass"], body[data-theme="whiskey-brass"] {
+  --fa-primary: #c9974c;
+  --fa-primary-dark: #9e6f28;
+  --fa-accent: #e5b873;
+  --fa-button-bg: linear-gradient(135deg, #c9974c 0%, #9e6f28 100%);
+  --fa-button-border: #dfb36c;
+  --fa-button-hover-bg: linear-gradient(135deg, #dfb36c 0%, #b58337 100%);
+  --fa-button-hover-border: #f5d194;
+  --fa-button-text: #0c0804;
+  --fa-background: #080809;
+  --fa-panel: #121214;
+  --fa-panel-alt: #1a191d;
+  --fa-border: #332717;
+  --fa-field-bg: #151417;
+  --fa-kanban-surface: #0c0c0e;
+  --fa-modal-header-bg: linear-gradient(135deg, #21180c 0%, #332410 100%);
+  --fa-modal-header-text: #e5b873;
+  --fa-text: #fcf9f2;
+  --fa-muted: #9c9284;
+  --fa-danger: #ef4444;
+  --header-bg: #121214;
+}
+html[data-theme="whiskey-brass"], body[data-theme="whiskey-brass"] {
+  --mesa-livre: #9e6f28; --mesa-livre-hover: #7d5620; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #0c0804;
+}
+
+html[data-theme="emperor-24k"] .badge-status.ativo, body[data-theme="emperor-24k"] .badge-status.ativo,
+html[data-theme="champagne-imperial"] .badge-status.ativo, body[data-theme="champagne-imperial"] .badge-status.ativo,
+html[data-theme="whiskey-brass"] .badge-status.ativo, body[data-theme="whiskey-brass"] .badge-status.ativo {
+  color: #4ade80 !important;
+  background: rgba(74, 222, 128, 0.18) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+html[data-theme="emperor-24k"] .badge-status.inativo, body[data-theme="emperor-24k"] .badge-status.inativo,
+html[data-theme="champagne-imperial"] .badge-status.inativo, body[data-theme="champagne-imperial"] .badge-status.inativo,
+html[data-theme="whiskey-brass"] .badge-status.inativo, body[data-theme="whiskey-brass"] .badge-status.inativo {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+
+/* Mais temas de luxo (28/09/2026, Daniel) - somente ACRESCENTADOS. ids: monaco-gold, venetian-ducat, solar-gold */
+/* TEMA: MONACO CASINO GOLD & JADE (Ouro Mônaco & Sombra Malaquita) */
+html[data-theme="monaco-gold"], body[data-theme="monaco-gold"] {
+  --fa-primary: #dfb547;
+  --fa-primary-dark: #ad841d;
+  --fa-accent: #f5cf6e;
+  --fa-button-bg: linear-gradient(135deg, #dfb547 0%, #ad841d 100%);
+  --fa-button-border: #f0cb67;
+  --fa-button-hover-bg: linear-gradient(135deg, #f0cb67 0%, #c49929 100%);
+  --fa-button-hover-border: #ffe28f;
+  --fa-button-text: #040906;
+  --fa-background: #040806;
+  --fa-panel: #0b140f;
+  --fa-panel-alt: #101c15;
+  --fa-border: #2e3518;
+  --fa-field-bg: #0e1712;
+  --fa-kanban-surface: #070d09;
+  --fa-modal-header-bg: linear-gradient(135deg, #142116 0%, #243015 100%);
+  --fa-modal-header-text: #f5cf6e;
+  --fa-text: #f8fbf9;
+  --fa-muted: #889e90;
+  --fa-danger: #f87171;
+  --header-bg: #0b140f;
+}
+html[data-theme="monaco-gold"], body[data-theme="monaco-gold"] {
+  --mesa-livre: #ad841d; --mesa-livre-hover: #8a6a17; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #040906;
+}
+
+/* TEMA: VENETIAN DUCAT (Ducado Veneziano & Grafite Nobre) */
+html[data-theme="venetian-ducat"], body[data-theme="venetian-ducat"] {
+  --fa-primary: #cca23e;
+  --fa-primary-dark: #9e7922;
+  --fa-accent: #e5bf65;
+  --fa-button-bg: linear-gradient(135deg, #cca23e 0%, #9e7922 100%);
+  --fa-button-border: #dfb858;
+  --fa-button-hover-bg: linear-gradient(135deg, #dfb858 0%, #b38b2d 100%);
+  --fa-button-hover-border: #f5d47f;
+  --fa-button-text: #08090b;
+  --fa-background: #07080a;
+  --fa-panel: #101217;
+  --fa-panel-alt: #161921;
+  --fa-border: #2d2616;
+  --fa-field-bg: #12141a;
+  --fa-kanban-surface: #0a0c0f;
+  --fa-modal-header-bg: linear-gradient(135deg, #1b170c 0%, #28210f 100%);
+  --fa-modal-header-text: #e5bf65;
+  --fa-text: #faf9f6;
+  --fa-muted: #969185;
+  --fa-danger: #f87171;
+  --header-bg: #101217;
+}
+html[data-theme="venetian-ducat"], body[data-theme="venetian-ducat"] {
+  --mesa-livre: #9e7922; --mesa-livre-hover: #7e601b; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #08090b;
+}
+
+/* TEMA: SOLAR ECLIPSE 24K (Ouro Solar Radiante & Titânio Negro) */
+html[data-theme="solar-gold"], body[data-theme="solar-gold"] {
+  --fa-primary: #e5a93b;
+  --fa-primary-dark: #b87a14;
+  --fa-accent: #ffc862;
+  --fa-button-bg: linear-gradient(135deg, #e5a93b 0%, #b87a14 100%);
+  --fa-button-border: #ffbe4a;
+  --fa-button-hover-bg: linear-gradient(135deg, #ffbe4a 0%, #cf8d1b 100%);
+  --fa-button-hover-border: #ffd57a;
+  --fa-button-text: #0a0804;
+  --fa-background: #08080a;
+  --fa-panel: #111216;
+  --fa-panel-alt: #181920;
+  --fa-border: #38280f;
+  --fa-field-bg: #14151b;
+  --fa-kanban-surface: #0a0a0d;
+  --fa-modal-header-bg: linear-gradient(135deg, #211606 0%, #33230a 100%);
+  --fa-modal-header-text: #ffc862;
+  --fa-text: #fffdfa;
+  --fa-muted: #9e9485;
+  --fa-danger: #ff5252;
+  --header-bg: #111216;
+}
+html[data-theme="solar-gold"], body[data-theme="solar-gold"] {
+  --mesa-livre: #b87a14; --mesa-livre-hover: #935f0f; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #0a0804;
+}
+
+html[data-theme="monaco-gold"] .badge-status.ativo, body[data-theme="monaco-gold"] .badge-status.ativo,
+html[data-theme="venetian-ducat"] .badge-status.ativo, body[data-theme="venetian-ducat"] .badge-status.ativo,
+html[data-theme="solar-gold"] .badge-status.ativo, body[data-theme="solar-gold"] .badge-status.ativo {
+  color: #4ade80 !important;
+  background: rgba(74, 222, 128, 0.18) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+html[data-theme="monaco-gold"] .badge-status.inativo, body[data-theme="monaco-gold"] .badge-status.inativo,
+html[data-theme="venetian-ducat"] .badge-status.inativo, body[data-theme="venetian-ducat"] .badge-status.inativo,
+html[data-theme="solar-gold"] .badge-status.inativo, body[data-theme="solar-gold"] .badge-status.inativo {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+
+/* =============================================================================
+   TEMAS DE LUXO — ACABAMENTO GOURMET (28/09/2026, Daniel: "ajustar para o gourmet" / "adicionar a mais nos temas").
+   Mesmo tratamento do Gourmet Dark (variante C, 20/09): barra superior no escuro do tema em vez de pintada de dourado;
+   bloco do logo no escuro do fundo; hamburguer so' com contorno dourado; botao do caixa/usuario dourado com texto escuro.
+   Tudo por variavel do proprio tema (--fa-primary/--fa-accent/--fa-button-*), entao vale para os 6 sem repetir cor.
+   ============================================================================= */
+html[data-theme="emperor-24k"] body .GOURMET-topbar, body[data-theme="emperor-24k"] .GOURMET-topbar,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar, body[data-theme="champagne-imperial"] .GOURMET-topbar,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar, body[data-theme="whiskey-brass"] .GOURMET-topbar,
+html[data-theme="monaco-gold"] body .GOURMET-topbar, body[data-theme="monaco-gold"] .GOURMET-topbar,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar, body[data-theme="venetian-ducat"] .GOURMET-topbar,
+html[data-theme="solar-gold"] body .GOURMET-topbar body[data-theme="solar-gold"] .GOURMET-topbar,
+html[data-theme="slate-pro"] body .GOURMET-topbar, body[data-theme="slate-pro"] .GOURMET-topbar,
+html[data-theme="matte-gold"] body .GOURMET-topbar, body[data-theme="matte-gold"] .GOURMET-topbar,
+html[data-theme="emperor-24k"] .gourmet-topbar, body[data-theme="emperor-24k"] .gourmet-topbar,
+html[data-theme="champagne-imperial"] .gourmet-topbar, body[data-theme="champagne-imperial"] .gourmet-topbar,
+html[data-theme="whiskey-brass"] .gourmet-topbar, body[data-theme="whiskey-brass"] .gourmet-topbar,
+html[data-theme="monaco-gold"] .gourmet-topbar, body[data-theme="monaco-gold"] .gourmet-topbar,
+html[data-theme="venetian-ducat"] .gourmet-topbar, body[data-theme="venetian-ducat"] .gourmet-topbar,
+html[data-theme="solar-gold"] .gourmet-topbar, body[data-theme="solar-gold"] .gourmet-topbar,
+html[data-theme="grafite-suave"] .gourmet-topbar, body[data-theme="grafite-suave"] .gourmet-topbar,
+html[data-theme="royal-gold"] .gourmet-topbar, body[data-theme="royal-gold"] .gourmet-topbar,
+html[data-theme="nordic-graphite"] .gourmet-topbar, body[data-theme="nordic-graphite"] .gourmet-topbar,
+html[data-theme="deep-pine"] .gourmet-topbar, body[data-theme="deep-pine"] .gourmet-topbar,
+html[data-theme="executive-midnight"] .gourmet-topbar, body[data-theme="executive-midnight"] .gourmet-topbar,
+html[data-theme="slate-pro"] .gourmet-topbar, body[data-theme="slate-pro"] .gourmet-topbar,
+html[data-theme="matte-gold"] .gourmet-topbar, body[data-theme="matte-gold"] .gourmet-topbar {
+  background: var(--fa-panel-alt) !important;
+  background-color: var(--fa-panel-alt) !important;
+  color: var(--fa-text) !important;
+  border-bottom-color: var(--fa-border) !important;
+}
+html[data-theme="emperor-24k"] body .GOURMET-topbar .top-left-cluster, body[data-theme="emperor-24k"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar .top-left-cluster, body[data-theme="champagne-imperial"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar .top-left-cluster, body[data-theme="whiskey-brass"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="monaco-gold"] body .GOURMET-topbar .top-left-cluster, body[data-theme="monaco-gold"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar .top-left-cluster, body[data-theme="venetian-ducat"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="solar-gold"] body .GOURMET-topbar .top-left-cluster, body[data-theme="solar-gold"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="grafite-suave"] body .GOURMET-topbar .top-left-cluster, body[data-theme="grafite-suave"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="royal-gold"] body .GOURMET-topbar .top-left-cluster, body[data-theme="royal-gold"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="nordic-graphite"] body .GOURMET-topbar .top-left-cluster, body[data-theme="nordic-graphite"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="deep-pine"] body .GOURMET-topbar .top-left-cluster, body[data-theme="deep-pine"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="executive-midnight"] body .GOURMET-topbar .top-left-cluster, body[data-theme="executive-midnight"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="slate-pro"] body .GOURMET-topbar .top-left-cluster, body[data-theme="slate-pro"] .GOURMET-topbar .top-left-cluster,
+html[data-theme="matte-gold"] body .GOURMET-topbar .top-left-cluster, body[data-theme="matte-gold"] .GOURMET-topbar .top-left-cluster {
+  background: var(--fa-panel) !important;
+  background-color: var(--fa-panel) !important;
+  border: 0.5px solid var(--fa-border) !important;
+  border-left: none !important;
+}
+html[data-theme="emperor-24k"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="emperor-24k"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="champagne-imperial"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="whiskey-brass"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="monaco-gold"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="monaco-gold"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="venetian-ducat"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="solar-gold"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="solar-gold"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="grafite-suave"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="grafite-suave"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="royal-gold"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="royal-gold"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="nordic-graphite"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="nordic-graphite"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="deep-pine"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="deep-pine"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="executive-midnight"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="executive-midnight"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="slate-pro"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="slate-pro"] .GOURMET-topbar .top-left-cluster .btn-hamburguer,
+html[data-theme="matte-gold"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer, body[data-theme="matte-gold"] .GOURMET-topbar .top-left-cluster .btn-hamburguer {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid var(--fa-primary) !important;
+}
+html[data-theme="emperor-24k"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="emperor-24k"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="champagne-imperial"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="whiskey-brass"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="monaco-gold"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="monaco-gold"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="venetian-ducat"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="solar-gold"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="solar-gold"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="grafite-suave"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="grafite-suave"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="royal-gold"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="royal-gold"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="nordic-graphite"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="nordic-graphite"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="deep-pine"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="deep-pine"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="executive-midnight"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="executive-midnight"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="slate-pro"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="slate-pro"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg,
+html[data-theme="matte-gold"] body .GOURMET-topbar .top-left-cluster .btn-hamburguer svg, body[data-theme="matte-gold"] .GOURMET-topbar .top-left-cluster .btn-hamburguer svg {
+  fill: var(--fa-primary) !important;
+}
+html[data-theme="emperor-24k"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="emperor-24k"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="champagne-imperial"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="whiskey-brass"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="monaco-gold"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="monaco-gold"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="venetian-ducat"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="solar-gold"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="solar-gold"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="grafite-suave"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="grafite-suave"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="royal-gold"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="royal-gold"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="nordic-graphite"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="nordic-graphite"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="deep-pine"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="deep-pine"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="executive-midnight"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="executive-midnight"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="slate-pro"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="slate-pro"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text,
+html[data-theme="matte-gold"] body .GOURMET-topbar .top-left-cluster .facilapp-logo-text, body[data-theme="matte-gold"] .GOURMET-topbar .top-left-cluster .facilapp-logo-text {
+  color: var(--fa-accent) !important;
+}
+html[data-theme="emperor-24k"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="emperor-24k"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="champagne-imperial"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="whiskey-brass"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="monaco-gold"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="monaco-gold"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="venetian-ducat"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="solar-gold"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="solar-gold"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="grafite-suave"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="grafite-suave"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="royal-gold"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="royal-gold"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="nordic-graphite"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="nordic-graphite"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="deep-pine"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="deep-pine"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="executive-midnight"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="executive-midnight"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="slate-pro"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="slate-pro"] .GOURMET-topbar .top-left-cluster .unit-selector,
+html[data-theme="matte-gold"] body .GOURMET-topbar .top-left-cluster .unit-selector, body[data-theme="matte-gold"] .GOURMET-topbar .top-left-cluster .unit-selector {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: var(--fa-border) !important;
+  color: var(--fa-muted) !important;
+}
+html[data-theme="emperor-24k"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="emperor-24k"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="champagne-imperial"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="whiskey-brass"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="monaco-gold"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="monaco-gold"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="venetian-ducat"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="solar-gold"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="solar-gold"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="grafite-suave"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="grafite-suave"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="royal-gold"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="royal-gold"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="nordic-graphite"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="nordic-graphite"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="deep-pine"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="deep-pine"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="executive-midnight"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="executive-midnight"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="slate-pro"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="slate-pro"] .GOURMET-topbar .top-left-cluster .unit-selector svg,
+html[data-theme="matte-gold"] body .GOURMET-topbar .top-left-cluster .unit-selector svg, body[data-theme="matte-gold"] .GOURMET-topbar .top-left-cluster .unit-selector svg {
+  fill: var(--fa-muted) !important;
+}
+html[data-theme="emperor-24k"] body .GOURMET-topbar .btn-imprimir-usuario, body[data-theme="emperor-24k"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar .btn-imprimir-usuario, body[data-theme="champagne-imperial"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar .btn-imprimir-usuario, body[data-theme="whiskey-brass"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="monaco-gold"] body .GOURMET-topbar .btn-imprimir-usuario, body[data-theme="monaco-gold"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar .btn-imprimir-usuario, body[data-theme="venetian-ducat"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="solar-gold"] body .GOURMET-topbar .btn-imprimir-usuario body[data-theme="solar-gold"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="slate-pro"] body .GOURMET-topbar .btn-imprimir-usuario, body[data-theme="slate-pro"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="matte-gold"] body .GOURMET-topbar .btn-imprimir-usuario, body[data-theme="matte-gold"] .GOURMET-topbar .btn-imprimir-usuario,
+html[data-theme="emperor-24k"] body .GOURMET-topbar .user-pill-btn, body[data-theme="emperor-24k"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="champagne-imperial"] body .GOURMET-topbar .user-pill-btn, body[data-theme="champagne-imperial"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="whiskey-brass"] body .GOURMET-topbar .user-pill-btn, body[data-theme="whiskey-brass"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="monaco-gold"] body .GOURMET-topbar .user-pill-btn, body[data-theme="monaco-gold"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="venetian-ducat"] body .GOURMET-topbar .user-pill-btn, body[data-theme="venetian-ducat"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="solar-gold"] body .GOURMET-topbar .user-pill-btn, body[data-theme="solar-gold"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="grafite-suave"] body .GOURMET-topbar .user-pill-btn, body[data-theme="grafite-suave"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="royal-gold"] body .GOURMET-topbar .user-pill-btn, body[data-theme="royal-gold"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="nordic-graphite"] body .GOURMET-topbar .user-pill-btn, body[data-theme="nordic-graphite"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="deep-pine"] body .GOURMET-topbar .user-pill-btn, body[data-theme="deep-pine"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="executive-midnight"] body .GOURMET-topbar .user-pill-btn, body[data-theme="executive-midnight"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="slate-pro"] body .GOURMET-topbar .user-pill-btn, body[data-theme="slate-pro"] .GOURMET-topbar .user-pill-btn,
+html[data-theme="matte-gold"] body .GOURMET-topbar .user-pill-btn, body[data-theme="matte-gold"] .GOURMET-topbar .user-pill-btn {
+  background: var(--fa-button-bg) !important;
+  border-color: var(--fa-button-border) !important;
+  color: var(--fa-button-text) !important;
+}
+
+/* Mais temas de luxo (28/09/2026, Daniel) - somente ACRESCENTADOS. ids: slate-pro, matte-gold */
+/* TEMA: SLATE CHARCOAL PRO (Alta Ergonomia / Jornadas Longas) */
+html[data-theme="slate-pro"], body[data-theme="slate-pro"] {
+  --fa-primary: #d99b38;
+  --fa-primary-dark: #b27a20;
+  --fa-accent: #f0be65;
+  --fa-button-bg: #2a2822;
+  --fa-button-border: #4a3d24;
+  --fa-button-hover-bg: #383427;
+  --fa-button-hover-border: #d99b38;
+  --fa-button-text: #fdfaf3;
+  --fa-background: #0f1115;
+  --fa-panel: #16181f;
+  --fa-panel-alt: #1c202a;
+  --fa-border: #282d3b;
+  --fa-field-bg: #13151b;
+  --fa-kanban-surface: #0b0d10;
+  --fa-modal-header-bg: #1c202a;
+  --fa-modal-header-text: #f0be65;
+  --fa-text: #e2e8f0;
+  --fa-muted: #8b96a5;
+  --fa-danger: #e06c75;
+  --header-bg: #16181f;
+}
+html[data-theme="slate-pro"], body[data-theme="slate-pro"] {
+  --mesa-livre: #b27a20; --mesa-livre-hover: #8e6119; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #0f1115;
+}
+
+/* TEMA: OBSIDIAN MATTE GOLD (Ouro Fosco Acetinado Antirreflexo) */
+html[data-theme="matte-gold"], body[data-theme="matte-gold"] {
+  --fa-primary: #c5a059;
+  --fa-primary-dark: #9e7d38;
+  --fa-accent: #dfc17b;
+  --fa-button-bg: #24221c;
+  --fa-button-border: #423b28;
+  --fa-button-hover-bg: #332f22;
+  --fa-button-hover-border: #c5a059;
+  --fa-button-text: #fbf9f4;
+  --fa-background: #111214;
+  --fa-panel: #18191d;
+  --fa-panel-alt: #202227;
+  --fa-border: #2e3037;
+  --fa-field-bg: #151619;
+  --fa-kanban-surface: #0d0e10;
+  --fa-modal-header-bg: #202227;
+  --fa-modal-header-text: #dfc17b;
+  --fa-text: #e4e7eb;
+  --fa-muted: #91969f;
+  --fa-danger: #e57373;
+  --header-bg: #18191d;
+}
+html[data-theme="matte-gold"], body[data-theme="matte-gold"] {
+  --mesa-livre: #9e7d38; --mesa-livre-hover: #7e642c; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #111214;
+}
+
+html[data-theme="slate-pro"] .badge-status.ativo, body[data-theme="slate-pro"] .badge-status.ativo,
+html[data-theme="matte-gold"] .badge-status.ativo, body[data-theme="matte-gold"] .badge-status.ativo {
+  color: #4ade80 !important;
+  background: rgba(74, 222, 128, 0.18) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+html[data-theme="slate-pro"] .badge-status.inativo, body[data-theme="slate-pro"] .badge-status.inativo,
+html[data-theme="matte-gold"] .badge-status.inativo, body[data-theme="matte-gold"] .badge-status.inativo {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+
+/* Mais temas de luxo (28/09/2026, Daniel) - somente ACRESCENTADOS. ids: nordic-graphite, deep-pine, executive-midnight */
+/* TEMA: NORDIC GRAPHITE & FROST (Grafite Titânio Cockpit) */
+html[data-theme="nordic-graphite"], body[data-theme="nordic-graphite"] {
+  --fa-primary: #4a90e2;
+  --fa-primary-dark: #2c6eb5;
+  --fa-accent: #6ba4e8;
+  --fa-button-bg: #1b2636;
+  --fa-button-border: #294060;
+  --fa-button-hover-bg: #24354c;
+  --fa-button-hover-border: #4a90e2;
+  --fa-button-text: #f0f6fc;
+  --fa-background: #121418;
+  --fa-panel: #191c22;
+  --fa-panel-alt: #21252e;
+  --fa-border: #2d3340;
+  --fa-field-bg: #15171d;
+  --fa-kanban-surface: #0e1013;
+  --fa-modal-header-bg: #21252e;
+  --fa-modal-header-text: #90cdf4;
+  --fa-text: #e1e6ed;
+  --fa-muted: #8892a0;
+  --fa-danger: #f56565;
+  --header-bg: #191c22;
+}
+html[data-theme="nordic-graphite"], body[data-theme="nordic-graphite"] {
+  --mesa-livre: #2c6eb5; --mesa-livre-hover: #235a94; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+/* TEMA: DEEP PINE & SAGE (Verde Sálvia Noturno - Máximo Alívio Visual) */
+html[data-theme="deep-pine"], body[data-theme="deep-pine"] {
+  --fa-primary: #38a169;
+  --fa-primary-dark: #276749;
+  --fa-accent: #68d391;
+  --fa-button-bg: #18281e;
+  --fa-button-border: #284433;
+  --fa-button-hover-bg: #213829;
+  --fa-button-hover-border: #38a169;
+  --fa-button-text: #f0fff4;
+  --fa-background: #0d1310;
+  --fa-panel: #131c17;
+  --fa-panel-alt: #1a2720;
+  --fa-border: #25392d;
+  --fa-field-bg: #101713;
+  --fa-kanban-surface: #090e0b;
+  --fa-modal-header-bg: #1a2720;
+  --fa-modal-header-text: #9ae6b4;
+  --fa-text: #e2f0e6;
+  --fa-muted: #819b8b;
+  --fa-danger: #e57373;
+  --header-bg: #131c17;
+}
+html[data-theme="deep-pine"], body[data-theme="deep-pine"] {
+  --mesa-livre: #276749; --mesa-livre-hover: #1e523a; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+/* TEMA: EXECUTIVE MIDNIGHT (Marinho Noturno Antifadiga) */
+html[data-theme="executive-midnight"], body[data-theme="executive-midnight"] {
+  --fa-primary: #3182ce;
+  --fa-primary-dark: #2b6cb0;
+  --fa-accent: #63b3ed;
+  --fa-button-bg: #162438;
+  --fa-button-border: #233b5c;
+  --fa-button-hover-bg: #1f334f;
+  --fa-button-hover-border: #3182ce;
+  --fa-button-text: #ebf8ff;
+  --fa-background: #0b0f17;
+  --fa-panel: #111824;
+  --fa-panel-alt: #182335;
+  --fa-border: #233249;
+  --fa-field-bg: #0e141f;
+  --fa-kanban-surface: #080b11;
+  --fa-modal-header-bg: #182335;
+  --fa-modal-header-text: #bee3f8;
+  --fa-text: #e2e8f0;
+  --fa-muted: #8295b0;
+  --fa-danger: #e57373;
+  --header-bg: #111824;
+}
+html[data-theme="executive-midnight"], body[data-theme="executive-midnight"] {
+  --mesa-livre: #2b6cb0; --mesa-livre-hover: #22568d; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+html[data-theme="nordic-graphite"] .badge-status.ativo, body[data-theme="nordic-graphite"] .badge-status.ativo,
+html[data-theme="deep-pine"] .badge-status.ativo, body[data-theme="deep-pine"] .badge-status.ativo,
+html[data-theme="executive-midnight"] .badge-status.ativo, body[data-theme="executive-midnight"] .badge-status.ativo {
+  color: #4ade80 !important;
+  background: rgba(74, 222, 128, 0.18) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+html[data-theme="nordic-graphite"] .badge-status.inativo, body[data-theme="nordic-graphite"] .badge-status.inativo,
+html[data-theme="deep-pine"] .badge-status.inativo, body[data-theme="deep-pine"] .badge-status.inativo,
+html[data-theme="executive-midnight"] .badge-status.inativo, body[data-theme="executive-midnight"] .badge-status.inativo {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+
+/* Mais temas de luxo (28/09/2026, Daniel) - somente ACRESCENTADOS. ids: cinza-windows, azul-ardosia, papel-areia, grafite-suave, royal-gold */
+/* TEMA: CINZA WINDOWS (Trabalho: claro neutro, azul do Windows 11) */
+html[data-theme="cinza-windows"], body[data-theme="cinza-windows"] {
+  --fa-primary: #0067c0;
+  --fa-primary-dark: #005299;
+  --fa-accent: #0067c0;
+  --fa-button-bg: #0067c0;
+  --fa-button-border: #005299;
+  --fa-button-hover-bg: #005299;
+  --fa-button-hover-border: #005299;
+  --fa-button-text: #ffffff;
+  --fa-background: #e4e4e4;
+  --fa-panel: #f3f3f3;
+  --fa-panel-alt: #e9e9e9;
+  --fa-border: #d4d4d4;
+  --fa-field-bg: #fbfbfb;
+  --fa-kanban-surface: #f7f7f7;
+  --fa-modal-header-bg: #e9e9e9;
+  --fa-modal-header-text: #1b1b1b;
+  --fa-text: #1b1b1b;
+  --fa-muted: #616161;
+  --fa-danger: #c42b1c;
+  --header-bg: #ececec;
+}
+html[data-theme="cinza-windows"], body[data-theme="cinza-windows"] {
+  --mesa-livre: #0067c0; --mesa-livre-hover: #005299; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+/* TEMA: AZUL ARDÓSIA (Trabalho: cinza-azulado de escritório) */
+html[data-theme="azul-ardosia"], body[data-theme="azul-ardosia"] {
+  --fa-primary: #3d5a80;
+  --fa-primary-dark: #2f4866;
+  --fa-accent: #3d5a80;
+  --fa-button-bg: #3d5a80;
+  --fa-button-border: #2f4866;
+  --fa-button-hover-bg: #2f4866;
+  --fa-button-hover-border: #2f4866;
+  --fa-button-text: #ffffff;
+  --fa-background: #d5dde6;
+  --fa-panel: #eef2f6;
+  --fa-panel-alt: #dbe3ec;
+  --fa-border: #c7d0da;
+  --fa-field-bg: #f8fafc;
+  --fa-kanban-surface: #f0f4f8;
+  --fa-modal-header-bg: #dbe3ec;
+  --fa-modal-header-text: #1f2a37;
+  --fa-text: #1f2a37;
+  --fa-muted: #5b6878;
+  --fa-danger: #b3382c;
+  --header-bg: #e2e8ef;
+}
+html[data-theme="azul-ardosia"], body[data-theme="azul-ardosia"] {
+  --mesa-livre: #3d5a80; --mesa-livre-hover: #2f4866; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+/* TEMA: PAPEL AREIA (Trabalho: papel quente, destaque oliva) */
+html[data-theme="papel-areia"], body[data-theme="papel-areia"] {
+  --fa-primary: #5f6b4e;
+  --fa-primary-dark: #4a543c;
+  --fa-accent: #9b4f2c;
+  --fa-button-bg: #5f6b4e;
+  --fa-button-border: #4a543c;
+  --fa-button-hover-bg: #4a543c;
+  --fa-button-hover-border: #4a543c;
+  --fa-button-text: #ffffff;
+  --fa-background: #ddd6ca;
+  --fa-panel: #f3efe8;
+  --fa-panel-alt: #e6dfd3;
+  --fa-border: #d6cec1;
+  --fa-field-bg: #faf8f4;
+  --fa-kanban-surface: #f5f1ea;
+  --fa-modal-header-bg: #e6dfd3;
+  --fa-modal-header-text: #2d2620;
+  --fa-text: #2d2620;
+  --fa-muted: #6f6558;
+  --fa-danger: #a8392a;
+  --header-bg: #e9e3d9;
+}
+html[data-theme="papel-areia"], body[data-theme="papel-areia"] {
+  --mesa-livre: #5f6b4e; --mesa-livre-hover: #4a543c; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+/* TEMA: GRAFITE SUAVE (Trabalho: escuro carvão, não preto) */
+html[data-theme="grafite-suave"], body[data-theme="grafite-suave"] {
+  --fa-primary: #4a78ad;
+  --fa-primary-dark: #3a6290;
+  --fa-accent: #6c9bd2;
+  --fa-button-bg: #4a78ad;
+  --fa-button-border: #3a6290;
+  --fa-button-hover-bg: #3a6290;
+  --fa-button-hover-border: #6c9bd2;
+  --fa-button-text: #ffffff;
+  --fa-background: #1f2227;
+  --fa-panel: #262a30;
+  --fa-panel-alt: #2e333a;
+  --fa-border: #3a4048;
+  --fa-field-bg: #2d3239;
+  --fa-kanban-surface: #2a2e34;
+  --fa-modal-header-bg: #2e333a;
+  --fa-modal-header-text: #d9dde3;
+  --fa-text: #d9dde3;
+  --fa-muted: #9aa3ad;
+  --fa-danger: #c4503f;
+  --header-bg: #262a30;
+}
+html[data-theme="grafite-suave"], body[data-theme="grafite-suave"] {
+  --mesa-livre: #4a78ad; --mesa-livre-hover: #3a6290; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+/* TEMA: ROYAL ONYX & 24K GOLD (Ouro Imperial e Ônix) */
+html[data-theme="royal-gold"], body[data-theme="royal-gold"] {
+  --fa-primary: #d4af37;
+  --fa-primary-dark: #aa851d;
+  --fa-accent: #e6c86e;
+  --fa-button-bg: linear-gradient(135deg, #d4af37 0%, #aa851d 100%);
+  --fa-button-border: #e6c86e;
+  --fa-button-hover-bg: linear-gradient(135deg, #e6c86e 0%, #c49926 100%);
+  --fa-button-hover-border: #ffd700;
+  --fa-button-text: #0b0c10;
+  --fa-background: #08090d;
+  --fa-panel: #11131a;
+  --fa-panel-alt: #171b26;
+  --fa-border: #2c2514;
+  --fa-field-bg: #141722;
+  --fa-kanban-surface: #0e1017;
+  --fa-modal-header-bg: linear-gradient(135deg, #1c180e 0%, #2c2514 100%);
+  --fa-modal-header-text: #e6c86e;
+  --fa-text: #fbfaf6;
+  --fa-muted: #9c9483;
+  --fa-danger: #f87171;
+  --header-bg: #11131a;
+}
+html[data-theme="royal-gold"], body[data-theme="royal-gold"] {
+  --mesa-livre: #aa851d; --mesa-livre-hover: #86681a; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #0b0c10;
+}
+
+html[data-theme="grafite-suave"] .badge-status.ativo, body[data-theme="grafite-suave"] .badge-status.ativo,
+html[data-theme="royal-gold"] .badge-status.ativo, body[data-theme="royal-gold"] .badge-status.ativo {
+  color: #4ade80 !important;
+  background: rgba(74, 222, 128, 0.18) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+html[data-theme="grafite-suave"] .badge-status.inativo, body[data-theme="grafite-suave"] .badge-status.inativo,
+html[data-theme="royal-gold"] .badge-status.inativo, body[data-theme="royal-gold"] .badge-status.inativo {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+
+/* Temas-base do AgroFácil (13/10/2026, Daniel: "trazer todos") - somente ACRESCENTADOS. ids: verde-claro, agro-dark.
+   Cores exatamente as do TemaFacilApp.css do AgroFácil, convertidas para as variáveis --fa-* do Gourmet. */
+/* TEMA: VERDE CLARO AGRO (padrão do AgroFácil) */
+html[data-theme="verde-claro"], body[data-theme="verde-claro"] {
+  --fa-primary: #506b3d;
+  --fa-primary-dark: #3d5630;
+  --fa-accent: #b86f2d;
+  --fa-button-bg: #506b3d;
+  --fa-button-border: #3d5630;
+  --fa-button-hover-bg: #3d5630;
+  --fa-button-hover-border: #3d5630;
+  --fa-button-text: #ffffff;
+  --fa-background: #bfd4b7;
+  --fa-panel: #d6ead1;
+  --fa-panel-alt: #c4dcbf;
+  --fa-border: #9eb993;
+  --fa-field-bg: #eef5e5;
+  --fa-kanban-surface: #e5f0e1;
+  --fa-modal-header-bg: #c4dcbf;
+  --fa-modal-header-text: #1e3120;
+  --fa-text: #1e3120;
+  --fa-muted: #607562;
+  --fa-danger: #a8392a;
+  --header-bg: #d6ead1;
+}
+html[data-theme="verde-claro"], body[data-theme="verde-claro"] {
+  --mesa-livre: #506b3d; --mesa-livre-hover: #3d5630; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+
+/* TEMA: VERDE AGRO NOTURNO (escuro do AgroFácil) */
+html[data-theme="agro-dark"], body[data-theme="agro-dark"] {
+  --fa-primary: #4e7d41;
+  --fa-primary-dark: #3d6630;
+  --fa-accent: #c27d21;
+  --fa-button-bg: #3d6630;
+  --fa-button-border: #2e4d27;
+  --fa-button-hover-bg: #4e7d41;
+  --fa-button-hover-border: #3d633d;
+  --fa-button-text: #ffffff;
+  --fa-background: #101a10;
+  --fa-panel: #172617;
+  --fa-panel-alt: #1f331f;
+  --fa-border: #294229;
+  --fa-field-bg: #121e12;
+  --fa-kanban-surface: #131f13;
+  --fa-modal-header-bg: #1f331f;
+  --fa-modal-header-text: #e6f0e3;
+  --fa-text: #e6f0e3;
+  --fa-muted: #74916f;
+  --fa-danger: #f87171;
+  --header-bg: #172617;
+}
+html[data-theme="agro-dark"], body[data-theme="agro-dark"] {
+  --mesa-livre: #3d6630; --mesa-livre-hover: #2e4d27; --mesa-consumo: #0284c7; --mesa-conta: #f59e0b; --mesa-text: #ffffff;
+}
+/* escuro: barra do topo no escuro do tema e selos legíveis (mesmo acabamento dos outros temas escuros) */
+html[data-theme="agro-dark"] .gourmet-topbar, body[data-theme="agro-dark"] .gourmet-topbar {
+  background: var(--fa-panel-alt) !important;
+}
+html[data-theme="agro-dark"] .badge-status.ativo, body[data-theme="agro-dark"] .badge-status.ativo {
+  color: #4ade80 !important;
+  background: rgba(74, 222, 128, 0.18) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+html[data-theme="agro-dark"] .badge-status.inativo, body[data-theme="agro-dark"] .badge-status.inativo {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}

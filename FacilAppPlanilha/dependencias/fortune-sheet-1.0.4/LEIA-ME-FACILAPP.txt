@@ -1,0 +1,7 @@
+Copia local do FortuneSheet 1.0.4 (MIT), @fortune-sheet/react dist/index.umd.min.js.
+Unico ajuste (13/09/2026): a funcao de idioma (Qt) chama window.FacilAppFortuneLocales(Zt)
+para o FacilApp registrar o idioma "pt" (assets/js/PlanilhaLocalePt.js).
+Original em C:\BACKUPkp_particularortune-sheet-index.umd.min.original.js
+Ajuste 2: texto fixo em chines do botao Borda ("边框设置") trocado por "Bordas".
+Ajuste 3: titulos fixos "Zoom settings" e "Pivot Table" em portugues.
+Ajuste 4: barra mostra todos os botoes (sem o "..." de mais); o CSS da tela quebra em 2 linhas.

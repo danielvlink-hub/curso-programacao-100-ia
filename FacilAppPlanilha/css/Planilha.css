@@ -1,0 +1,39 @@
+/* FacilApp Planilha (13/09/2026). A grade é como papel (fundo claro do próprio
+   FortuneSheet); moldura, barra e abas seguem as variáveis do tema. */
+html,body{background:transparent!important}
+.browse-toolbar{display:grid!important;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px 10px}
+.browse-toolbar .toolbar-left,.browse-toolbar .toolbar-right{gap:4px}
+.browse-toolbar .toolbar-right{justify-self:end}
+.planilha-status{justify-self:center;font-size:11.5px;color:var(--text-secondary);white-space:nowrap}
+
+.planilha-area{flex:1;min-height:0;position:relative;margin:0 6px 6px;border:1px solid var(--border-glass);border-radius:8px;overflow:hidden}
+#planilha{position:absolute;inset:0}
+
+/* Barra de ferramentas, barra de fórmula e abas nas cores do tema. */
+.planilha-area .fortune-toolbar,
+.planilha-area .fortune-fx-editor,
+.planilha-area .fortune-sheettab-container,
+.planilha-area .fortune-sheet-container .luckysheet-stat-area{background:var(--bg-card-inner)!important;border-color:var(--border-glass)!important}
+.planilha-area .fortune-toolbar-button,
+.planilha-area .fortune-toolbar-combo,
+.planilha-area .fortune-sheettab-tab,
+.planilha-area .fortune-fx-icon,
+.planilha-area .fortune-name-box{color:var(--text-primary)!important}
+.planilha-area .fortune-toolbar-button:hover,
+.planilha-area .fortune-toolbar-combo:hover,
+.planilha-area .fortune-sheettab-tab:hover{background:var(--bg-surface-hover)!important}
+.planilha-area .fortune-toolbar-button.active,
+.planilha-area .fortune-sheettab-tab.luckysheet-sheets-item-active{background:var(--bg-surface-hover)!important;color:var(--contour-primary)!important}
+.planilha-area .fortune-toolbar svg,
+.planilha-area .fortune-sheettab-container svg{fill:currentColor}
+
+/* Ícones da barra um pouco menores (13/09/2026): 24px -> 18px, botões mais juntos. */
+.planilha-area .fortune-toolbar{padding:3px 0 2px 10px}
+.planilha-area .fortune-toolbar-button,
+.planilha-area .fortune-toolbar-combo{margin:1px 2px;padding:2px}
+.planilha-area .fortune-toolbar svg,
+.planilha-area .fortune-toolbar-more-container svg{width:18px!important;height:18px!important}
+.planilha-area .fortune-toolbar-combo-button{font-size:11px}
+
+/* Barra em 2 linhas (13/09/2026): todos os botões à vista, sem o menu "...". */
+.planilha-area .fortune-toolbar{flex-wrap:wrap;white-space:normal;row-gap:1px}

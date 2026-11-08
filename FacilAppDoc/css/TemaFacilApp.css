@@ -1,0 +1,2061 @@
+/* ==========================================================================
+   Tema e cor — a unica fonte de cor do sistema
+
+   Nenhum outro arquivo define cor. Os sete temas:
+
+     verde-claro     Verde Claro (Padrao)      agro-dark       Verde Agro Noturno
+     dark-tech       Dark Tech Noturno         obsidian-gold   Obsidian Gold
+     deep-teal       Deep Teal Esmeralda       default         Padrao Azul Executivo
+     codex-dark      Codex Dark
+
+   A lista tem que bater em tres lugares: aqui, no NOMES_TEMAS do app.js e no
+   data-theme do index.html. Tema no CSS sem entrada no seletor fica inalcancavel;
+   entrada no seletor sem CSS abre a tela sem cor.
+
+   Precisando de um tom que nao existe, o lugar de acrescentar e este arquivo — nao
+   a tela.
+   ========================================================================== */
+/* TemaFacilApp.css — temas e estrutura exclusivos da Balança Pesagem. */
+/* Temas ativos: verde-claro, agro-dark, dark-tech, obsidian-gold, deep-teal, default, codex-dark e jotape. */
+
+/* =========================================================
+   AgroScale / Vlink Cereais - Sistema de Controle de Balança
+   Design: Tema Verde Claro Oficial (Ergonômico / FacilApp)
+   Conforme Desenho Aprovado pelo Usuário
+   ========================================================= */
+
+/* 1. VERDE CLARO AGRO (JOTAPÊ) - PADRÃO OFICIAL */
+:root,
+html[data-theme="verde-claro"],
+body[data-theme="verde-claro"] {
+  --bg-app: #bfd4b7;
+  --bg-gradient: linear-gradient(180deg, #ddead9 0%, #bfd4b7 100%);
+  --bg-surface: #d6ead1;
+  --bg-surface-hover: #c5ddbf;
+  --bg-card-inner: #eef5e5;
+  
+  --border-glass: #9eb993;
+  --border-glass-bright: #789b6c;
+  
+  --contour-primary: #506b3d;
+  --contour-gold: #b86f2d;
+  --contour-green: #2f7a45;
+  
+  --text-white: #ffffff;
+  --text-primary: #1e3120;
+  --text-secondary: #3f5841;
+  --text-muted: #607562;
+  
+  --capsule-bg: #102814;
+  --capsule-border: #355a39;
+  --btn-pesar-bg: #3f7550;
+  --btn-pesar-color: #ffffff;
+
+  /* Top Nav & FacilApp */
+  --top-nav-bg: #d6ead1;
+  --top-nav-border: #9eb993;
+  --facilapp-capsule-bg: #eef5e5;
+  --facilapp-capsule-border: #9eb993;
+  --facilapp-btn-menu: #506b3d;
+  --facilapp-btn-menu-border: #3d5630;
+  --facilapp-btn-menu-color: #ffffff;
+  --facilapp-check-color: #ea580c;
+  --facilapp-brand-text: #1e3120;
+  --facilapp-brand-app-color: #ea580c;
+  --facilapp-badge-bg: #b85d19;
+  --facilapp-select-bg: #eef5e5;
+  --facilapp-select-border: #9eb993;
+  --facilapp-select-text: #1e3120;
+  
+  --table-header-bg: #c4dcbf;
+  --table-row-alt: #e5f0e1;
+  --card-header-bg: var(--table-header-bg);
+}
+
+html[data-theme="verde-claro"] .panel-header-mini,
+html[data-theme="verde-claro"] .kpi-card-header,
+html[data-theme="verde-claro"] .right-card-title,
+html[data-theme="verde-claro"] .patio-browse-header {
+  background: var(--card-header-bg);
+}
+
+html[data-theme="verde-claro"] .panel-header-mini {
+  margin: -10px -10px 6px;
+  padding: 7px 10px;
+  border-radius: 11px 11px 0 0;
+}
+
+html[data-theme="verde-claro"] .kpi-card-header {
+  margin: -6px -10px 2px;
+  padding: 4px 8px;
+  border-radius: 7px 7px 0 0;
+}
+
+html[data-theme="verde-claro"] .right-card-title {
+  margin: -8px -10px 6px;
+  padding: 6px 10px;
+  border-radius: 11px 11px 0 0;
+}
+
+html[data-theme="verde-claro"] .patio-browse-header {
+  margin: -8px -12px 0;
+  padding: 7px 12px;
+  border-radius: 11px 11px 0 0;
+}
+
+/* Marca e selo do cabeçalho no padrão visual do FacilApp Cereais. */
+html[data-theme="verde-claro"] .facilapp-capsule-badge {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  gap: 8px;
+}
+
+html[data-theme="verde-claro"] .facilapp-logo-box {
+  gap: 6px;
+}
+
+html[data-theme="verde-claro"] .facilapp-check-box {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #31482d;
+  border-radius: 6px;
+  color: #d97721;
+  font-size: 0.75rem;
+}
+
+html[data-theme="verde-claro"] .facilapp-brand-name {
+  color: #243322;
+  font-size: 1rem;
+  letter-spacing: -0.5px;
+}
+
+html[data-theme="verde-claro"] .facilapp-brand-app {
+  color: #d75f24;
+}
+
+html[data-theme="verde-claro"] .badge-modulo-cereais {
+  background: #b85d35;
+  border: 1px solid #a54e29;
+  padding: 3px 9px;
+  box-shadow: 0 2px 6px rgba(184, 93, 53, 0.32);
+}
+
+html[data-theme="verde-claro"] input,
+html[data-theme="verde-claro"] select,
+html[data-theme="verde-claro"] textarea,
+html[data-theme="verde-claro"] .vehicle-blueprint-box {
+  background-color: #eef5e5;
+}
+
+/* 2. VERDE AGRO NOTURNO */
+html[data-theme="agro-dark"],
+body[data-theme="agro-dark"] {
+  --bg-app: #101a10;
+  --bg-gradient: linear-gradient(180deg, #142214 0%, #0c150c 100%);
+  --bg-surface: #172617;
+  --bg-surface-hover: #1f331f;
+  --bg-card-inner: #121e12;
+  
+  --border-glass: #294229;
+  --border-glass-bright: #3d633d;
+  
+  --contour-primary: #4e7d41;
+  --contour-gold: #c27d21;
+  --contour-green: #3b8245;
+  
+  --text-white: #ffffff;
+  --text-primary: #e6f0e3;
+  --text-secondary: #b8d2b3;
+  --text-muted: #74916f;
+  
+  --capsule-bg: #0a120a;
+  --capsule-border: #2e4d27;
+  --btn-pesar-bg: #3d6630;
+  --btn-pesar-color: #ffffff;
+
+  --top-nav-bg: #172617;
+  --top-nav-border: #294229;
+  --facilapp-capsule-bg: #1f331f;
+  --facilapp-capsule-border: #3d633d;
+  --facilapp-btn-menu: #121e12;
+  --facilapp-btn-menu-border: #294229;
+  --facilapp-btn-menu-color: #b8d2b3;
+  --facilapp-check-color: #f97316;
+  --facilapp-brand-text: #ffffff;
+  --facilapp-brand-app-color: #f97316;
+  --facilapp-badge-bg: #b85d19;
+  --facilapp-select-bg: #121e12;
+  --facilapp-select-border: #294229;
+  --facilapp-select-text: #ffffff;
+
+  --table-header-bg: #1f331f;
+  --table-row-alt: #131f13;
+}
+
+/* 3. DARK TECH NOTURNO */
+html[data-theme="dark-tech"],
+body[data-theme="dark-tech"] {
+  --bg-app: #0d131d;
+  --bg-gradient: linear-gradient(180deg, #121a28 0%, #090e15 100%);
+  --bg-surface: #141e2d;
+  --bg-surface-hover: #1c2a3f;
+  --bg-card-inner: #0f1723;
+  
+  --border-glass: #25364f;
+  --border-glass-bright: #385175;
+  
+  --contour-primary: #0284c7;
+  --contour-gold: #d97706;
+  --contour-green: #16a34a;
+  
+  --text-white: #ffffff;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --capsule-bg: #070d14;
+  --capsule-border: #1a2f4c;
+  --btn-pesar-bg: #0284c7;
+  --btn-pesar-color: #ffffff;
+
+  --top-nav-bg: #141e2d;
+  --top-nav-border: #25364f;
+  --facilapp-capsule-bg: #1c2a3f;
+  --facilapp-capsule-border: #385175;
+  --facilapp-btn-menu: #0f1723;
+  --facilapp-btn-menu-border: #25364f;
+  --facilapp-btn-menu-color: #38bdf8;
+  --facilapp-check-color: #38bdf8;
+  --facilapp-brand-text: #ffffff;
+  --facilapp-brand-app-color: #38bdf8;
+  --facilapp-badge-bg: #0284c7;
+  --facilapp-select-bg: #0f1723;
+  --facilapp-select-border: #25364f;
+  --facilapp-select-text: #ffffff;
+
+  --table-header-bg: #1c2a3f;
+  --table-row-alt: #101824;
+}
+
+/* 4. PADRÃO AZUL CLÁSSICO */
+html[data-theme="default"],
+body[data-theme="default"] {
+  --bg-app: #dbe7f2;
+  --bg-gradient: linear-gradient(180deg, #e1edf7 0%, #d4e1ec 100%);
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #edf4fb;
+  --bg-card-inner: #f5f9fd;
+  
+  --border-glass: #b8cde2;
+  --border-glass-bright: #94b5d6;
+  
+  --contour-primary: #0369a1;
+  --contour-gold: #b85d19;
+  --contour-green: #15803d;
+  
+  --text-white: #ffffff;
+  --text-primary: #0f243a;
+  --text-secondary: #1e3e60;
+  --text-muted: #577594;
+  
+  --capsule-bg: #0b1a2a;
+  --capsule-border: #224b75;
+  --btn-pesar-bg: #0284c7;
+  --btn-pesar-color: #ffffff;
+
+  --top-nav-bg: #ffffff;
+  --top-nav-border: #b8cde2;
+  --facilapp-capsule-bg: #e6f0fa;
+  --facilapp-capsule-border: #b8cde2;
+  --facilapp-btn-menu: #0369a1;
+  --facilapp-btn-menu-border: #024d77;
+  --facilapp-btn-menu-color: #ffffff;
+  --facilapp-check-color: #0284c7;
+  --facilapp-brand-text: #091e3a;
+  --facilapp-brand-app-color: #0284c7;
+  --facilapp-badge-bg: #0284c7;
+  --facilapp-select-bg: #ffffff;
+  --facilapp-select-border: #b8cde2;
+  --facilapp-select-text: #091e3a;
+
+  --table-header-bg: #deecf8;
+  --table-row-alt: #f5f9fd;
+}
+
+/* =========================================================
+   CONFIGURAÇÕES GERAIS
+   ========================================================= */
+:root {
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Chakra Petch e JetBrains Mono vinham do Google e nao existem em
+     assets/fonts. Sem internet elas nao carregam, e a reserva passa a ser uma
+     fonte LOCAL do projeto, nao a padrao do sistema. Baixando os .woff2 para
+     assets/fonts e declarando-os no offline-fonts.css, elas voltam sozinhas. */
+  --font-display: 'Chakra Petch', 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Roboto', monospace;
+  
+  --radius-pill: 9999px;
+  --radius-card: 12px;
+  --radius-inner: 8px;
+  --radius-btn: 6px;
+
+  /* Cores que estavam cravadas em browse.css, update.css e MenuBalanca.css.
+     Mesmo valor de antes — o que muda e o lugar: cor mora aqui, e so aqui.
+
+     --facilapp-error ja era usada pelo tema com o valor de reserva escrito
+     dentro da regra, que e justamente o vicio que estas linhas eliminam. */
+  --facilapp-error: #a63232;
+
+  /* Sombras. Ficam no tema porque sao cor, ainda que preta. */
+  --sombra-botao: rgb(0 0 0 / 16%);
+  --sombra-menu: rgb(0 0 0 / 28%);
+  --sombra-camada: rgb(0 0 0 / 32%);
+  --sombra-cartao: rgb(0 0 0 / 10%);
+  --sombra-cartao-forte: rgb(0 0 0 / 20%);
+  --sombra-combo: rgba(20, 70, 50, .24);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background-color: var(--bg-app);
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-size: 13.5px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* CONTAINER PRINCIPAL */
+.app-container {
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  margin: 0 auto;
+  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* =========================================================
+   1. TOP NAVIGATION BAR (FACILAPP OFICIAL)
+   ========================================================= */
+.top-nav {
+  flex: 0 0 48px;
+  height: 48px;
+  background: var(--top-nav-bg);
+  border: 1px solid var(--top-nav-border);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  position: relative;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.facilapp-left-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-menu-hamburger {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--facilapp-btn-menu);
+  border: 1px solid var(--facilapp-btn-menu-border);
+  color: var(--facilapp-btn-menu-color);
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.btn-menu-hamburger:hover {
+  filter: brightness(1.15);
+}
+
+.facilapp-capsule-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--facilapp-capsule-bg);
+  border: 1px solid var(--facilapp-capsule-border);
+  padding: 2px 6px 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.facilapp-logo-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.facilapp-check-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.8px solid var(--facilapp-check-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--facilapp-check-color);
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+
+.facilapp-brand-name {
+  font-family: var(--font-main);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--facilapp-brand-text);
+  letter-spacing: -0.3px;
+}
+
+.facilapp-brand-app {
+  color: var(--facilapp-brand-app-color);
+  font-weight: 900;
+}
+
+.badge-modulo-cereais {
+  background: var(--facilapp-badge-bg);
+  color: #ffffff;
+  font-family: var(--font-main);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.theme-dropdown-wrapper {
+  position: relative;
+  z-index: 1002;
+}
+
+.theme-select-btn-facilapp {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--facilapp-select-bg);
+  border: 1px solid var(--facilapp-select-border);
+  color: var(--facilapp-select-text);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-main);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.theme-select-btn-facilapp:hover {
+  filter: brightness(0.95);
+}
+
+.theme-popover {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass-bright);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  width: 210px;
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 999999;
+}
+
+.theme-popover.open {
+  display: flex;
+}
+
+.theme-popover-title {
+  font-size: 0.64rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 6px;
+  border-bottom: 1px solid var(--border-glass);
+  margin-bottom: 2px;
+}
+
+.theme-opt-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 5px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.theme-opt-item:hover {
+  background: var(--bg-surface-hover);
+}
+
+.theme-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.modulo-title-tag {
+  display: flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border-glass);
+}
+
+/* Ferramentas Topo Direita */
+.top-right-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-tickets-topo {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.btn-tickets-topo:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-glass-bright);
+}
+
+.com-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.com-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.com-led.offline {
+  background: #ef4444;
+}
+
+.clock-display {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.user-badge:hover {
+  border-color: var(--border-glass-bright);
+}
+
+.user-session {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.user-session-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 1000003;
+  min-width: 120px;
+  padding: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: 7px;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 25%);
+}
+
+.user-session-menu[hidden] { display: none; }
+.user-session-menu button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #d32f2f;
+  font: inherit;
+  cursor: pointer;
+}
+.user-session-menu button:hover { background: var(--bg-surface-hover); }
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--contour-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.user-role {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   2. DASHBOARD MAIN 3-PANEL GRID (SUPERIOR)
+   ========================================================= */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(190px, 220px) minmax(0, 1fr) minmax(220px, 250px);
+  gap: 8px;
+  align-items: stretch;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+/* =========================================================
+   3. LEFT PANEL: 1ª PESADA / OPERAÇÕES
+   ========================================================= */
+.left-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-card);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.panel-header-mini {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.pills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pill-btn {
+  width: 100%;
+  height: 38px;
+  border-radius: 6px;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 10px;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.pill-icon {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.pill-btn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-glass-bright);
+}
+
+.pill-btn.active,
+.pill-btn.cyan-glow.active,
+.pill-btn.gold-glow.active {
+  background: var(--contour-primary);
+  border-color: var(--contour-primary);
+  color: #ffffff;
+}
+
+.pill-btn.active .pill-icon,
+.pill-btn.cyan-glow.active .pill-icon,
+.pill-btn.gold-glow.active .pill-icon {
+  color: #ffffff;
+}
+
+.active-op-tag-box {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  border-radius: 6px;
+  padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.active-op-tag-box small {
+  font-size: 0.56rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.4px;
+}
+
+.active-op-tag-box strong {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* =========================================================
+   4. CENTER PANEL: CONSOLE DA BALANÇA
+   ========================================================= */
+.center-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-card);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.scale-selectors-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: 5px;
+}
+
+.scale-selector-group {
+  display: flex;
+  gap: 6px;
+}
+
+.scale-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.scale-toggle-btn.active {
+  border-color: var(--contour-primary);
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.scale-radio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.scale-toggle-btn.active .scale-radio-dot {
+  background: var(--contour-primary);
+}
+
+.scale-label-box {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.scale-label-box strong {
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.scale-label-box small {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+}
+
+.scale-mode-tags {
+  display: flex;
+  gap: 5px;
+}
+
+.tag-status {
+  font-size: 0.6rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.tag-status.live {
+  color: var(--contour-green);
+  border-color: var(--contour-green);
+}
+
+/* Console Body */
+.console-body {
+  display: grid;
+  grid-template-columns: clamp(160px, 16.5vw, 187px) minmax(210px, 1fr) clamp(160px, 16.5vw, 187px);
+  gap: 12px;
+  align-items: center;
+}
+
+.vehicle-blueprint-box {
+  justify-self: start;
+  width: 85.7375%;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-inner);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.vehicle-photo-box {
+  justify-self: end;
+  width: 85.7375%;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-inner);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.vehicle-photo-title {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.vehicle-photo-placeholder {
+  flex: 1;
+  min-height: 0;
+  border: 1px dashed var(--border-glass-bright);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.vehicle-photo-placeholder i {
+  font-size: 1.8rem;
+  color: var(--contour-primary);
+  opacity: 0.72;
+}
+
+.blueprint-title {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sensors-graphic {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sensor-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sensor-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--contour-green);
+}
+
+.sensor-pillar {
+  width: 7px;
+  height: 52px;
+  background: #c5d4b8;
+  border: 1px solid var(--border-glass);
+  border-radius: 3px;
+}
+
+.truck-silhouette {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.truck-silhouette svg {
+  width: 68px;
+  height: 125px;
+}
+
+.alignment-status {
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--contour-green);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Display Digital Cápsula */
+.scale-readout-box {
+  width: 110%;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 10px;
+}
+
+.capsule-display {
+  width: 100%;
+  max-width: none;
+  height: 136.4px;
+  border-radius: 12px;
+  background: var(--capsule-bg);
+  border: 1.5px solid var(--capsule-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.capsule-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.capsule-digits {
+  font-family: var(--font-mono);
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #4ade80;
+  letter-spacing: -1px;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.capsule-digits.long-value {
+  font-size: 3rem;
+}
+
+.capsule-unit {
+  font-family: var(--font-main);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #a3c993;
+}
+
+.capsule-status span {
+  font-family: var(--font-main);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #4ade80;
+}
+
+/* Botões de Ação */
+.action-buttons-row {
+  display: grid;
+  grid-template-columns: 125px 38px;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  max-width: none;
+}
+
+.btn-saida-pill {
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-card-inner);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+
+.btn-saida-pill:hover {
+  background: var(--bg-surface-hover);
+}
+
+.btn-zerar-pill {
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-card-inner);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.btn-zerar-pill:hover {
+  background: var(--bg-surface-hover);
+}
+
+/* 3 Breakdown Cards */
+.breakdown-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.kpi-glass-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-inner);
+  padding: 6px 10px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 72px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.kpi-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.dots {
+  color: var(--text-muted);
+}
+
+.kpi-card-val-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 1px;
+}
+
+.kpi-card-val {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.kpi-unit {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.kpi-card-footer {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+}
+
+.sacas-highlight {
+  color: var(--contour-primary);
+  font-weight: 700;
+}
+
+.sparkline-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+.sparkline-svg svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* =========================================================
+   5. RIGHT PANEL: COMMODITIES & QUICK TOOLS
+   ========================================================= */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: space-between;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.commodities-card, .quick-operators-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-card);
+  padding: 8px 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.commodities-card {
+  flex: 1 1 0;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.quick-operators-card {
+  flex: 0 0 auto;
+}
+
+.right-card-title {
+  flex: 0 0 auto;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.commodities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-glass-bright) transparent;
+}
+
+.commodity-empty { padding: 12px 2px; color: var(--text-muted); font-size: 0.68rem; text-align: center; }
+
+.commodity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.commodity-row:last-child {
+  border-bottom: none;
+}
+
+.comm-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.comm-icon {
+  font-size: 0.8rem;
+}
+
+.comm-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.comm-price {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.key-btn {
+  height: 28px;
+  border-radius: 5px;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.key-btn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-glass-bright);
+}
+
+.key-wide-btn {
+  grid-column: span 2;
+  height: 28px;
+  border-radius: 5px;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  transition: all 0.15s;
+}
+
+.key-wide-btn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-glass-bright);
+}
+
+.arrow-sm {
+  font-size: 0.5rem;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   6. BROWSE INFERIOR: CAMINHÕES NO PÁTIO (EXATAMENTE 10 LINHAS)
+   ========================================================= */
+.bottom-patio-browse-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-card);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+}
+
+.patio-browse-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.patio-browse-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.patio-count-pill {
+  background: var(--contour-primary);
+  color: #ffffff;
+  font-size: 0.64rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+}
+
+.patio-browse-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-refresh-patio {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.btn-refresh-patio:hover {
+  background: var(--bg-surface-hover);
+}
+
+.patio-table-container {
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  border-radius: 6px;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-card-inner);
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: 190px minmax(0, 1fr) 210px;
+  }
+
+  .modulo-title-tag {
+    display: none;
+  }
+
+  .top-right-tools,
+  .facilapp-left-header {
+    gap: 5px;
+  }
+}
+
+html[data-theme="verde-claro"] .patio-table-container {
+  background: #d6ead1;
+}
+
+.tickets-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 10px;
+}
+
+.tickets-table th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  text-align: left;
+  padding: 5px 8px;
+  font-size: 8.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-glass);
+  background: var(--table-header-bg, #e1edd2);
+  height: 26px;
+}
+
+.tickets-table td {
+  padding: 0 5px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-glass);
+  height: 26px;
+  vertical-align: middle;
+}
+
+.tickets-table tbody tr:nth-child(even) td { background: var(--bg-card-inner); }
+.tickets-table tbody tr:nth-child(odd) td { background: var(--bg-card-inner); }
+
+.tickets-table tbody tr:hover td {
+  background: var(--bg-surface-hover);
+}
+
+.tickets-table tbody tr.selected td {
+  background: var(--contour-primary);
+  color: #ffffff;
+}
+
+/* Botão de Ação "Saída do Caminhão" */
+.btn-saida-row-3d {
+  height: 22px;
+  background: var(--contour-primary);
+  border: 1px solid var(--facilapp-btn-menu-border, var(--contour-primary));
+  color: #ffffff;
+  font-family: var(--font-main);
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+
+.btn-saida-row-3d:hover {
+  filter: brightness(1.15);
+}
+
+.status-badge-patio {
+  display: inline-block;
+  background: rgba(46, 125, 50, 0.12);
+  border: 1px solid var(--contour-green);
+  color: var(--contour-green);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.table-search-input {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  outline: none;
+  width: 190px;
+}
+
+.table-search-input:focus {
+  border-color: var(--border-glass-bright);
+}
+
+/* =========================================================
+   7. MODAIS
+   ========================================================= */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999999;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+/* Janela de lançamento: o conteúdo flutua como o Update do Browse. */
+#modalOperacaoOverlay { background:rgba(0,0,0,.52); }
+
+.modal-frame-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass-bright);
+  border-radius: var(--radius-card);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+
+.btn-close-modal {
+  background: rgba(0, 0, 0, 0.06);
+  border: none;
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.btn-close-modal:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.btn-close-modal-float {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #dc2626;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+}
+
+/* Paleta oficial do seletor: obsidian-gold */
+html[data-theme="obsidian-gold"], body[data-theme="obsidian-gold"] {
+  --bg-app: #0d1117;
+  --bg-surface: #161b22;
+  --bg-surface-hover: #1d232b;
+  --bg-card-inner: #1c2229;
+  --border-glass: #30363d;
+  --border-glass-bright: #b48c48;
+  --contour-primary: #b48c48;
+  --contour-gold: #b48c48;
+  --contour-green: #b48c48;
+  --text-primary: #c9d1d9;
+  --text-secondary: #c9d1d9;
+  --text-muted: #8b949e;
+  --capsule-bg: #0d1117;
+  --capsule-border: #30363d;
+  --btn-pesar-bg: #b48c48;
+  --btn-pesar-color: #fff;
+  --top-nav-bg: #161b22;
+  --top-nav-border: #30363d;
+  --facilapp-capsule-bg: #1d232b;
+  --facilapp-capsule-border: #30363d;
+  --facilapp-btn-menu: #b48c48;
+  --facilapp-btn-menu-border: #30363d;
+  --facilapp-btn-menu-color: #fff;
+  --facilapp-check-color: #b48c48;
+  --facilapp-brand-text: #c9d1d9;
+  --facilapp-brand-app-color: #b48c48;
+  --facilapp-badge-bg: #b48c48;
+  --facilapp-select-bg: #1c2229;
+  --facilapp-select-border: #30363d;
+  --facilapp-select-text: #c9d1d9;
+  --table-header-bg: #1d232b;
+  --table-row-alt: #1c2229;
+  --bg-gradient: linear-gradient(180deg, var(--bg-surface), var(--bg-app));
+}
+
+/* Paleta oficial do seletor: deep-teal */
+html[data-theme="deep-teal"], body[data-theme="deep-teal"] {
+  --bg-app: #06141b;
+  --bg-surface: #11212d;
+  --bg-surface-hover: #172c39;
+  --bg-card-inner: #142b37;
+  --border-glass: #253e4b;
+  --border-glass-bright: #0d9488;
+  --contour-primary: #0d9488;
+  --contour-gold: #0d9488;
+  --contour-green: #0d9488;
+  --text-primary: #cbd5e1;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --capsule-bg: #06141b;
+  --capsule-border: #253e4b;
+  --btn-pesar-bg: #0d9488;
+  --btn-pesar-color: #fff;
+  --top-nav-bg: #11212d;
+  --top-nav-border: #253e4b;
+  --facilapp-capsule-bg: #172c39;
+  --facilapp-capsule-border: #253e4b;
+  --facilapp-btn-menu: #0d9488;
+  --facilapp-btn-menu-border: #253e4b;
+  --facilapp-btn-menu-color: #fff;
+  --facilapp-check-color: #0d9488;
+  --facilapp-brand-text: #cbd5e1;
+  --facilapp-brand-app-color: #0d9488;
+  --facilapp-badge-bg: #0d9488;
+  --facilapp-select-bg: #142b37;
+  --facilapp-select-border: #253e4b;
+  --facilapp-select-text: #cbd5e1;
+  --table-header-bg: #172c39;
+  --table-row-alt: #142b37;
+  --bg-gradient: linear-gradient(180deg, var(--bg-surface), var(--bg-app));
+}
+
+/* Paleta oficial do seletor: codex-dark */
+html[data-theme="codex-dark"], body[data-theme="codex-dark"] {
+  --bg-app: #1b1b1b;
+  --bg-surface: #222222;
+  --bg-surface-hover: #282828;
+  --bg-card-inner: #252525;
+  --border-glass: #383838;
+  --border-glass-bright: #0873b9;
+  --contour-primary: #0873b9;
+  --contour-gold: #0873b9;
+  --contour-green: #0873b9;
+  --text-primary: #e7e7e7;
+  --text-secondary: #e7e7e7;
+  --text-muted: #a6a6a6;
+  --capsule-bg: #1b1b1b;
+  --capsule-border: #383838;
+  --btn-pesar-bg: #2a3641;
+  --btn-pesar-color: #f0f0f0;
+  --top-nav-bg: #222222;
+  --top-nav-border: #383838;
+  --facilapp-capsule-bg: #282828;
+  --facilapp-capsule-border: #383838;
+  --facilapp-btn-menu: #2a3641;
+  --facilapp-btn-menu-border: #383838;
+  --facilapp-btn-menu-color: #f0f0f0;
+  --facilapp-check-color: #0873b9;
+  --facilapp-brand-text: #e7e7e7;
+  --facilapp-brand-app-color: #0873b9;
+  --facilapp-badge-bg: #0873b9;
+  --facilapp-select-bg: #252525;
+  --facilapp-select-border: #383838;
+  --facilapp-select-text: #e7e7e7;
+  --table-header-bg: #282828;
+  --table-row-alt: #252525;
+  --bg-gradient: linear-gradient(180deg, var(--bg-surface), var(--bg-app));
+}
+
+/* Cabeçalho: marca, menu e seletor em uma cápsula única. */
+.top-nav {
+  background: color-mix(in srgb, var(--top-nav-bg) 78%, #000);
+  padding-left: 4px;
+}
+html[data-theme="verde-claro"] .top-nav,
+html[data-theme="default"] .top-nav {
+  background: color-mix(in srgb, var(--contour-primary) 85%, #000);
+}
+.top-nav .modulo-tag-text { color: #f1f5f9; }
+.facilapp-menu-capsule {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 9px;
+  padding: 4px 12px 4px 7px;
+  background: var(--facilapp-capsule-bg);
+  border: 1px solid var(--facilapp-capsule-border);
+  border-radius: 12px 24px 24px 12px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+}
+.top-nav .facilapp-capsule-badge {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  gap: 9px;
+}
+.facilapp-menu-capsule .btn-menu-hamburger {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.facilapp-menu-capsule .theme-select-btn-facilapp {
+  min-height: 26px;
+  border-radius: 7px;
+}
+
+.btn-menu-superior {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--facilapp-select-text);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn-menu-superior:hover,
+.btn-menu-superior:focus-visible {
+  background: var(--bg-surface-hover);
+}
+
+.top-nav button:not(.theme-opt-item) {
+  box-shadow:inset 0 1px 0 rgb(255 255 255 / 16%),0 2px 3px rgb(0 0 0 / 18%);
+}
+.top-nav button:not(.theme-opt-item):active {
+  box-shadow:inset 0 1px 2px rgb(0 0 0 / 22%);
+  transform:translateY(1px);
+}
+
+/* Faixa de menu contínua até as duas bordas da tela. */
+.app-container > .top-nav {
+  margin-inline: -10px;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  padding-inline: 10px;
+}
+.app-container > .top-nav .facilapp-menu-capsule {
+  border-radius: 0;
+}
+/* Cabeçalho alinhado ao modelo principal do FacilApp. */
+.app-container > .top-nav {
+  flex-basis: 48px;
+  height: 48px;
+  background: var(--facilapp-btn-menu) !important;
+  border: 0;
+  padding: 0 14px 0 0;
+}
+.app-container > .top-nav .facilapp-left-header {
+  gap: 10px;
+  height: 38px;
+  background: var(--facilapp-capsule-bg);
+  border-radius: 0 20px 20px 0;
+  padding: 0 14px 0 10px;
+  box-shadow: 2px 2px 6px rgb(0 0 0 / 18%);
+}
+.app-container > .top-nav .facilapp-menu-capsule {
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.app-container > .top-nav .btn-menu-hamburger {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+}
+.app-container > .top-nav .facilapp-capsule-badge {
+  gap: 8px;
+}
+.app-container > .top-nav .facilapp-check-box {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+  font-size: .7rem;
+}
+.app-container > .top-nav .facilapp-brand-name {
+  font-size: calc(1rem + .5px);
+  line-height: 1;
+}
+.app-container > .top-nav .badge-modulo-cereais {
+  background: #b85f3d;
+  font-size: 8px;
+  line-height: 1;
+  padding: 3px 7px 2px;
+  letter-spacing: .25px;
+}
+.app-container > .top-nav .theme-select-btn-facilapp {
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+}
+
+/* Mantém o menu à esquerda quando a janela fica estreita.  A marca e o
+   seletor são a âncora visual da faixa; somente as ferramentas da direita
+   podem ser reduzidas/cortadas para evitar que o menu desapareça. */
+.app-container > .top-nav {
+  justify-content: flex-start;
+  min-width: 0;
+  overflow: visible;
+  position: sticky;
+  top: 0;
+  z-index: 1000002;
+}
+.app-container > .top-nav .facilapp-left-header {
+  flex: 0 0 auto;
+  min-width: max-content;
+}
+.app-container > .top-nav .top-right-tools {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
+  overflow: visible;
+}
+
+/* Modal de mensagem padrao (FacilAppBrowse.mensagem).
+   Substitui o alert() do navegador, que ignora o tema e mostra o endereco do
+   site no titulo. Cores todas por variavel; botao de 26px, como o padrao. */
+.facilapp-msg{
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  min-width: 280px;
+  max-width: min(460px, 92vw);
+  padding: 14px 16px;
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  box-shadow: 0 18px 50px rgba(0,0,0,.32);
+}
+.facilapp-msg::backdrop{ background: rgba(0,0,0,.45); }
+.facilapp-msg-titulo{
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--contour-primary);
+}
+.facilapp-msg-texto{
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.facilapp-msg .modal-footer-actions{
+  display: flex;
+  justify-content: flex-end;
+}
+.facilapp-msg .toolbar-btn{
+  height: 26px;
+  min-width: 74px;
+  padding: 0 14px;
+  border-radius: 6px;
+  background: var(--contour-primary);
+  color: var(--facilapp-btn-menu-text, #fff);
+  border: 1px solid var(--facilapp-btn-menu-border, var(--contour-primary));
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Campo e botão secundário do modal que pede um valor (FacilAppBrowse.pedirValor). */
+.facilapp-msg-campo{
+  width: 100%;
+  height: 22px;
+  margin: 0 0 12px;
+  padding: 1px 7px;
+  border: 1px solid var(--border-glass);
+  border-radius: 5px;
+  background: var(--bg-card-inner);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+.facilapp-msg .modal-footer-actions{ gap: 8px; }
+.facilapp-msg .toolbar-btn.facilapp-msg-cancelar{
+  background: var(--bg-card-inner);
+  color: var(--text-primary);
+  border: 1px solid var(--border-glass);
+}
+
+/* Botão de confirmação de ação destrutiva. */
+.facilapp-msg .toolbar-btn.facilapp-msg-perigo{
+  background: var(--facilapp-error, #a63232);
+  border-color: var(--facilapp-error, #a63232);
+  color: #fff;
+}
+
+/* ==========================================================================
+   JOTAPÊ — paleta institucional oliva do menu geral do Cereais
+   Trazida do TemaFacilApp.css antigo da raiz em 12/09/2026, a pedido do
+   Daniel, como mais um tema. NÃO é o Verde Claro: é mais oliva e menos
+   acinzentado. Mesmos tokens do Verde Claro, só as cores mudam.
+   A lista de temas tem que bater em: este arquivo, NOMES_TEMAS do app.js,
+   seletor do Balanca/index.html e seletor do index.html do menu geral.
+   ========================================================================== */
+html[data-theme="jotape"],
+body[data-theme="jotape"] {
+  --bg-app: #bfd5a5;
+  --bg-gradient: linear-gradient(180deg, #d8e9c5 0%, #bfd5a5 100%);
+  --bg-surface: #d8e9c5;
+  --bg-surface-hover: #c9ddb0;
+  --bg-card-inner: #eef5e5;
+
+  --border-glass: #9caf77;
+  --border-glass-bright: #778337;
+
+  --contour-primary: #59651f;
+  --contour-gold: #c85a32;
+  --contour-green: #778337;
+
+  --text-white: #ffffff;
+  --text-primary: #171a10;
+  --text-secondary: #414b16;
+  --text-muted: #596044;
+
+  --capsule-bg: #1f2a0c;
+  --capsule-border: #414b16;
+  --btn-pesar-bg: #59651f;
+  --btn-pesar-color: #eef2e5;
+
+  --top-nav-bg: #c9ddb0;
+  --top-nav-border: #9caf77;
+  --facilapp-capsule-bg: #eef5e5;
+  --facilapp-capsule-border: #9caf77;
+  --facilapp-btn-menu: #59651f;
+  --facilapp-btn-menu-border: #414b16;
+  --facilapp-btn-menu-color: #ffffff;
+  --facilapp-check-color: #d97706;
+  --facilapp-brand-text: #2b3a16;
+  --facilapp-brand-app-color: #d97706;
+  --facilapp-badge-bg: #c85a32;
+  --facilapp-select-bg: #eef5e5;
+  --facilapp-select-border: #9caf77;
+  --facilapp-select-text: #171a10;
+
+  --table-header-bg: #c9ddb0;
+  --table-row-alt: #e3eed6;
+  --card-header-bg: var(--table-header-bg);
+}
+
+html[data-theme="jotape"] .panel-header-mini,
+html[data-theme="jotape"] .kpi-card-header,
+html[data-theme="jotape"] .right-card-title,
+html[data-theme="jotape"] .patio-browse-header {
+  background: var(--card-header-bg);
+}
+html[data-theme="jotape"] .panel-header-mini { margin: -10px -10px 6px; padding: 7px 10px; border-radius: 11px 11px 0 0; }
+html[data-theme="jotape"] .kpi-card-header { margin: -6px -10px 2px; padding: 4px 8px; border-radius: 7px 7px 0 0; }
+html[data-theme="jotape"] .right-card-title { margin: -8px -10px 6px; padding: 6px 10px; border-radius: 11px 11px 0 0; }
+html[data-theme="jotape"] .patio-browse-header { margin: -8px -12px 0; padding: 7px 12px; border-radius: 11px 11px 0 0; }
+
+html[data-theme="jotape"] .facilapp-capsule-badge { background: transparent; border: 0; border-radius: 0; padding: 0; gap: 8px; }
+html[data-theme="jotape"] .facilapp-logo-box { gap: 6px; }
+html[data-theme="jotape"] .facilapp-check-box {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #2b3a16;
+  border-radius: 6px;
+  color: #d97706;
+  font-size: 0.75rem;
+}
+html[data-theme="jotape"] .facilapp-brand-name { color: #2b3a16; font-size: 1rem; letter-spacing: -0.5px; }
+html[data-theme="jotape"] .facilapp-brand-app { color: #d97706; }
+html[data-theme="jotape"] .badge-modulo-cereais {
+  background: #c85a32;
+  border: 1px solid #a8421c;
+  padding: 3px 9px;
+  box-shadow: 0 2px 6px rgba(200, 90, 50, 0.32);
+}
+html[data-theme="jotape"] input,
+html[data-theme="jotape"] select,
+html[data-theme="jotape"] textarea,
+html[data-theme="jotape"] .vehicle-blueprint-box {
+  background-color: #eef5e5;
+}
+html[data-theme="jotape"] .patio-table-container { background: #d8e9c5; }
+html[data-theme="jotape"] .top-nav {
+  background: color-mix(in srgb, var(--contour-primary) 85%, #000);
+}

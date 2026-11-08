@@ -1,0 +1,16 @@
+# gerados no build / dados locais (nunca publicar)
+API FACILAPP SQLite/bin/
+API FACILAPP SQLite/obj/
+API FACILAPP SQLite/staging/
+API FACILAPP SQLite/saida/
+API FACILAPP SQLite/Backups/
+API FACILAPP SQLite/Mcp/bin/
+API FACILAPP SQLite/Mcp/obj/
+API FACILAPP SQLite/Tray/bin/
+API FACILAPP SQLite/Tray/obj/
+Telas/
+.claude/
+*.pdb
+*.db
+Thumbs.db
+desktop.ini

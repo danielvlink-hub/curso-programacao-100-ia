@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 160" width="660" height="160" style="background:transparent; overflow:visible;">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&amp;display=swap');
+      .facilapp-text {
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 108px;
+        letter-spacing: -2px;
+      }
+    </style>
+  </defs>
+
+  <!-- LOGO COMPLETA DA IMAGEM ENVIADA - FUNDO 100% TRANSPARENTE -->
+  <g id="facilapp-logo-grupo">
+    <rect x="20" y="20" width="120" height="120" rx="28" fill="none" stroke="#ffffff" stroke-width="14"/>
+    <path d="M 45 80 L 68 103 L 115 53" fill="none" stroke="#d99b1c" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="175" y="115" class="facilapp-text">
+      <tspan fill="#ffffff">Facil </tspan><tspan fill="#d99b1c">App</tspan>
+    </text>
+  </g>
+</svg>

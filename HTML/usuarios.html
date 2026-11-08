@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usuários e Permissões</title>
+<!--
+  USUÁRIOS E PERMISSÕES — FastPousada
+  Daniel, 03/11/2026: "também trazer o acessos.html e update acesso, e usuários e update". Adaptado do usuarios.html do
+  Gourmet (browse Tabulator + modal de update + modal de permissões do menu).
+  O QUE FAZ
+    - Browse dos usuários da FacilApp API SQL (GET /users): busca, filtro de situação, CSV e XLSX.
+    - Update em janela: nome, login, senha (em branco mantém a atual), administrador e ativo (POST/PUT /users).
+    - Excluir (DELETE /users/{id}) com confirmação.
+    - Permissões do menu por usuário (GET/PUT /api/menu/usuarios/{id}): só grava o que foge do padrão (regra do Gourmet).
+  O QUE SAIU (é do restaurante): cargo operacional, caixa do usuário, cliente para vales, Console da API.
+  REGRAS: só administrador (a API recusa os demais). A API impede desativar/excluir o próprio usuário e deixar o sistema
+  sem administrador; a tela só mostra a mensagem. Senha nunca é lida nem exibida; campo com autocomplete="new-password"
+  (no Gourmet o Chrome autopreenchia e trocava a senha sem ninguém digitar).
+  EFEITOS: gravar avisa o index (FACILAPP_MENU_ALTERADO) — se for o próprio usuário, o menu já reflete.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="dependencias/tabulator-6.5.0/css/tabulator.min.css">
+<script src="dependencias/tabulator-6.5.0/js/tabulator.min.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="assets/js/ApiCurso.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  /* ===== BROWSE (padrão do Gourmet, cabeçalho 35px, linhas 22px) ===== */
+  .browse-window { position: fixed; inset: 6px; background: var(--fa-panel, #fff); border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.18); display: flex; flex-direction: column; overflow: hidden; }
+  .browse-header { height: 35px; flex: 0 0 35px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 12px;
+    background: var(--fa-panel-alt, #f1f5f9); border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .browse-title-group { display: flex; align-items: center; gap: 8px; }
+  .browse-icon-badge { width: 24px; height: 24px; border-radius: 6px; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff);
+    display: flex; align-items: center; justify-content: center; }
+  .browse-icon-badge .material-icons { font-size: 16px; }
+  .browse-title { font-size: 14px; font-weight: 700; }
+  .browse-subtitle { font-size: 11px; color: var(--fa-muted, #64748b); margin-left: 6px; }
+  .btn-fechar { width: 26px; height: 26px; border: 1px solid var(--fa-primary-dark, #35470e); border-radius: 6px; background: var(--fa-primary, #4b5a32);
+    color: var(--fa-button-text, #fff); font: 700 16px/1 Arial, sans-serif; cursor: pointer; }
+  .browse-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 7px; padding: 6px 12px; border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 6px; }
+  .btn { height: 22px; padding: 0 9px; border: 0; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); white-space: nowrap; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn .material-icons { font-size: 15px; }
+  .btn.alt { background: var(--fa-field-bg, #f8fafc); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+  .busca { position: relative; }
+  .busca .material-icons { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--fa-muted, #64748b); }
+  .campo { height: 22px; padding: 0 8px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 4px; background: var(--fa-field-bg, #fff);
+    color: var(--fa-text, #1e293b); outline: none; }
+  .busca .campo { width: 260px; padding-left: 26px; }
+  .campo:focus { border-color: var(--fa-primary, #4b5a32); }
+  .grid-container { flex: 1; min-height: 0; margin: 6px 12px 10px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; overflow: hidden; display: flex; }
+  #gradeUsuarios { flex: 1; border: 0 !important; }
+  /* Tabulator no tema: cabeçalho verde-claro, colunas em CAIXA ALTA, linhas de 22px (gabarito bairros.html). */
+  .tabulator { background: transparent !important; color: var(--fa-text, #1e293b) !important; font-size: 12px; }
+  .tabulator .tabulator-header { background: var(--fa-panel-alt, #eef3e6) !important; border-bottom: 1px solid var(--fa-border, #d8ddcf) !important;
+    font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase; color: var(--fa-text, #1e293b) !important; }
+  .tabulator .tabulator-header .tabulator-col { background: transparent !important; border-right: 1px solid var(--fa-border, #d8ddcf) !important; }
+  .tabulator .tabulator-row { min-height: 22px; background: var(--fa-panel, #fff) !important; border-bottom: 1px solid var(--fa-border, #e5e7eb) !important; }
+  .tabulator .tabulator-row.tabulator-row-even { background: color-mix(in srgb, var(--fa-panel-alt, #f1f5f9) 45%, var(--fa-panel, #fff)) !important; }
+  .tabulator .tabulator-row.tabulator-selected, .tabulator .tabulator-row:hover { background: var(--fa-field-bg, #f8fafc) !important; }
+  .tabulator .tabulator-cell { padding: 2px 8px !important; border-right: 1px solid var(--fa-border, #e5e7eb) !important; }
+  .tabulator .tabulator-footer { background: transparent !important; border-top: 1px solid var(--fa-border, #d8ddcf) !important; font-size: 11px !important; }
+  .tabulator .tabulator-group { background: var(--fa-panel-alt, #eef3e6) !important; border-bottom: 1px solid var(--fa-border, #d8ddcf) !important; font-weight: 700; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 9px; font-size: 10.5px; font-weight: 700; }
+  .badge.ativo { background: #dcfce7; color: #166534; } .badge.inativo { background: #fee2e2; color: #991b1b; }
+  .badge.admin { background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); } .badge.comum { background: var(--fa-panel-alt, #e2e8f0); color: var(--fa-text, #1e293b); }
+  .acoes-linha { display: flex; gap: 3px; justify-content: center; }
+  .row-btn { width: 22px; height: 22px; padding: 0; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 5px; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); }
+  .row-btn .material-icons { font-size: 15px; }
+  .row-btn.delete:hover { background: #b3261e; border-color: #b3261e; }
+  /* ===== MODAIS ===== */
+  .modal-backdrop { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
+  .modal-backdrop.open { display: flex; }
+  .modal-dialog { width: min(560px, 94vw); max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; background: var(--fa-panel, #fff);
+    border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px; box-shadow: 0 24px 70px rgba(0,0,0,.35); }
+  .modal-dialog.permissoes { width: min(900px, 96vw); height: min(620px, 92vh); }
+  .modal-header { height: 35px; flex: 0 0 35px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 12px;
+    background: var(--fa-panel-alt, #f1f5f9); border-bottom: 1px solid var(--fa-border, #d8ddcf); font-weight: 700; font-size: 13px; }
+  .modal-header .titulo { display: flex; align-items: center; gap: 7px; }
+  .modal-header .material-icons { font-size: 18px; color: var(--fa-primary, #4b5a32); }
+  .modal-body { padding: 10px 14px; overflow: auto; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 2px; }
+  .form-group.col-2 { grid-column: span 2; }
+  .form-group label { font-size: 11px; font-weight: 700; color: var(--fa-muted, #64748b); text-transform: uppercase; }
+  .form-group .campo { width: 100%; }
+  .required { color: #b42318; }
+  .ajuda { font-size: 10.5px; color: var(--fa-muted, #64748b); }
+  .checks { display: flex; gap: 18px; align-items: center; padding-top: 4px; }
+  .checks label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; text-transform: none; color: var(--fa-text, #1e293b); cursor: pointer; }
+  #erroUsuario, #msgPermissoes { font-size: 11.5px; }
+  #erroUsuario { display: none; margin-top: 8px; padding: 5px 8px; border-radius: 5px; background: #fde8e7; color: #9b1c1c; }
+  .modal-footer { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px;
+    border-top: 1px solid var(--fa-border, #d8ddcf); }
+  .modal-footer .acoes { display: flex; gap: 6px; }
+  .faixa-usuario { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-bottom: 1px solid var(--fa-border, #d8ddcf); font-size: 12px; }
+  .faixa-usuario .direita { margin-left: auto; color: var(--fa-muted, #64748b); font-size: 11px; }
+  .perm-wrap { flex: 1; min-height: 0; display: flex; padding: 6px 12px; }
+  #gradePermissoes { flex: 1; }
+  .perm-check { width: 15px; height: 15px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="browse-window">
+  <header class="browse-header">
+    <div class="browse-title-group">
+      <div class="browse-icon-badge"><span class="material-icons">group</span></div>
+      <div><span class="browse-title">Usuários e Permissões</span><span class="browse-subtitle">Acesso ao FastPousada pela FacilApp API SQL</span></div>
+    </div>
+    <button type="button" class="btn-fechar" title="Fechar" onclick="fecharBrowse()">×</button>
+  </header>
+  <div class="browse-toolbar">
+    <div class="toolbar-left">
+      <div class="busca"><span class="material-icons">search</span><input id="inputFiltro" class="campo" placeholder="Buscar por nome ou login..." oninput="filtrar()" autocomplete="off"></div>
+      <select id="selSituacao" class="campo" onchange="filtrar()"><option value="">Todas as situações</option><option value="1">Ativos</option><option value="0">Inativos</option></select>
+    </div>
+    <div class="toolbar-right">
+      <button type="button" class="btn" onclick="abrirNovo()"><span class="material-icons">person_add</span>Novo Usuário</button>
+      <button type="button" class="btn alt" onclick="exportarCSV()"><span class="material-icons">description</span>CSV</button>
+      <button type="button" class="btn alt" onclick="exportarExcel()"><span class="material-icons">table_view</span>XLSX</button>
+      <button type="button" class="btn alt" title="Recarregar" onclick="carregarUsuarios()"><span class="material-icons">refresh</span></button>
+    </div>
+  </div>
+  <div class="grid-container"><div id="gradeUsuarios"></div></div>
+</div>
+
+<!-- UPDATE DO USUÁRIO -->
+<div class="modal-backdrop" id="modalUsuario">
+  <div class="modal-dialog">
+    <header class="modal-header"><div class="titulo"><span class="material-icons">badge</span><span id="tituloUsuario">Novo Usuário</span></div>
+      <button type="button" class="btn-fechar" onclick="fecharModal()">×</button></header>
+    <div class="modal-body">
+      <input type="hidden" id="usuarioId">
+      <div class="form-grid">
+        <div class="form-group col-2"><label>Nome <span class="required">*</span></label><input id="txtNome" class="campo" maxlength="120" placeholder="Ex.: Ana Recepção"></div>
+        <div class="form-group"><label>Login <span class="required">*</span></label><input id="txtLogin" class="campo" maxlength="80" autocomplete="off" placeholder="Ex.: ana.recepcao"></div>
+        <div class="form-group"><label>Senha <span class="required" id="reqSenha">*</span></label>
+          <input id="txtSenha" class="campo" type="password" maxlength="60" autocomplete="new-password" placeholder="Em branco mantém a senha atual">
+          <span class="ajuda" id="ajudaSenha">Obrigatória para usuário novo.</span></div>
+        <div class="form-group col-2"><div class="checks">
+          <label><input type="checkbox" id="chkAtivo" checked> Usuário ativo</label>
+          <label title="Vê Administração (Usuários, Acessos) e Configurações"><input type="checkbox" id="chkAdmin"> Administrador</label>
+        </div></div>
+      </div>
+      <div id="erroUsuario"></div>
+    </div>
+    <footer class="modal-footer"><span class="ajuda">Campos com <span class="required">*</span> são obrigatórios.</span>
+      <div class="acoes"><button type="button" class="btn alt" onclick="fecharModal()">Cancelar</button>
+      <button type="button" class="btn" id="btnGravarUsuario" onclick="salvarUsuario()"><span class="material-icons">save</span>Gravar</button></div></footer>
+  </div>
+</div>
+
+<!-- PERMISSÕES DO MENU -->
+<div class="modal-backdrop" id="modalPermissoes">
+  <div class="modal-dialog permissoes">
+    <header class="modal-header"><div class="titulo"><span class="material-icons">lock</span><span>Permissões do Menu</span></div>
+      <button type="button" class="btn-fechar" onclick="fecharPermissoes()">×</button></header>
+    <div class="faixa-usuario"><span class="material-icons" style="font-size:17px;color:var(--fa-primary);">person</span>Usuário: <strong id="nomePermissoes">—</strong>
+      <span class="direita">Sem marcação = acesso liberado. Marque para restringir.</span></div>
+    <div class="browse-toolbar" style="justify-content:flex-start;">
+      <div class="busca"><span class="material-icons">search</span><input class="campo" placeholder="Buscar opção do menu..." oninput="filtrarPermissoes(this.value)" autocomplete="off"></div>
+      <button type="button" class="btn alt" onclick="expandirGrupos(true)">Expandir tudo</button>
+      <button type="button" class="btn alt" onclick="expandirGrupos(false)">Recolher tudo</button>
+      <button type="button" class="btn alt" onclick="liberarTudo()">Liberar tudo</button>
+    </div>
+    <div class="perm-wrap"><div id="gradePermissoes"></div></div>
+    <footer class="modal-footer"><span id="msgPermissoes" class="ajuda"></span>
+      <div class="acoes"><button type="button" class="btn alt" onclick="fecharPermissoes()">Cancelar</button>
+      <button type="button" class="btn" id="btnGravarPermissoes" onclick="salvarPermissoes()"><span class="material-icons">save</span>Gravar Permissões</button></div></footer>
+  </div>
+</div>
+
+<script>
+  let grade = null, gradePerm = null, usuarioPerm = null;
+  const el = id => document.getElementById(id);
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+  const avisarMenu = () => { try { window.parent.postMessage({ origem: 'FACILAPP_MENU_ALTERADO' }, '*'); } catch (e) {} };
+  const LANG = { default: { pagination: { page_size: 'Registros por página', first: 'Primeira', last: 'Última', prev: 'Anterior', next: 'Próxima',
+    counter: { showing: 'Exibindo', of: 'de', rows: 'registros', pages: 'páginas' } } } };
+
+  /* ---------------------------------------------------------------- browse */
+  function iniciarGrade() {
+    grade = new Tabulator('#gradeUsuarios', {
+      data: [], layout: 'fitColumns', height: '100%', pagination: 'local', paginationSize: 50, paginationCounter: 'rows',
+      locale: true, langs: LANG, selectableRows: 1, placeholder: 'Nenhum usuário cadastrado.',
+      columns: [
+        { title: 'Nome', field: 'nome', minWidth: 200, formatter: c => '<strong>' + esc(c.getValue()) + '</strong>' },
+        { title: 'Login', field: 'login', width: 170 },
+        { title: 'Perfil', field: 'administrador', width: 130, hozAlign: 'center', headerHozAlign: 'center',
+          formatter: c => c.getValue() ? '<span class="badge admin">Administrador</span>' : '<span class="badge comum">Usuário</span>' },
+        { title: 'Situação', field: 'ativo', width: 110, hozAlign: 'center', headerHozAlign: 'center',
+          formatter: c => c.getValue() ? '<span class="badge ativo">● Ativo</span>' : '<span class="badge inativo">✕ Inativo</span>' },
+        { title: 'Ações', width: 96, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, download: false,
+          formatter: () => '<div class="acoes-linha"><button type="button" class="row-btn perm" title="Permissões do Menu"><span class="material-icons">lock</span></button>' +
+            '<button type="button" class="row-btn edit" title="Alterar"><span class="material-icons">edit</span></button>' +
+            '<button type="button" class="row-btn delete" title="Excluir"><span class="material-icons">delete</span></button></div>',
+          cellClick: (e, cell) => {
+            const u = cell.getRow().getData();
+            if (e.target.closest('.perm')) abrirPermissoes(u);
+            else if (e.target.closest('.edit')) abrirEditar(u);
+            else if (e.target.closest('.delete')) excluir(u);
+          } }
+      ]
+    });
+    grade.on('rowDblClick', (e, row) => abrirEditar(row.getData()));
+  }
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /** carregarUsuarios() — GET /users (só administrador). Campos: id, nome, login, ativo, administrador. */
+  async function carregarUsuarios() {
+    try {
+      const lista = await ApiCurso.listarUsuarios();
+      await grade.replaceData(lista.map(u => ({ id: u.id, nome: u.nome, login: u.login, ativo: !!u.ativo, administrador: !!u.administrador })));
+      filtrar();
+    } catch (erro) { grade.setData([]); grade.options.placeholder = erro.message; aviso('Não foi possível carregar os usuários: ' + erro.message); }
+  }
+
+  function filtrar() {
+    const termo = el('inputFiltro').value.trim().toLowerCase();
+    const sit = el('selSituacao').value;
+    grade.setFilter(d => (!termo || String(d.nome).toLowerCase().includes(termo) || String(d.login).toLowerCase().includes(termo)) &&
+      (sit === '' || String(Number(d.ativo)) === sit));
+  }
+  function exportarCSV() { grade.download('csv', 'usuarios_fastpousada.csv', { delimiter: ';', bom: true }); }
+  function exportarExcel() { grade.download('xlsx', 'usuarios_fastpousada.xlsx', { sheetName: 'Usuários' }); }
+
+  /* ---------------------------------------------------------------- update */
+  function mostrarErro(m) { const e = el('erroUsuario'); e.textContent = m || ''; e.style.display = m ? 'block' : 'none'; }
+  function abrirNovo() {
+    el('usuarioId').value = ''; el('tituloUsuario').textContent = 'Novo Usuário';
+    el('txtNome').value = ''; el('txtLogin').value = ''; el('txtSenha').value = '';
+    el('chkAtivo').checked = true; el('chkAtivo').disabled = true; el('chkAdmin').checked = false;
+    el('reqSenha').style.visibility = 'visible'; el('ajudaSenha').textContent = 'Obrigatória para usuário novo.';
+    mostrarErro(''); el('modalUsuario').classList.add('open'); el('txtNome').focus();
+  }
+  function abrirEditar(u) {
+    el('usuarioId').value = u.id; el('tituloUsuario').textContent = 'Alterar Usuário — ' + u.login;
+    el('txtNome').value = u.nome || ''; el('txtLogin').value = u.login || ''; el('txtSenha').value = '';
+    el('chkAtivo').checked = !!u.ativo; el('chkAtivo').disabled = false; el('chkAdmin').checked = !!u.administrador;
+    el('reqSenha').style.visibility = 'hidden'; el('ajudaSenha').textContent = 'Em branco mantém a senha atual.';
+    mostrarErro(''); el('modalUsuario').classList.add('open'); el('txtNome').focus();
+  }
+  function fecharModal() { el('modalUsuario').classList.remove('open'); el('txtSenha').value = ''; }
+
+  /**
+   * salvarUsuario() — inclui (POST /users) ou altera (PUT /users/{id}).
+   * Senha: obrigatória na inclusão; na alteração, vazia = mantém (a API só troca quando recebe valor).
+   * As travas (não se desativar, sobrar um administrador) são da API; a mensagem dela aparece aqui.
+   */
+  async function salvarUsuario() {
+    mostrarErro('');
+    const id = el('usuarioId').value;
+    const nome = el('txtNome').value.trim(), login = el('txtLogin').value.trim(), senha = el('txtSenha').value;
+    if (nome.length < 2) { mostrarErro('Informe o nome (mínimo 2 letras).'); return; }
+    if (login.length < 3) { mostrarErro('Informe o login (mínimo 3 caracteres).'); return; }
+    if (!id && !senha) { mostrarErro('Informe a senha do usuário novo.'); return; }
+    const btn = el('btnGravarUsuario'); btn.disabled = true;
+    try {
+      if (id) await ApiCurso.alterarUsuario(id, { nome, login, senha: senha || null, ativo: el('chkAtivo').checked, administrador: el('chkAdmin').checked });
+      else await ApiCurso.incluirUsuario({ nome, login, senha, administrador: el('chkAdmin').checked });
+      fecharModal(); await carregarUsuarios(); avisarMenu(); aviso('Usuário gravado.');
+    } catch (erro) { mostrarErro(erro.message); }
+    finally { btn.disabled = false; }
+  }
+
+  async function excluir(u) {
+    const ok = await FacilAppConfirmar('Excluir o usuário "' + u.nome + '" (' + u.login + ')? As permissões de menu dele também saem.', { confirmar: 'Excluir' });
+    if (!ok) return;
+    try { await ApiCurso.excluirUsuario(u.id); await carregarUsuarios(); aviso('Usuário excluído.'); }
+    catch (erro) { aviso('Não foi possível excluir: ' + erro.message); }
+  }
+
+  /* ---------------------------------------------------------------- permissões do menu */
+  /** Checkbox das colunas da grade de permissões. Desativar bloqueia (e zera) as operações, como no Gourmet. */
+  function checkPermissao(celula) {
+    const campo = celula.getField(), d = celula.getRow().getData();
+    const ch = document.createElement('input');
+    ch.type = 'checkbox'; ch.className = 'perm-check'; ch.checked = !!celula.getValue();
+    ch.disabled = !['desativar', 'ocultar', 'desabilitar'].includes(campo) && d.desativar;
+    ch.addEventListener('change', async () => {
+      const linha = celula.getRow(), item = linha.getData();
+      item[campo] = ch.checked;
+      if (campo === 'desativar' && ch.checked) { item.inserir = false; item.alterar = false; item.excluir = false; }
+      if (['inserir', 'alterar', 'excluir'].includes(campo) && ch.checked) item.desativar = false;
+      await linha.update(item); linha.reformat();
+    });
+    return ch;
+  }
+
+  function iniciarGradePermissoes() {
+    if (gradePerm) return;
+    gradePerm = new Tabulator('#gradePermissoes', {
+      data: [], layout: 'fitColumns', height: '100%', groupBy: 'grupo', groupStartOpen: false,
+      placeholder: 'Nenhuma opção no catálogo do menu.',
+      groupHeader: (valor, qtd, linhas) => {
+        const restritas = (linhas || []).filter(l => { const d = (l && typeof l.getData === 'function') ? l.getData() : l;
+          return d && (d.desativar || d.ocultar || d.desabilitar || !d.inserir || !d.alterar || !d.excluir); }).length;
+        return valor + ' <span style="opacity:.65;font-weight:400;">(' + qtd + ')</span>' + (restritas ? ' <span style="color:#b91c1c;font-weight:400;">• ' + restritas + ' restrita(s)</span>' : '');
+      },
+      columns: [
+        { title: 'Opção do Menu', field: 'menu', minWidth: 240 },
+        { title: 'Desativar acesso', field: 'desativar', width: 120, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, formatter: checkPermissao },
+        { title: 'Ocultar', field: 'ocultar', width: 82, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, formatter: checkPermissao },
+        { title: 'Desabilitar', field: 'desabilitar', width: 96, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, formatter: checkPermissao },
+        { title: 'Inserir', field: 'inserir', width: 76, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, formatter: checkPermissao },
+        { title: 'Alterar', field: 'alterar', width: 76, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, formatter: checkPermissao },
+        { title: 'Excluir', field: 'excluir', width: 76, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, formatter: checkPermissao }
+      ]
+    });
+  }
+
+  /**
+   * abrirPermissoes(u) — monta a grade a partir do CATÁLOGO (todos os itens) e marca por cima as EXCEÇÕES do usuário.
+   * Item sem exceção aparece liberado (o padrão é ter acesso; só o bloqueio é gravado). Módulos não entram (não são clicáveis).
+   */
+  async function abrirPermissoes(u) {
+    usuarioPerm = u;
+    el('nomePermissoes').textContent = u.nome + ' (' + u.login + ')';
+    el('msgPermissoes').textContent = 'Carregando permissões...';
+    el('modalPermissoes').classList.add('open');
+    iniciarGradePermissoes();
+    try {
+      const [catalogo, excecoes] = await Promise.all([ApiCurso.listarCatalogo(), ApiCurso.permissoesDoUsuario(u.id)]);
+      const porId = new Map(catalogo.map(i => [i.id_item, i]));
+      const exc = new Map(excecoes.map(e => [e.id_item, e]));
+      const grupoDe = i => i.tipo_menu === 'superior' ? 'Menu superior' : i.tipo_menu === 'dashboard' ? 'Dashboards'
+        : 'Menu principal › ' + ((porId.get(i.id_pai) || {}).rotulo || 'Sem módulo');
+      const linhas = catalogo.filter(i => !(i.tipo_menu === 'lateral' && i.id_pai == null))
+        .sort((a, b) => grupoDe(a).localeCompare(grupoDe(b), 'pt-BR') || (a.ordem - b.ordem))
+        .map(i => { const e = exc.get(i.id_item); return {
+          id_item: i.id_item, menu: i.rotulo, grupo: grupoDe(i),
+          desativar: e ? Number(e.ativo) === 0 : false, ocultar: e ? Number(e.oculto) === 1 : false, desabilitar: e ? Number(e.desabilitado) === 1 : false,
+          inserir: e ? Number(e.incluir) === 1 : true, alterar: e ? Number(e.alterar) === 1 : true, excluir: e ? Number(e.excluir) === 1 : true }; });
+      await gradePerm.replaceData(linhas);
+      el('msgPermissoes').textContent = linhas.length + ' opções do menu • ' + excecoes.length + ' com restrição gravada.';
+    } catch (erro) { el('msgPermissoes').textContent = 'Erro: ' + erro.message; }
+  }
+  function fecharPermissoes() { el('modalPermissoes').classList.remove('open'); usuarioPerm = null; }
+  function filtrarPermissoes(texto) {
+    const t = String(texto || '').trim().toLowerCase();
+    if (!t) { gradePerm.clearFilter(); return; }
+    gradePerm.setFilter(d => String(d.menu).toLowerCase().includes(t) || String(d.grupo).toLowerCase().includes(t));
+    expandirGrupos(true);
+  }
+  function expandirGrupos(abrir) { if (gradePerm) gradePerm.getGroups().forEach(g => abrir ? g.show() : g.hide()); }
+  async function liberarTudo() {
+    await gradePerm.replaceData(gradePerm.getData().map(d => ({ ...d, desativar: false, ocultar: false, desabilitar: false, inserir: true, alterar: true, excluir: true })));
+    el('msgPermissoes').textContent = 'Tudo liberado na tela — clique em Gravar Permissões para confirmar.';
+  }
+
+  /** salvarPermissoes() — PUT /api/menu/usuarios/{id}; a API grava só o que foge do padrão. */
+  async function salvarPermissoes() {
+    if (!usuarioPerm) return;
+    const btn = el('btnGravarPermissoes'); btn.disabled = true;
+    try {
+      const lista = gradePerm.getData().map(d => ({ id_item: d.id_item, incluir: d.inserir ? 1 : 0, alterar: d.alterar ? 1 : 0, excluir: d.excluir ? 1 : 0,
+        ativo: d.desativar ? 0 : 1, oculto: d.ocultar ? 1 : 0, desabilitado: d.desabilitar ? 1 : 0 }));
+      const gravadas = await ApiCurso.salvarPermissoesDoUsuario(usuarioPerm.id, lista);
+      fecharPermissoes(); avisarMenu(); aviso('Permissões gravadas (' + gravadas + ' restrição(ões)).');
+    } catch (erro) { el('msgPermissoes').textContent = 'Erro: ' + erro.message; }
+    finally { btn.disabled = false; }
+  }
+
+  function fecharBrowse() {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_USUARIOS' }, '*'); } catch (e) {}
+    if (window.parent === window) history.back();
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (el('modalPermissoes').classList.contains('open')) fecharPermissoes(); else if (el('modalUsuario').classList.contains('open')) fecharModal(); } });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!ApiCurso.token()) { ApiCurso.sair('sessao'); return; }
+    iniciarGrade();
+    if (!ApiCurso.ehAdministrador()) { grade.options.placeholder = 'Somente o administrador acessa o cadastro de usuários.'; grade.setData([]); return; }
+    carregarUsuarios();
+  });
+</script>
+</body>
+</html>

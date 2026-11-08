@@ -1,0 +1,111 @@
+/* Inter — a fonte que as telas do modelo (bairros.html, entregadores.html)
+   pedem em primeiro lugar. Ela nunca esteve no pacote offline: no Windows a
+   cadeia caía em Segoe UI, e num servidor Linux cairia em Roboto ou no
+   sans-serif do sistema, mudando o acabamento conforme a máquina.
+   Com o arquivo local, a tela fica igual em qualquer lugar.
+   Subconjunto latino, variável de 100 a 900. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('inter-variable.woff2') format('woff2');
+}
+
+/* ==============================================================================
+   PACOTE DE FONTES & ÍCONES 100% OFFLINE PARA COMPILAÇÃO EXE
+   ============================================================================== */
+
+/* 1. ROBOTO (LOCAL) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('roboto-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('roboto-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('roboto-bold.woff2') format('woff2');
+}
+
+/* 2. MATERIAL ICONS (LOCAL) */
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('material-icons.woff2') format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 3. MATERIAL SYMBOLS ROUNDED & OUTLINED (LOCAL) */
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('material-symbols-rounded.woff2') format('woff2');
+}
+
+.material-symbols-rounded,
+.material-symbols-outlined {
+  font-family: 'Material Symbols Rounded' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* 4. PLUS JAKARTA SANS (LOCAL)
+   Fonte da tela de descanso, a mesma do Cardápio Digital do Gourmet.
+   É uma fonte VARIÁVEL: um único arquivo cobre os pesos 200 a 800, por isso
+   o range em font-weight. O peso 900 pedido pelo título cai no 800, que é o
+   extremo disponível. */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('plus-jakarta-sans.woff2') format('woff2');
+}

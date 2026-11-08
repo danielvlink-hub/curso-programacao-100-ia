@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Módulo V — Desktop, Web, Mobile e Linux</title>
+  <script>
+    /** Resolve os recursos compartilhados quando a aula é exibida dentro do curso. */
+    function arquivoDashboard(endereco) {
+      try {
+        if (window.parent && typeof window.parent.FacilAppResolverArquivoLocal === 'function') {
+          return window.parent.FacilAppResolverArquivoLocal('DASHBOARDS/' + endereco);
+        }
+      } catch (erro) {}
+      return endereco;
+    }
+    document.write('<script src="' + arquivoDashboard('js/TemaFacilApp.js').replace(/&/g, '&amp;') + '"><\/script>');
+  </script>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--fa-bg,#f4f6ef);color:var(--fa-text,#17210e)}body{padding:18px}.curso{max-width:1440px;margin:auto}
+    .hero{position:relative;overflow:hidden;border-radius:18px;padding:27px 31px;background:linear-gradient(125deg,#263807,#415715 62%,#566d1e);color:#fff;box-shadow:0 18px 45px rgba(38,56,7,.18)}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#f2b313;text-transform:uppercase}.hero h1{font-size:34px;line-height:1.08;margin:9px 0 8px}.hero p{max-width:940px;margin:0;color:#dce9c5;font-size:15px;line-height:1.55}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700}
+    .section-head{display:flex;align-items:end;justify-content:space-between;margin:22px 2px 11px}.section-head h2{margin:0;font-size:22px;color:var(--fa-primary,#35470e)}.section-head span{font-size:12px;color:var(--fa-muted,#65705c)}.grade{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.lesson-link{min-height:126px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:12px;padding:14px;text-decoration:none;color:inherit;transition:.18s ease}.lesson-link:hover{transform:translateY(-2px);border-color:#6f8a28;box-shadow:0 8px 20px rgba(53,71,14,.09)}.lesson-link .n{width:34px;height:34px;border-radius:9px;background:#dce9c5;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.lesson-link h3{font-size:13px;margin:10px 0 5px;color:var(--fa-primary,#35470e)}.lesson-link p{font-size:11px;line-height:1.38;margin:0;color:var(--fa-muted,#65705c)}
+    .aula{scroll-margin-top:12px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:14px;margin-top:11px;overflow:hidden;box-shadow:0 7px 22px rgba(23,33,14,.045)}.aula-head{display:flex;gap:12px;align-items:center;padding:15px 18px;background:var(--fa-panel-alt,#e6efd8);border-bottom:1px solid var(--fa-border,#d8ddcf)}.aula-head .n{flex:0 0 38px;height:38px;border-radius:10px;background:#f2b313;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.aula-head h3{margin:0;color:var(--fa-primary,#35470e);font-size:19px}.aula-head p{margin:3px 0 0;font-size:12px;color:var(--fa-muted,#65705c)}.conteudo{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:17px}.bloco{border-left:4px solid #6f8a28;background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:13px}.bloco h4{margin:0 0 7px;color:var(--fa-primary,#35470e);font-size:14px}.bloco p,.bloco li{font-size:12px;line-height:1.48;color:var(--fa-muted,#65705c)}.bloco p{margin:0}.bloco ul,.bloco ol{margin:0;padding-left:19px}.bloco li+li{margin-top:4px}.modelo{grid-column:1/-1;border:1px dashed #9daf79;border-radius:10px;background:#fbfcf8;padding:13px}.modelo b{display:block;color:#35470e;font-size:12px;margin-bottom:7px}.modelo pre{white-space:pre-wrap;margin:0;font:12px/1.5 Consolas,"Courier New",monospace;color:#253015}.atividade{border-color:#f2b313;background:#fffaf0}
+    .plataformas{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.plataforma .tec{margin-top:8px;font-size:10.5px;font-weight:800;color:#35470e;line-height:1.35}.plataforma{border:1px solid var(--fa-border,#d8ddcf);border-radius:10px;background:var(--fa-panel-alt,#f7f5ea);padding:14px}.plataforma .icone{width:38px;height:38px;border-radius:10px;background:#dce9c5;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:8px}.plataforma h4{font-size:14px;color:#35470e;margin:0 0 6px}.plataforma p{font-size:11px;line-height:1.42;color:var(--fa-muted,#65705c);margin:0}.linguagens{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:7px}.linguagens div{text-align:left!important;padding:9px 11px!important}.linguagens b{display:block;font-size:12px;margin-bottom:3px}.linguagens span{display:block;font-size:11px;font-weight:500;line-height:1.38;color:var(--fa-muted,#65705c)}.linguagens div{border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel-alt,#f7f5ea);border-radius:8px;padding:11px 7px;text-align:center;font-size:11px;font-weight:800;color:#35470e}
+    .modernizar{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.passo{position:relative;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:11px;text-align:center}.passo:not(:last-child):after{content:"›";position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:2;font-size:18px;font-weight:900;color:#778337}.passo b{display:block;font-size:11px;color:#35470e;margin-bottom:4px}.passo span{font-size:10px;line-height:1.35;color:var(--fa-muted,#65705c)}.arquitetura{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.camada{border-top:4px solid #6f8a28;border-radius:9px;background:var(--fa-panel-alt,#f7f5ea);padding:12px}.camada b{display:block;color:#35470e;font-size:12px;margin-bottom:4px}.camada span{font-size:11px;line-height:1.4;color:var(--fa-muted,#65705c)}.rodape{padding:18px 4px 2px;font-size:11px;color:var(--fa-muted,#65705c);display:flex;justify-content:space-between;gap:12px}
+    @media(max-width:1050px){.grade{grid-template-columns:repeat(2,1fr)}.linguagens{grid-template-columns:repeat(4,1fr)}.modernizar{grid-template-columns:repeat(3,1fr)}.passo:after{display:none}}@media(max-width:720px){body{padding:10px}.hero{padding:22px}.hero h1{font-size:27px}.grade,.conteudo,.plataformas,.linguagens,.modernizar,.arquitetura{grid-template-columns:1fr}.modelo{grid-column:auto}.section-head{align-items:start;gap:4px;flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="curso">
+  <section class="hero">
+    <!-- Remasterizado em 04/11/2026: projeto multiplataforma com o FastPousada. A ponte WinDev saiu do curso (Daniel, 04/11/2026: "a ponte não entra mais"). --><div class="eyebrow">Módulo V</div>
+    <h1>Desktop, Web, Mobile e Linux</h1>
+    <p>A mesma solução no computador da recepção (Windows), no navegador, no celular Android e no servidor Linux, com a FacilApp API SQL no centro.</p>
+    <div class="meta"><span class="chip">4 aulas</span><span class="chip">C# .NET 10 + HTML/CSS/JS</span><span class="chip">Modernização gradual</span><span class="chip">Projeto multiplataforma</span></div>
+  </section>
+
+  <div class="section-head"><h2>Programa do módulo</h2><span>Clique em uma aula para ir ao conteúdo</span></div>
+  <nav class="grade" aria-label="Aulas do Módulo V">
+    <a class="lesson-link" href="#aula1"><span class="n">1</span><h3>Plataformas</h3><p>O que muda entre desktop, web, mobile e Linux.</p></a>
+    <a class="lesson-link" href="#aula2"><span class="n">2</span><h3>Linguagens e ferramentas</h3><p>O ecossistema FacilApp: C#/.NET, JavaScript, HTML/CSS, APIs REST, Linux e Windows.</p></a>
+    <a class="lesson-link" href="#aula3"><span class="n">3</span><h3>Modernização</h3><p>Evoluindo uma solução existente com ajuda da IA.</p></a>
+    <a class="lesson-link" href="#aula4"><span class="n">4</span><h3>Projeto multiplataforma</h3><p>A mesma regra de negócio em mais de uma interface.</p></a>
+  </nav>
+
+  <section class="aula" id="aula1">
+    <header class="aula-head"><span class="n">1</span><div><h3>O que muda entre desktop, web, mobile e Linux</h3><p>A regra de negócio pode ser a mesma, mas a experiência, a implantação e os recursos são diferentes.</p></div></header>
+    <div class="conteudo">
+      <div class="plataformas"><!-- Daniel, 04/11/2026: "isso é quais tecnologias usamos em cada uma, falta Linux aí, mobile Android" --><article class="plataforma"><div class="icone">D</div><h4>Desktop (Windows)</h4><p>A FacilApp API SQL roda como serviço no computador da recepção, com impressão da ficha e do recibo na térmica e banco na rede local.</p><p class="tec">C# / .NET 10 · Windows Service · PowerShell · ESC/POS · SQLite / SQL Server</p></article><article class="plataforma"><div class="icone">W</div><h4>Web</h4><p>As telas abrem no navegador e falam com a API por REST e JSON. Atualização centralizada; domínio e HTTPS pelo Cloudflare.</p><p class="tec">HTML · CSS · JavaScript · APIs REST · Cloudflare</p></article><article class="plataforma"><div class="icone">M</div><h4>Mobile (Android)</h4><p>App Android que abre as mesmas telas e usa câmera, toque e conexão instável do celular; mesmo login e mesma API.</p><p class="tec">.NET 10 Android · APK assinado · HTML/JS · APIs REST</p></article><article class="plataforma"><div class="icone">L</div><h4>Servidor (Linux)</h4><p>A mesma API em produção na nuvem, atrás do Nginx com HTTPS, com o banco PostgreSQL e o código versionado no Git.</p><p class="tec">Ubuntu · Nginx · .NET 10 · PostgreSQL · Git</p></article></div>
+      <div class="bloco"><h4>O que permanece</h4><ul><li>Regras de negócio.</li><li>Modelo dos dados.</li><li>Contratos da API.</li><li>Validações do servidor.</li><li>Identidade e permissões.</li></ul></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Pegue o check-in do FastPousada e descreva como ele seria usado na recepção (computador), no navegador do gerente, no celular do recepcionista e o que fica rodando no servidor Linux.</p></div>
+      <div class="modelo"><b>PROMPT DE COMPARAÇÃO</b><pre>Analise o check-in do FastPousada para desktop (Windows), web, mobile (Android) e servidor Linux. Separe o que pode ser compartilhado (regras da reserva,
+quarto ocupado, dados do hóspede, FacilApp API SQL) do que precisa mudar em cada plataforma: na recepção (desktop),
+no painel web e no celular do recepcionista. Compare interface, impressora da ficha, câmera para o documento,
+conectividade, implantação, atualização, segurança e testes. Não escolha tecnologia antes de concluir a comparação.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula2">
+    <header class="aula-head"><span class="n">2</span><div><h3>O ecossistema FacilApp: linguagens e ferramentas</h3><p>Só o que é usado hoje nos sistemas FacilApp, no Windows e no Linux.</p></div></header>
+    <div class="conteudo">
+      <!-- Daniel, 04/11/2026: papel de cada tecnologia no ecossistema FacilApp (texto dele). --><div class="linguagens"><div><b>C# / .NET 10</b><span>As APIs, os apps Android, o Abridor Windows e a FacilApp Print.</span></div><div><b>JavaScript</b><span>As telas, sem framework, com SQL.js, avisos.js e o motor de ticket.</span></div><div><b>HTML e CSS</b><span>Uma tela por arquivo .html, o tema único TemaFacilApp.css e um CSS separado para o celular.</span></div><div><b>PostgreSQL e SQLite</b><span>PostgreSQL é a produção, com um banco por cliente; SQLite é o ambiente local e as filas.</span></div><div><b>APIs REST</b><span>A API SQL, a API Fiscal, a API de impressão (porta 4000) e o /api/js/.</span></div><div><b>Nginx e Linux</b><span>A VPS serve os sites e repassa as chamadas para as APIs, com o Cloudflare na frente.</span></div><div><b>Windows Services</b><span>A Print e as APIs nas máquinas dos clientes. Firewall e serviços se aplicam por scripts .ps1: a IA escreve, você revisa e roda.</span></div><div><b>Impressão ESC/POS</b><span>Tickets, fichas e recibos na impressora térmica, pela FacilApp Print.</span></div><div><b>Cloudflare</b><span>Domínio, HTTPS e cache na frente da VPS. Publicou? Confira com ?x=aleatório na URL.</span></div><div><b>Git</b><span>Versão de cada mudança, com backup antes de alterar.</span></div></div>
+      <div class="bloco"><h4>Um ecossistema, dois sistemas operacionais</h4><p>A FacilApp API SQL é escrita em C# no .NET 10. No Windows roda como serviço, instalada e atualizada por scripts PowerShell. No Linux roda no Ubuntu (compatível com o .NET 10), com o nginx na frente publicando o HTTPS. As telas em HTML, CSS e JavaScript são as mesmas nos dois.</p></div>
+      <div class="bloco"><h4>A API como ponto comum</h4><p>A FacilApp API SQL permite que as telas web, o celular e o computador da recepção compartilhem autenticação, usuários, menus e operações SQL por um contrato HTTP documentado no Swagger.</p></div>
+      <div class="bloco"><h4>Como a IA ajuda</h4><ul><li>Explica código legado.</li><li>Mapeia regras escondidas.</li><li>Escreve C#, JavaScript e PowerShell no padrão do projeto.</li><li>Compara implementações.</li><li>Produz testes de equivalência.</li></ul></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Pegue uma regra do FastPousada que hoje está na tela (validar as datas da reserva em JavaScript) e peça ao Claude Code a versão equivalente em C# na API, mantendo as mesmas entradas, saídas e regras.</p></div>
+      <div class="modelo"><b>PROMPT DE TRADUÇÃO SEGURA</b><pre>Explique esta função JavaScript da tela de reservas do FastPousada (calcularDiaria) em linguagem simples. Liste
+entradas (tarifa, datas de entrada e saída, quantidade de hóspedes), saídas, efeitos colaterais, regras e erros.
+Depois produza a versão equivalente em C# no .NET 10, dentro da FacilApp API SQL, sem alterar o comportamento. Crie
+casos de teste que comparem as duas versões: 1 noite, fim de semana, hóspede extra e saída antes da entrada.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula3">
+    <header class="aula-head"><span class="n">3</span><div><h3>Modernizando uma solução existente com ajuda da IA</h3><p>Modernização segura acontece por etapas verificáveis, não por uma substituição total sem controle.</p></div></header>
+    <div class="conteudo">
+      <div class="modernizar"><div class="passo"><b>Inventariar</b><span>Telas, dados e integrações</span></div><div class="passo"><b>Proteger</b><span>Backup e testes atuais</span></div><div class="passo"><b>Separar</b><span>Regra, dados e interface</span></div><div class="passo"><b>Substituir</b><span>Uma parte por vez</span></div><div class="passo"><b>Comparar</b><span>Resultado antigo e novo</span></div></div>
+      <div class="bloco"><h4>Estratégias</h4><ul><li>Encapsular o legado atrás de uma API.</li><li>Criar nova interface sobre a mesma regra.</li><li>Migrar uma rotina de cada vez.</li><li>Manter convivência temporária controlada.</li><li>Retirar o antigo somente depois da validação.</li></ul></div>
+      <div class="bloco"><h4>Cuidados</h4><p>Não envie segredos para a IA, não altere dados reais durante testes e não remova o caminho anterior sem backup e evidência de equivalência.</p></div>
+      <div class="modelo"><b>PROMPT DE MODERNIZAÇÃO</b><pre>Analise este módulo existente sem modificá-lo. Produza inventário de telas, regras, tabelas, integrações e dependências. Proponha uma modernização incremental com pontos de rollback. Para a primeira etapa, crie testes que registrem o comportamento atual antes de implementar a substituição.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula4">
+    <header class="aula-head"><span class="n">4</span><div><h3>Projeto prático em mais de uma plataforma</h3><p>Compartilhe dados e regras na API, adaptando apenas a experiência de cada dispositivo.</p></div></header>
+    <div class="conteudo">
+      <div class="arquitetura"><div class="camada"><b>API + SQLite</b><span>Autenticação, regras, dados e contrato comum.</span></div><div class="camada"><b>Interface web</b><span>Browse completo para administração e escritório.</span></div><div class="camada"><b>Interface mobile</b><span>Consulta e atualização rápida para uso em campo.</span></div></div>
+      <div class="bloco"><h4>Projeto sugerido</h4><p>FastPousada: reservas e cadastros completos no computador, mapa de ocupação responsivo na web e check-in pelo celular na recepção. Todos usam a mesma FacilApp API SQL e o mesmo banco SQLite.</p></div>
+      <div class="bloco"><h4>Teste de equivalência</h4><ul><li>Registro criado em uma plataforma aparece nas outras.</li><li>Permissões produzem o mesmo resultado.</li><li>Validações são aplicadas pela API.</li><li>Conflitos e falhas de rede são tratados.</li></ul></div>
+      <div class="modelo"><b>ROTEIRO DO PROJETO</b><pre>1. Definir RESERVAS e as regras compartilhadas (datas, quarto ocupado, check-in).
+2. Criar as tabelas no SQLite e os endpoints na FacilApp API SQL.
+3. Implementar o browse web de Reservas com CRUD completo.
+4. Implementar a tela de celular para check-in e consulta de ocupação.
+5. Instalar a API como Windows Service no computador da recepção e publicar no Ubuntu com nginx.
+6. Executar testes cruzados nas três interfaces.</pre></div>
+      <div class="bloco atividade"><h4>Entrega do módulo</h4><p>Apresente duas interfaces utilizando a mesma API. Demonstre uma reserva criada no computador e o check-in feito pelo celular, com o mapa de ocupação atualizado.</p></div>
+    </div>
+  </section>
+
+  <footer class="rodape"><span>FacilApp API SQL · Curso Programação 100% IA</span><span>Módulo V · Desktop, Web, Mobile e Linux</span></footer>
+</main>
+</body>
+</html>

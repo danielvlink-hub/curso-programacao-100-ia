@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro de Menu de Acesso</title>
+<!--
+  UPDATE DE ACESSOS (inclui/altera um item de menu_catalogo_itens)
+  Daniel, 03/11/2026: "trazer o acessos.html e acessos_update.html". Adaptado do acessos_update.html do Gourmet.
+  ABRE: dentro da janela do acessos.html. ?id=<id_item> = alterar; ?tipo=lateral|superior|dashboard = incluir.
+  CAMPOS: Parte do menu, Módulo (Menu Principal; ComboBusca — se não existir, o módulo é criado ao gravar), Título,
+  Ícone (nome Material), Arquivo HTML (vazio = tela prevista, aparece cinza), Ordem, Coluna (só módulo) e Estado
+  (Liberado / Desabilitado / Oculto — mutuamente exclusivos, como no Gourmet).
+  GRAVA: ApiCurso.incluirItemMenu / alterarItemMenu (FacilApp API SQL). Depois avisa o acessos.html
+  (FACILAPP_ACESSOS_GRAVADO), que fecha a janela e relê o catálogo. Cancelar = FACILAPP_ACESSOS_CANCELADO.
+  CUIDADOS: o código interno (codigo) é gerado na inclusão e não muda na alteração (é a chave estável do item).
+  O item Acessos (adm_acessos) só pode ficar Liberado.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/ComboBusca.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  main { height: 100%; display: flex; }
+  .card { flex: 1; display: grid; grid-template-rows: auto minmax(0,1fr) 36px; padding: 10px 14px 8px; gap: 6px; }
+  #erro { display: none; padding: 5px 8px; border-radius: 5px; background: #fde8e7; color: #9b1c1c; font-size: 12px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; align-content: start; overflow: auto; }
+  .full { grid-column: 1 / -1; }
+  label.rot { display: block; font-size: 11px; font-weight: 700; color: var(--fa-muted, #64748b); margin-bottom: 3px; text-transform: uppercase; }
+  input[type=text], input[type=number], select { width: 100%; height: 22px; padding: 0 7px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf);
+    border-radius: 4px; background: var(--fa-field-bg, #fff); color: var(--fa-text, #1e293b); outline: none; }
+  input:focus, select:focus { border-color: var(--fa-primary, #4b5a32); }
+  .icone-previa { display: flex; align-items: center; gap: 6px; }
+  .icone-previa .material-icons { font-size: 20px; color: var(--fa-primary, #4b5a32); width: 22px; }
+  .estado { display: flex; gap: 16px; padding-top: 2px; }
+  .estado label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .dica { font-size: 11px; color: var(--fa-muted, #64748b); margin-top: 2px; }
+  footer { display: flex; justify-content: flex-end; align-items: center; gap: 6px; border-top: 1px solid var(--fa-border, #d8ddcf); padding-top: 6px; }
+  .btn { height: 22px; padding: 0 12px; border: 0; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer;
+    background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); }
+  .btn.cancel { background: var(--fa-field-bg, #f1f5f9); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  .so-lateral, .so-modulo { }
+</style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <div id="erro"></div>
+    <div class="grid">
+      <div>
+        <label class="rot">Parte do menu</label>
+        <select id="tipo" onchange="ajustarCampos()">
+          <option value="lateral">Menu Principal (item de módulo)</option>
+          <option value="modulo">Menu Principal (novo módulo)</option>
+          <option value="superior">Menu Superior (atalho)</option>
+          <option value="dashboard">Faixa de Dashboards (aba)</option>
+        </select>
+      </div>
+      <div class="so-lateral">
+        <label class="rot">Módulo</label>
+        <input id="grupo" type="text" autocomplete="off" placeholder="Digite ou escolha. Se não existir, o módulo é criado">
+      </div>
+      <div>
+        <label class="rot">Título</label>
+        <input id="rotulo" type="text" maxlength="120" placeholder="Ex.: Hóspedes">
+      </div>
+      <div>
+        <label class="rot">Ícone (Material)</label>
+        <div class="icone-previa"><span class="material-icons" id="previaIcone">apps</span><input id="icone" type="text" value="apps" placeholder="Ex.: person" oninput="document.getElementById('previaIcone').textContent = this.value || 'apps'"></div>
+      </div>
+      <div class="full so-item">
+        <label class="rot">Arquivo HTML</label>
+        <input id="arquivo" type="text" placeholder="Ex.: hospedes.html ou DASHBOARDS/resumo.html (vazio = tela prevista)">
+        <div class="dica">Sem arquivo, o item aparece cinza no menu como "tela prevista para uma próxima aula".</div>
+      </div>
+      <div>
+        <label class="rot">Ordem</label>
+        <input id="ordem" type="number" min="0" step="10" value="">
+      </div>
+      <div class="so-modulo">
+        <label class="rot">Coluna no mega menu</label>
+        <select id="coluna"><option value="0">Automática</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+      </div>
+      <div class="full">
+        <label class="rot">Estado no menu</label>
+        <div class="estado">
+          <label title="Aparece e funciona."><input type="radio" name="estado" value="liberado" checked> Liberado</label>
+          <label title="Não abre para ninguém (tela sem arquivo fica cinza; com arquivo, some)."><input type="radio" name="estado" value="desabilitado"> Desabilitado</label>
+          <label title="Some do menu."><input type="radio" name="estado" value="oculto"> Oculto</label>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <button class="btn cancel" type="button" onclick="cancelar()">Cancelar</button>
+      <button class="btn" type="button" id="btnGravar" onclick="gravar()">Gravar</button>
+    </footer>
+  </section>
+</main>
+<script>
+  const params = new URLSearchParams(location.search);
+  const idEdicao = Number(params.get('id') || 0) || null;
+  let catalogo = [];
+  let itemAtual = null;
+
+  const $ = id => document.getElementById(id);
+  function mostrarErro(msg) { const e = $('erro'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
+  const modulos = () => catalogo.filter(i => i.tipo_menu === 'lateral' && i.id_pai == null);
+
+  /** Mostra/esconde campos conforme a parte do menu escolhida. */
+  function ajustarCampos() {
+    const t = $('tipo').value;
+    document.querySelectorAll('.so-lateral').forEach(el => el.style.display = t === 'lateral' ? '' : 'none');
+    document.querySelectorAll('.so-modulo').forEach(el => el.style.display = t === 'modulo' ? '' : 'none');
+    document.querySelectorAll('.so-item').forEach(el => el.style.display = t === 'modulo' ? 'none' : '');
+  }
+
+  /** Código interno estável para item novo: tipo + título sem acento + carimbo curto (único no catálogo). */
+  function gerarCodigo(tipo, rotulo) {
+    const base = String(rotulo || 'item').normalize('NFD').replace(/[^\w\s]/g, '').trim().toLowerCase().replace(/\s+/g, '_').slice(0, 40) || 'item';
+    const prefixo = { lateral: 'item', modulo: 'mod', superior: 'sup', dashboard: 'dash' }[tipo] || 'item';
+    return prefixo + '_' + base + '_' + Date.now().toString(36).slice(-5);
+  }
+
+  function estadoMarcado() { return (document.querySelector('input[name=estado]:checked') || {}).value || 'liberado'; }
+
+  async function iniciar() {
+    if (!ApiCurso.token()) { ApiCurso.sair('sessao'); return; }
+    try { catalogo = await ApiCurso.listarCatalogo(); }
+    catch (erro) { mostrarErro(erro.message); return; }
+    FacilAppComboBusca.ligar('grupo', { itens: () => modulos().map(m => m.rotulo), vazio: 'Nenhum módulo com esse nome. Será criado ao gravar.' });
+
+    if (idEdicao) {
+      itemAtual = catalogo.find(i => i.id_item === idEdicao);
+      if (!itemAtual) { mostrarErro('Item de menu não encontrado.'); return; }
+      const ehModulo = itemAtual.tipo_menu === 'lateral' && itemAtual.id_pai == null;
+      $('tipo').value = ehModulo ? 'modulo' : itemAtual.tipo_menu;
+      $('tipo').disabled = true;   // a parte do menu não muda na alteração (seria outro item)
+      const pai = modulos().find(m => m.id_item === itemAtual.id_pai);
+      $('grupo').value = pai ? pai.rotulo : '';
+      $('rotulo').value = itemAtual.rotulo || '';
+      $('icone').value = itemAtual.icone || '';
+      $('previaIcone').textContent = itemAtual.icone || 'apps';
+      $('arquivo').value = itemAtual.arquivo_destino || '';
+      $('ordem').value = itemAtual.ordem || 0;
+      $('coluna').value = String(itemAtual.coluna || 0);
+      const est = Number(itemAtual.ativo_padrao) === 0 ? 'oculto' : (Number(itemAtual.desabilitado_padrao) === 1 ? 'desabilitado' : 'liberado');
+      document.querySelector('input[name=estado][value=' + est + ']').checked = true;
+      if (itemAtual.codigo === 'adm_acessos') document.querySelectorAll('input[name=estado]').forEach(r => r.disabled = r.value !== 'liberado');
+    } else {
+      const t = params.get('tipo');
+      $('tipo').value = ['lateral', 'superior', 'dashboard'].includes(t) ? t : 'lateral';
+    }
+    ajustarCampos();
+    $('rotulo').focus();
+  }
+
+  /** Próxima ordem livre (maior + 10) entre os irmãos do item. */
+  function proximaOrdem(tipo, idPai) {
+    const irmaos = catalogo.filter(i => i.tipo_menu === tipo && (i.id_pai ?? null) === (idPai ?? null));
+    return irmaos.reduce((m, i) => Math.max(m, Number(i.ordem) || 0), 0) + 10;
+  }
+
+  /**
+   * gravar() — valida, cria o módulo se precisar, inclui ou altera o item e avisa o acessos.html.
+   * Validação aqui é só de conveniência; a regra de verdade (código único, arquivo .html seguro, pai existente) é da API.
+   */
+  async function gravar() {
+    mostrarErro('');
+    const tipoTela = $('tipo').value;
+    const rotulo = $('rotulo').value.trim();
+    const arquivo = tipoTela === 'modulo' ? '' : $('arquivo').value.trim();
+    if (!rotulo) { mostrarErro('Informe o título.'); $('rotulo').focus(); return; }
+    if (arquivo && !/^[A-Za-z0-9_./-]+\.html$/.test(arquivo)) { mostrarErro('Arquivo deve ser uma tela .html desta pasta (ex.: hospedes.html).'); return; }
+    const estado = estadoMarcado();
+    const tipoMenu = tipoTela === 'modulo' ? 'lateral' : tipoTela;
+    const btn = $('btnGravar'); btn.disabled = true;
+    try {
+      let idPai = null;
+      if (tipoTela === 'lateral') {
+        const nomeGrupo = $('grupo').value.trim();
+        if (!nomeGrupo) { mostrarErro('Escolha ou digite o módulo.'); btn.disabled = false; return; }
+        let mod = modulos().find(m => m.rotulo.toLowerCase() === nomeGrupo.toLowerCase());
+        if (!mod) {   // módulo novo: cria antes do item
+          const idMod = await ApiCurso.incluirItemMenu({ tipo_menu: 'lateral', id_pai: null, codigo: gerarCodigo('modulo', nomeGrupo), rotulo: nomeGrupo,
+            icone: 'folder', icone_tipo: 'material', coluna: 0, ordem: proximaOrdem('lateral', null), arquivo_destino: '', ativo_padrao: 1, desabilitado_padrao: 0 });
+          mod = { id_item: idMod };
+        }
+        idPai = mod.id_item;
+      }
+      const ordemDigitada = $('ordem').value === '' ? null : Number($('ordem').value);
+      const corpo = {
+        tipo_menu: tipoMenu, id_pai: idPai,
+        codigo: itemAtual ? itemAtual.codigo : gerarCodigo(tipoTela, rotulo),
+        rotulo, icone: $('icone').value.trim() || (tipoTela === 'modulo' ? 'folder' : 'apps'), icone_tipo: 'material',
+        coluna: tipoTela === 'modulo' ? Number($('coluna').value) : (itemAtual ? itemAtual.coluna : 0),
+        ordem: ordemDigitada ?? (itemAtual ? itemAtual.ordem : proximaOrdem(tipoMenu, idPai)),
+        arquivo_destino: arquivo, button_id: itemAtual ? itemAtual.button_id || null : null,
+        ativo_padrao: estado === 'oculto' ? 0 : 1, desabilitado_padrao: estado === 'desabilitado' ? 1 : 0
+      };
+      if (itemAtual) await ApiCurso.alterarItemMenu(itemAtual.id_item, corpo);
+      else await ApiCurso.incluirItemMenu(corpo);
+      window.parent.postMessage({ origem: 'FACILAPP_ACESSOS_GRAVADO' }, '*');
+    } catch (erro) {
+      mostrarErro(erro.message);
+      btn.disabled = false;
+    }
+  }
+
+  function cancelar() { window.parent.postMessage({ origem: 'FACILAPP_ACESSOS_CANCELADO' }, '*'); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cancelar(); });
+  window.addEventListener('DOMContentLoaded', iniciar);
+</script>
+</body>
+</html>

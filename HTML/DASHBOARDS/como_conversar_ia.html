@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Módulo II — Como Conversar com a IA</title>
+  <script>
+    /** Resolve os arquivos compartilhados quando a aula é aberta dentro do menu do curso. */
+    function arquivoDashboard(endereco) {
+      try {
+        if (window.parent && typeof window.parent.FacilAppResolverArquivoLocal === 'function') {
+          return window.parent.FacilAppResolverArquivoLocal('DASHBOARDS/' + endereco);
+        }
+      } catch (erro) {}
+      return endereco;
+    }
+    document.write('<script src="' + arquivoDashboard('js/TemaFacilApp.js').replace(/&/g, '&amp;') + '"><\/script>');
+  </script>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--fa-bg,#f4f6ef);color:var(--fa-text,#17210e)}
+    body{padding:18px}.curso{max-width:1440px;margin:auto}.hero{position:relative;overflow:hidden;border-radius:18px;padding:27px 31px;background:linear-gradient(125deg,#263807,#415715 62%,#566d1e);color:#fff;box-shadow:0 18px 45px rgba(38,56,7,.18)}
+    .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#f2b313;text-transform:uppercase}.hero h1{font-size:34px;line-height:1.08;margin:9px 0 8px}.hero p{max-width:900px;margin:0;color:#dce9c5;font-size:15px;line-height:1.55}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700}
+    .section-head{display:flex;align-items:end;justify-content:space-between;margin:22px 2px 11px}.section-head h2{margin:0;font-size:22px;color:var(--fa-primary,#35470e)}.section-head span{font-size:12px;color:var(--fa-muted,#65705c)}
+    .grade{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.lesson-link{min-height:128px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:12px;padding:14px;text-decoration:none;color:inherit;transition:.18s ease}.lesson-link:hover{transform:translateY(-2px);border-color:#6f8a28;box-shadow:0 8px 20px rgba(53,71,14,.09)}.lesson-link .n{width:34px;height:34px;border-radius:9px;background:#dce9c5;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.lesson-link h3{font-size:13px;margin:10px 0 5px;color:var(--fa-primary,#35470e)}.lesson-link p{font-size:11px;line-height:1.38;margin:0;color:var(--fa-muted,#65705c)}
+    .aula{scroll-margin-top:12px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:14px;margin-top:11px;overflow:hidden;box-shadow:0 7px 22px rgba(23,33,14,.045)}.aula-head{display:flex;gap:12px;align-items:center;padding:15px 18px;background:var(--fa-panel-alt,#e6efd8);border-bottom:1px solid var(--fa-border,#d8ddcf)}.aula-head .n{flex:0 0 38px;height:38px;border-radius:10px;background:#f2b313;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.aula-head h3{margin:0;color:var(--fa-primary,#35470e);font-size:19px}.aula-head p{margin:3px 0 0;font-size:12px;color:var(--fa-muted,#65705c)}.conteudo{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:17px}.bloco{border-left:4px solid #6f8a28;background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:13px}.bloco h4{margin:0 0 7px;color:var(--fa-primary,#35470e);font-size:14px}.bloco p,.bloco li{font-size:12px;line-height:1.48;color:var(--fa-muted,#65705c)}.bloco p{margin:0}.bloco ul,.bloco ol{margin:0;padding-left:19px}.bloco li+li{margin-top:4px}.modelo{grid-column:1/-1;border:1px dashed #9daf79;border-radius:10px;background:#fbfcf8;padding:13px}.modelo b{display:block;color:#35470e;font-size:12px;margin-bottom:7px}.modelo pre{white-space:pre-wrap;margin:0;font:12px/1.5 Consolas,"Courier New",monospace;color:#253015}
+    .formula{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.formula div{background:var(--fa-panel,#fff);border:1px solid var(--fa-border,#d8ddcf);border-radius:8px;padding:9px;text-align:center;font-size:11px}.formula b{display:block;color:#35470e;margin-bottom:3px}.atividade{border-color:#f2b313;background:#fffaf0}.rodape{padding:18px 4px 2px;font-size:11px;color:var(--fa-muted,#65705c);display:flex;justify-content:space-between;gap:12px}
+    @media(max-width:1080px){.grade{grid-template-columns:repeat(3,1fr)}.formula{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){body{padding:10px}.hero{padding:22px}.hero h1{font-size:27px}.grade,.conteudo,.formula{grid-template-columns:1fr}.modelo{grid-column:auto}.section-head{align-items:start;gap:4px;flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="curso">
+  <section class="hero">
+    <!-- Remasterizado em 04/11/2026: exemplos no FastPousada, Claude Code e FacilApp API SQL (porta 7777). --><div class="eyebrow">Módulo II · Curso Programação 100% IA</div>
+    <h1>Como Conversar com a IA</h1>
+    <p>Aprenda a transformar uma ideia em instruções claras, revisar o resultado sem recomeçar do zero e montar sua própria biblioteca de prompts e testar cada resultado contra a FacilApp API SQL, com o Claude Code como parceiro de desenvolvimento.</p>
+    <div class="meta"><span class="chip">5 aulas</span><span class="chip">Exemplos no FastPousada</span><span class="chip">Prompts reutilizáveis</span><span class="chip">FacilApp API SQL</span></div>
+  </section>
+
+  <div class="section-head"><h2>Programa do módulo</h2><span>Clique em uma aula para ir ao conteúdo</span></div>
+  <nav class="grade" aria-label="Aulas do módulo">
+    <a class="lesson-link" href="#aula1"><span class="n">1</span><h3>Contexto</h3><p>Por que ele muda completamente o resultado.</p></a>
+    <a class="lesson-link" href="#aula2"><span class="n">2</span><h3>Estrutura do pedido</h3><p>Objetivo, regra, dados, visual e limite.</p></a>
+    <a class="lesson-link" href="#aula3"><span class="n">3</span><h3>Revisão e ajustes</h3><p>Como corrigir sem começar tudo novamente.</p></a>
+    <a class="lesson-link" href="#aula4"><span class="n">4</span><h3>Biblioteca de prompts</h3><p>Organização pessoal para seus projetos.</p></a>
+    <a class="lesson-link" href="#aula5"><span class="n">5</span><h3>Backend</h3><p>FacilApp API SQL instalada e usada para conferir os resultados.</p></a>
+  </nav>
+
+  <section class="aula" id="aula1">
+    <header class="aula-head"><span class="n">1</span><div><h3>Contexto: por que ele muda completamente o resultado</h3><p>A IA responde melhor quando entende o cenário, o público e o estado atual do trabalho.</p></div></header>
+    <div class="conteudo">
+      <div class="bloco"><h4>O contexto mínimo</h4><ul><li>Qual projeto está sendo trabalhado.</li><li>O que já existe e está aprovado.</li><li>Quem utilizará o resultado.</li><li>Qual problema precisa ser resolvido agora.</li><li>Quais regras o projeto já tem (CLAUDE.md).</li></ul></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Escolha uma tarefa do FastPousada (ex.: o browse de Hóspedes) e descreva em quatro linhas: projeto, situação atual, usuário e resultado esperado. Compare a resposta com a de um pedido sem contexto.</p></div>
+      <div class="modelo"><b>EXEMPLO</b><pre>Estou trabalhando no browse de Hóspedes do FastPousada, que usa SQLite pela FacilApp API SQL (porta 7777). A tela já segue o padrão visual aprovado do browse de Usuários. Corrija somente a exportação CSV, preservando o restante da tela. O CSV deve abrir no Excel mantendo os acentos.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula2">
+    <header class="aula-head"><span class="n">2</span><div><h3>Estrutura de um bom pedido</h3><p>Uma fórmula simples reduz interpretações erradas e retrabalho.</p></div></header>
+    <div class="conteudo">
+      <div class="modelo"><b>A FÓRMULA</b><div class="formula"><div><b>Objetivo</b>O que deve ficar pronto</div><div><b>Regra</b>O que deve ser respeitado</div><div><b>Dados</b>Quais informações usar</div><div><b>Visual</b>Como apresentar</div><div><b>Limite</b>O que não alterar</div></div></div>
+      <div class="bloco"><h4>Pedido verificável</h4><p>Inclua uma condição que possa ser testada: “clique no botão”, “compile em Release”, “compare em 1280 × 768” ou “confirme o código HTTP”.</p></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Reescreva “faça uma tela de hóspedes” usando os cinco elementos. Termine dizendo como a entrega deverá ser testada.</p></div>
+      <div class="modelo"><b>MODELO REUTILIZÁVEL</b><pre>Objetivo: browse de Hóspedes do FastPousada listando nome, documento, telefone e cidade.
+Regras: mesmo padrão do browse de Usuários; cores só pelas variáveis --fa-*; dados só pela FacilApp API SQL.
+Dados: tabela HOSPEDES no SQLite (porta 7777); exemplo: Maria Souza, CPF 123.456.789-09, (11) 98888-7777, Santos.
+Visual: cabeçalho de 35px, linhas de 22px, busca à esquerda e botões à direita.
+Limites: não alterar o index.html, o menu nem a tela de Usuários.
+Validação: incluir, alterar e excluir um hóspede e conferir no Swagger (GET) que o registro mudou.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula3">
+    <header class="aula-head"><span class="n">3</span><div><h3>Revisão, ajustes e correção das respostas</h3><p>Uma boa continuação aproveita o trabalho feito e aponta exatamente o desvio.</p></div></header>
+    <div class="conteudo">
+      <div class="bloco"><h4>Como revisar</h4><ol><li>Diga o que ficou correto.</li><li>Aponte o erro observável.</li><li>Informe a referência correta.</li><li>Peça uma mudança limitada.</li><li>Solicite novo teste.</li></ol></div>
+      <div class="bloco"><h4>Evite</h4><ul><li>Repetir toda a tarefa sem explicar o erro.</li><li>Mudar várias decisões ao mesmo tempo.</li><li>Dizer apenas “não funcionou”.</li><li>Aprovar antes de testar o resultado real.</li></ul></div>
+      <div class="modelo"><b>EXEMPLO DE CONTINUAÇÃO</b><pre>O modal abriu e o cadastro foi preservado. Falta somente centralizar os dados verticalmente nas linhas da grade. Use a mesma altura e tipografia do browse de Usuários. Não altere os botões nem o cabeçalho. Depois clique em dois registros e confirme que apenas uma linha permanece selecionada.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula4">
+    <header class="aula-head"><span class="n">4</span><div><h3>Biblioteca pessoal de prompts</h3><p>Prompts úteis devem ser encontrados, adaptados e melhorados com facilidade.</p></div></header>
+    <div class="conteudo">
+      <div class="bloco"><h4>Organização recomendada</h4><ul><li><b>Diagnóstico:</b> localizar causa sem alterar código.</li><li><b>Implementação:</b> criar ou corrigir uma função.</li><li><b>Revisão:</b> conferir segurança, visual e regressões.</li><li><b>Entrega:</b> compilar, testar e empacotar.</li></ul></div>
+      <div class="bloco"><h4>O que guardar</h4><p>Nome, finalidade, entradas necessárias, prompt-base, exemplo de uso, validação esperada e histórico das melhorias que realmente deram resultado.</p></div>
+      <div class="modelo"><b>FICHA DE PROMPT</b><pre>Nome: Corrigir browse de Hóspedes sem regressão
+Finalidade: Ajustar uma função do browse preservando a tela aprovada
+Entradas: hospedes.html, erro observado, referência visual (browse de Usuários) e teste
+Prompt-base: No browse de Hóspedes do FastPousada, corrija somente [o problema observado]. Preserve cabeçalho,
+  botões e a grade. Use a FacilApp API SQL (porta 7777). Depois clique em dois hóspedes e confirme o resultado.
+Validação: abrir a tela, clicar nos controles e registrar o resultado</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula5">
+    <header class="aula-head"><span class="n">5</span><div><h3>Backend: instalar a FacilApp API SQL e usá-la para conferir o trabalho</h3><p>O prompt orienta o trabalho; a API, o Swagger e os testes fornecem dados verificáveis. A API não gera prompts: quem escreve o pedido é você, com o Claude Code.</p></div></header>
+    <div class="conteudo">
+      <div class="bloco"><h4>Fluxo seguro</h4><ol><li>Instalar o serviço FacilAppCursoSqlite e conferir GET /status na porta 7777.</li><li>Autenticar pelo endpoint público de login.</li><li>Guardar o Bearer somente na sessão necessária.</li><li>Consultar o contrato no Swagger.</li><li>Executar a função com dados controlados.</li><li>Validar resposta e efeito no banco.</li></ol></div>
+      <div class="bloco"><h4>Responsabilidades</h4><p>A IA não deve inventar endpoints nem expor senhas. Informe a URL da API, o contrato disponível e o objetivo; mantenha segredos no servidor e use o Bearer nas operações protegidas.</p></div>
+      <div class="modelo"><b>EXEMPLO INTEGRADO</b><pre>Use o Swagger da FacilApp API SQL (http://127.0.0.1:7777/swagger) como contrato. Faça login com o usuário de testes do curso, guarde o accessToken apenas em memória e consulte GET /api/menu. Não registre senha nem Bearer. Mostre o código HTTP, a quantidade de registros e qualquer erro operacional.</pre></div>
+      <div class="bloco atividade"><h4>Projeto final do módulo</h4><p>Escolha uma rotina do FastPousada, escreva o prompt completo para o Claude Code, execute-a contra a API de teste e revise o pedido até obter um resultado comprovado.</p></div>
+    </div>
+  </section>
+
+  <footer class="rodape"><span>FacilApp API SQL · Curso Programação 100% IA</span><span>Módulo II · Como Conversar com a IA</span></footer>
+</main>
+</body>
+</html>

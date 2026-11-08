@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Módulo VI — Integrações, Dados e Publicação</title>
+  <script>
+    /** Resolve os recursos compartilhados quando a aula é exibida dentro do curso. */
+    function arquivoDashboard(endereco) {
+      try {
+        if (window.parent && typeof window.parent.FacilAppResolverArquivoLocal === 'function') {
+          return window.parent.FacilAppResolverArquivoLocal('DASHBOARDS/' + endereco);
+        }
+      } catch (erro) {}
+      return endereco;
+    }
+    document.write('<script src="' + arquivoDashboard('js/TemaFacilApp.js').replace(/&/g, '&amp;') + '"><\/script>');
+  </script>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--fa-bg,#f4f6ef);color:var(--fa-text,#17210e)}body{padding:18px}.curso{max-width:1440px;margin:auto}
+    .hero{position:relative;overflow:hidden;border-radius:18px;padding:27px 31px;background:linear-gradient(125deg,#263807,#415715 62%,#566d1e);color:#fff;box-shadow:0 18px 45px rgba(38,56,7,.18)}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#f2b313;text-transform:uppercase}.hero h1{font-size:34px;line-height:1.08;margin:9px 0 8px}.hero p{max-width:940px;margin:0;color:#dce9c5;font-size:15px;line-height:1.55}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700}
+    .section-head{display:flex;align-items:end;justify-content:space-between;margin:22px 2px 11px}.section-head h2{margin:0;font-size:22px;color:var(--fa-primary,#35470e)}.section-head span{font-size:12px;color:var(--fa-muted,#65705c)}.grade{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.lesson-link{min-height:126px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:12px;padding:14px;text-decoration:none;color:inherit;transition:.18s ease}.lesson-link:hover{transform:translateY(-2px);border-color:#6f8a28;box-shadow:0 8px 20px rgba(53,71,14,.09)}.lesson-link .n{width:34px;height:34px;border-radius:9px;background:#dce9c5;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.lesson-link h3{font-size:13px;margin:10px 0 5px;color:var(--fa-primary,#35470e)}.lesson-link p{font-size:11px;line-height:1.38;margin:0;color:var(--fa-muted,#65705c)}
+    .aula{scroll-margin-top:12px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:14px;margin-top:11px;overflow:hidden;box-shadow:0 7px 22px rgba(23,33,14,.045)}.aula-head{display:flex;gap:12px;align-items:center;padding:15px 18px;background:var(--fa-panel-alt,#e6efd8);border-bottom:1px solid var(--fa-border,#d8ddcf)}.aula-head .n{flex:0 0 38px;height:38px;border-radius:10px;background:#f2b313;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.aula-head h3{margin:0;color:var(--fa-primary,#35470e);font-size:19px}.aula-head p{margin:3px 0 0;font-size:12px;color:var(--fa-muted,#65705c)}.conteudo{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:17px}.bloco{border-left:4px solid #6f8a28;background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:13px}.bloco h4{margin:0 0 7px;color:var(--fa-primary,#35470e);font-size:14px}.bloco p,.bloco li{font-size:12px;line-height:1.48;color:var(--fa-muted,#65705c)}.bloco p{margin:0}.bloco ul,.bloco ol{margin:0;padding-left:19px}.bloco li+li{margin-top:4px}.modelo{grid-column:1/-1;border:1px dashed #9daf79;border-radius:10px;background:#fbfcf8;padding:13px}.modelo b{display:block;color:#35470e;font-size:12px;margin-bottom:7px}.modelo pre{white-space:pre-wrap;margin:0;font:12px/1.5 Consolas,"Courier New",monospace;color:#253015}.atividade{border-color:#f2b313;background:#fffaf0}
+    .fluxo{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.passo{position:relative;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:11px;text-align:center}.passo:not(:last-child):after{content:"›";position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:2;font-size:18px;font-weight:900;color:#778337}.passo b{display:block;font-size:11px;color:#35470e;margin-bottom:4px}.passo span{font-size:10px;line-height:1.35;color:var(--fa-muted,#65705c)}
+    .cenarios{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.cenario{border-top:4px solid #6f8a28;border-radius:9px;background:var(--fa-panel-alt,#f7f5ea);padding:12px}.cenario b{display:block;color:#35470e;font-size:12px;margin-bottom:4px}.cenario span{font-size:11px;line-height:1.4;color:var(--fa-muted,#65705c)}
+    .bancos{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.banco{border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:12px 8px;text-align:center}.banco b{display:block;font-size:11px;color:#35470e;margin-bottom:4px}.banco span{font-size:10px;line-height:1.32;color:var(--fa-muted,#65705c)}
+    .diagnostico{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.diagnostico div{border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:12px}.diagnostico b{display:block;font-size:11px;color:#35470e;margin-bottom:4px}.diagnostico span{font-size:10px;line-height:1.35;color:var(--fa-muted,#65705c)}.rodape{padding:18px 4px 2px;font-size:11px;color:var(--fa-muted,#65705c);display:flex;justify-content:space-between;gap:12px}
+    @media(max-width:1050px){.grade{grid-template-columns:repeat(2,1fr)}.fluxo{grid-template-columns:repeat(3,1fr)}.passo:after{display:none}.cenarios{grid-template-columns:repeat(3,1fr)}.bancos{grid-template-columns:repeat(3,1fr)}.diagnostico{grid-template-columns:repeat(2,1fr)}}@media(max-width:720px){body{padding:10px}.hero{padding:22px}.hero h1{font-size:27px}.grade,.conteudo,.fluxo,.cenarios,.bancos,.diagnostico{grid-template-columns:1fr}.modelo{grid-column:auto}.section-head{align-items:start;gap:4px;flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="curso">
+  <section class="hero">
+    <!-- Remasterizado em 04/11/2026: FacilApp API SQL multibanco (SQLite -> SQL Server -> PostgreSQL) e a tabela de diferenças de SQL do ebook. --><div class="eyebrow">Módulo VI</div>
+    <h1>Integrações, Dados e Publicação</h1>
+    <p>Conecte telas, sistemas e bancos de dados com segurança para colocar projetos no ar.</p>
+    <div class="meta"><span class="chip">4 aulas</span><span class="chip">API como ponte</span><span class="chip">SQLite, SQL Server e PostgreSQL</span><span class="chip">Publicação e diagnóstico</span></div>
+  </section>
+
+  <div class="section-head"><h2>Programa do módulo</h2><span>Clique em uma aula para ir ao conteúdo</span></div>
+  <nav class="grade" aria-label="Aulas do Módulo VI">
+    <a class="lesson-link" href="#aula1"><span class="n">1</span><h3>API como ponte</h3><p>Integração entre telas, sistemas e bancos.</p></a>
+    <a class="lesson-link" href="#aula2"><span class="n">2</span><h3>Escolha da ferramenta</h3><p>Desktop, web, rede local, dados e publicação.</p></a>
+    <a class="lesson-link" href="#aula3"><span class="n">3</span><h3>Bancos de dados</h3><p>SQLite, SQL Server e PostgreSQL.</p></a>
+    <a class="lesson-link" href="#aula4"><span class="n">4</span><h3>Publicação e diagnóstico</h3><p>Token, redes, testes e investigação de erros.</p></a>
+  </nav>
+
+  <section class="aula" id="aula1">
+    <header class="aula-head"><span class="n">1</span><div><h3>Uso de API como ponte de integração</h3><p>A interface pede uma operação; a API autentica, valida, consulta os dados e devolve uma resposta previsível.</p></div></header>
+    <div class="conteudo">
+      <div class="fluxo"><div class="passo"><b>Tela</b><span>Envia a solicitação</span></div><div class="passo"><b>HTTP + JSON</b><span>Transporta os dados</span></div><div class="passo"><b>API</b><span>Autentica e valida</span></div><div class="passo"><b>Banco</b><span>Executa a operação</span></div><div class="passo"><b>Resposta</b><span>Retorna resultado ou erro</span></div></div>
+      <div class="bloco"><h4>Por que usar uma API</h4><ul><li>Evita colocar senha do banco no HTML.</li><li>Centraliza regras e validações.</li><li>Permite várias interfaces sobre os mesmos dados.</li><li>Documenta o contrato no Swagger.</li><li>Facilita logs, testes e manutenção.</li></ul></div>
+      <div class="bloco"><h4>Integrações do ecossistema</h4><ul><li><b>Impressão térmica ESC/POS:</b> ficha de check-in e recibo na impressora da recepção.</li><li><b>Cloudflare:</b> domínio, HTTPS e proteção na frente do servidor.</li></ul></div>
+      <div class="bloco"><h4>FacilApp API SQL</h4><p>Serve autenticação, usuários, menus e operações SQL; no curso roda em http://127.0.0.1:7777 com SQLite. O cliente faz login, recebe um Bearer e usa esse token nas chamadas protegidas, sem conhecer as credenciais internas do banco.</p></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Desenhe o caminho de uma consulta desde o clique na tela até o retorno dos dados. Marque onde ficam autenticação, validação, SQL e mensagem de erro.</p></div>
+      <div class="bloco"><h4>Regra de segurança</h4><p>Tokens, senhas e segredos ficam protegidos. Nunca grave segredo no HTML, no JavaScript público, em URL, captura de tela ou log.</p></div>
+      <div class="modelo"><b>PROMPT DE INTEGRAÇÃO</b><pre>Crie o fluxo de integração das reservas do FastPousada. A tela reservas.html deve chamar a FacilApp API SQL
+(http://127.0.0.1:7777) por HTTP e JSON. Separe interface, autenticação Bearer, validação (datas e quarto livre),
+regra de negócio, acesso ao SQLite, resposta e tratamento de erro. Não exponha credenciais do banco na tela.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula2">
+    <header class="aula-head"><span class="n">2</span><div><h3>Quando usar cada ferramenta</h3><p>A escolha correta depende do local de uso, da conectividade, dos dispositivos e da forma de publicação.</p></div></header>
+    <div class="conteudo">
+      <div class="cenarios"><div class="cenario"><b>Desktop</b><span>Impressoras, arquivos, dispositivos e integração forte com Windows.</span></div><div class="cenario"><b>Web</b><span>Acesso por navegador e atualização centralizada.</span></div><div class="cenario"><b>Rede local</b><span>Operação interna com baixa latência e controle do servidor.</span></div><div class="cenario"><b>Dados</b><span>API e banco como núcleo compartilhado.</span></div><div class="cenario"><b>Publicação</b><span>HTTPS, domínio, proxy, firewall e monitoramento.</span></div></div>
+      <div class="bloco"><h4>Perguntas antes de decidir</h4><ul><li>Quem usa e em qual dispositivo?</li><li>Precisa funcionar sem internet?</li><li>Há impressoras ou equipamentos locais?</li><li>Quantos usuários simultâneos?</li><li>Quem fará instalação e atualização?</li></ul></div>
+      <div class="bloco"><h4>Combinação comum</h4><p>No FastPousada, a FacilApp API SQL atende o sistema da recepção (desktop), o painel web do gerente e a tela de check-in no celular. Cada interface muda, mas dados e regras permanecem comuns.</p></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Escolha um projeto e monte uma matriz com público, dispositivo, rede, dados, implantação, atualização e risco. Só depois selecione a plataforma.</p></div>
+      <div class="bloco"><h4>Evite</h4><p>Não escolha tecnologia apenas por popularidade. Considere o que já existe, o custo da migração, as habilidades da equipe e os requisitos reais.</p></div>
+      <div class="modelo"><b>PROMPT DE DECISÃO</b><pre>Compare desktop (Windows), web, mobile (Android) e servidor Linux para o FastPousada: recepção com computador e impressora, gerente acompanhando a
+ocupação pelo navegador e recepcionista fazendo check-in pelo celular. Considere usuários, dispositivos, rede da
+pousada, internet instável, impressora da ficha, volume de reservas, segurança, implantação, atualização e manutenção.
+Recomende uma arquitetura com a FacilApp API SQL no centro e explique os motivos e riscos.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula3">
+    <header class="aula-head"><span class="n">3</span><div><h3>SQLite, SQL Server e PostgreSQL</h3><p>Os três bancos da FacilApp API SQL: todos guardam os mesmos dados, mas diferem em administração, recursos, custos e dialeto SQL.</p></div></header>
+    <div class="conteudo">
+      <div class="bancos"><div class="banco"><b>SQLite</b><span>Um arquivo, sem servidor: o banco da porta 7777 nas aulas e em instalações pequenas.</span></div><div class="banco"><b>SQL Server</b><span>Express no Windows, para a pousada com rede local e vários computadores.</span></div><div class="banco"><b>PostgreSQL</b><span>Produção na nuvem, no Ubuntu, atrás do nginx.</span></div></div>
+      <div class="bloco"><h4>O que comparar</h4><ul><li>Licença e custo operacional.</li><li>Backup, restauração e replicação.</li><li>Drivers disponíveis.</li><li>Concorrência e volume.</li><li>Equipe e ferramentas existentes.</li></ul></div>
+      <div class="bloco"><h4>Portabilidade exige cuidado</h4><p>Tipos de dados, paginação, datas, funções, identidade automática e parâmetros variam. Use comandos parametrizados e isole o dialeto específico.</p></div>
+      <div class="modelo"><b>O QUE MUDA ENTRE OS BANCOS</b><pre>                 SQLite                    SQL Server                         PostgreSQL
+Limitar linhas   ... LIMIT 10              SELECT TOP (10) ...                ... LIMIT 10
+Chave automática INTEGER PRIMARY KEY       INT IDENTITY(1,1)                  GENERATED BY DEFAULT AS IDENTITY
+Data/hora atual  CURRENT_TIMESTAMP         SYSDATETIME()                      CURRENT_TIMESTAMP
+Nulo             COALESCE(v,0)             ISNULL(v,0) ou COALESCE(v,0)       COALESCE(v,0)
+Paginação        LIMIT 20 OFFSET 40        OFFSET 40 ROWS FETCH NEXT 20 ROWS  LIMIT 20 OFFSET 40
+Upsert           ON CONFLICT DO UPDATE     MERGE (testar concorrência)        ON CONFLICT DO UPDATE</pre></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Crie a tabela QUARTOS do FastPousada no SQLite e no SQL Server. Compare identidade, texto, decimal, data, booleano, paginação e parâmetros.</p></div>
+      <div class="bloco"><h4>Onde entra o SQLite</h4><p>SQLite é excelente para aulas, protótipos, aplicações locais e bases embarcadas. Não exige servidor, mas ainda precisa de backup e controle de concorrência. No FastPousada começamos no SQLite e a FacilApp API SQL evolui para SQL Server e PostgreSQL sem mudar as telas.</p></div>
+      <div class="modelo"><b>PROMPT DE PORTABILIDADE</b><pre>Analise o SQL que lista os quartos livres do FastPousada entre duas datas, escrito para SQLite, e adapte para SQL
+Server. Liste diferenças de tipos, identidade, datas, funções, paginação e parâmetros. Preserve o resultado e gere
+dados de teste (5 quartos e 8 reservas) para comparar as duas versões.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula4">
+    <header class="aula-head"><span class="n">4</span><div><h3>Token, redes locais, testes, publicação e diagnóstico</h3><p>Publicar não é apenas copiar arquivos: é garantir acesso, segurança, observabilidade e recuperação.</p></div></header>
+    <div class="conteudo">
+      <div class="diagnostico"><div><b>1. Serviço</b><span>A API está iniciada e ouvindo na porta correta?</span></div><div><b>2. Rede</b><span>IP, DNS, rota, NAT e firewall permitem o acesso?</span></div><div><b>3. HTTP</b><span>URL, método, cabeçalhos, CORS e HTTPS estão corretos?</span></div><div><b>4. Aplicação</b><span>Token, escopo, JSON, SQL e parâmetros estão válidos?</span></div></div>
+      <div class="bloco"><h4>Ciclo do token</h4><ol><li>Login público recebe usuário e senha.</li><li>A API valida o usuário.</li><li>O retorno fornece access_token e validade.</li><li>O cliente envia Authorization: Bearer.</li><li>Quando expirar, o usuário reloga ou renova conforme o contrato.</li></ol></div>
+      <div class="bloco"><h4>Onde a FacilApp API SQL roda</h4><ul><li><b>Windows:</b> serviço do Windows, instalado e atualizado por PowerShell.</li><li><b>Linux:</b> Ubuntu (compatível com o .NET 10), com o nginx na frente fazendo o HTTPS e o proxy para a API.</li><li>O mesmo código C# no .NET 10 nos dois, versionado no Git.</li><li><b>Cloudflare</b> na frente do domínio: DNS, HTTPS e cache. Publicou? Confira com um ?x=aleatório na URL.</li></ul></div>
+      <div class="bloco"><h4>Publicação responsável</h4><ul><li>Defina endereço e porta.</li><li>Use HTTPS em acesso externo.</li><li>Configure firewall e NAT conscientemente.</li><li>Teste de outra máquina e outra rede.</li><li>Mantenha logs sem segredos e plano de rollback.</li></ul></div>
+      <div class="bloco"><h4>Erros frequentes</h4><ul><li><b>Failed to fetch:</b> serviço, rede, HTTPS ou CORS.</li><li><b>401:</b> Bearer ausente ou inválido.</li><li><b>403:</b> autenticado, mas sem permissão.</li><li><b>404:</b> rota ou endereço incorreto.</li><li><b>500:</b> falha interna que deve aparecer no log seguro.</li></ul></div>
+      <div class="bloco atividade"><h4>Teste final</h4><p>Faça login, copie somente o token para memória, execute uma consulta protegida e simule uma falha de endereço. Registre status HTTP, mensagem, hipótese e correção.</p></div>
+      <div class="modelo"><b>CHECKLIST DE DIAGNÓSTICO</b><pre>1. Confirmar processo e porta da API.
+2. Testar a raiz e o Swagger localmente.
+3. Testar IP local a partir de outra máquina.
+4. Conferir URL, método, JSON e cabeçalhos.
+5. Fazer login e usar o Bearer retornado.
+6. Registrar status HTTP e resposta, sem expor segredos.
+7. Consultar o log do servidor.
+8. Corrigir uma camada por vez e repetir o teste.</pre></div>
+    </div>
+  </section>
+
+  <footer class="rodape"><span>FacilApp API SQL · Curso Programação 100% IA</span><span>Módulo VI · Integrações, Dados e Publicação</span></footer>
+</main>
+</body>
+</html>

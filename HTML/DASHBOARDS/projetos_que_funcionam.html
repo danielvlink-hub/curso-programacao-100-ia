@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Módulo IV — Projetos que Funcionam</title>
+  <script>
+    /** Resolve os recursos compartilhados quando a aula é exibida dentro do curso. */
+    function arquivoDashboard(endereco) {
+      try {
+        if (window.parent && typeof window.parent.FacilAppResolverArquivoLocal === 'function') {
+          return window.parent.FacilAppResolverArquivoLocal('DASHBOARDS/' + endereco);
+        }
+      } catch (erro) {}
+      return endereco;
+    }
+    document.write('<script src="' + arquivoDashboard('js/TemaFacilApp.js').replace(/&/g, '&amp;') + '"><\/script>');
+  </script>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--fa-bg,#f4f6ef);color:var(--fa-text,#17210e)}body{padding:18px}.curso{max-width:1440px;margin:auto}
+    .hero{position:relative;overflow:hidden;border-radius:18px;padding:27px 31px;background:linear-gradient(125deg,#263807,#415715 62%,#566d1e);color:#fff;box-shadow:0 18px 45px rgba(38,56,7,.18)}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#f2b313;text-transform:uppercase}.hero h1{font-size:34px;line-height:1.08;margin:9px 0 8px}.hero p{max-width:920px;margin:0;color:#dce9c5;font-size:15px;line-height:1.55}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700}
+    .section-head{display:flex;align-items:end;justify-content:space-between;margin:22px 2px 11px}.section-head h2{margin:0;font-size:22px;color:var(--fa-primary,#35470e)}.section-head span{font-size:12px;color:var(--fa-muted,#65705c)}.grade{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.lesson-link{min-height:126px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:12px;padding:14px;text-decoration:none;color:inherit;transition:.18s ease}.lesson-link:hover{transform:translateY(-2px);border-color:#6f8a28;box-shadow:0 8px 20px rgba(53,71,14,.09)}.lesson-link .n{width:34px;height:34px;border-radius:9px;background:#dce9c5;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.lesson-link h3{font-size:13px;margin:10px 0 5px;color:var(--fa-primary,#35470e)}.lesson-link p{font-size:11px;line-height:1.38;margin:0;color:var(--fa-muted,#65705c)}
+    .aula{scroll-margin-top:12px;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel,#fff);border-radius:14px;margin-top:11px;overflow:hidden;box-shadow:0 7px 22px rgba(23,33,14,.045)}.aula-head{display:flex;gap:12px;align-items:center;padding:15px 18px;background:var(--fa-panel-alt,#e6efd8);border-bottom:1px solid var(--fa-border,#d8ddcf)}.aula-head .n{flex:0 0 38px;height:38px;border-radius:10px;background:#f2b313;color:#35470e;display:flex;align-items:center;justify-content:center;font-weight:900}.aula-head h3{margin:0;color:var(--fa-primary,#35470e);font-size:19px}.aula-head p{margin:3px 0 0;font-size:12px;color:var(--fa-muted,#65705c)}.conteudo{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:17px}.bloco{border-left:4px solid #6f8a28;background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:13px}.bloco h4{margin:0 0 7px;color:var(--fa-primary,#35470e);font-size:14px}.bloco p,.bloco li{font-size:12px;line-height:1.48;color:var(--fa-muted,#65705c)}.bloco p{margin:0}.bloco ul,.bloco ol{margin:0;padding-left:19px}.bloco li+li{margin-top:4px}.modelo{grid-column:1/-1;border:1px dashed #9daf79;border-radius:10px;background:#fbfcf8;padding:13px}.modelo b{display:block;color:#35470e;font-size:12px;margin-bottom:7px}.modelo pre{white-space:pre-wrap;margin:0;font:12px/1.5 Consolas,"Courier New",monospace;color:#253015}.atividade{border-color:#f2b313;background:#fffaf0}
+    .fluxo{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.passo{position:relative;border:1px solid var(--fa-border,#d8ddcf);background:var(--fa-panel-alt,#f7f5ea);border-radius:9px;padding:11px;text-align:center}.passo:not(:last-child):after{content:"›";position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:2;font-size:18px;font-weight:900;color:#778337}.passo b{display:block;font-size:11px;color:#35470e;margin-bottom:4px}.passo span{font-size:10px;line-height:1.35;color:var(--fa-muted,#65705c)}
+    .crud{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.crud div{border:1px solid var(--fa-border,#d8ddcf);border-radius:9px;background:var(--fa-panel-alt,#f7f5ea);padding:12px}.crud strong{display:flex;width:31px;height:31px;border-radius:8px;align-items:center;justify-content:center;background:#dce9c5;color:#35470e;margin-bottom:7px}.crud b{display:block;color:#35470e;font-size:12px}.crud span{font-size:11px;line-height:1.38;color:var(--fa-muted,#65705c)}
+    .testes{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.teste{border-top:4px solid #6f8a28;border-radius:9px;background:var(--fa-panel-alt,#f7f5ea);padding:11px}.teste b{display:block;color:#35470e;font-size:12px;margin-bottom:4px}.teste span{font-size:11px;color:var(--fa-muted,#65705c)}.rodape{padding:18px 4px 2px;font-size:11px;color:var(--fa-muted,#65705c);display:flex;justify-content:space-between;gap:12px}
+    @media(max-width:1000px){.grade,.crud,.testes{grid-template-columns:repeat(2,1fr)}.fluxo{grid-template-columns:repeat(3,1fr)}.passo:after{display:none}}@media(max-width:720px){body{padding:10px}.hero{padding:22px}.hero h1{font-size:27px}.grade,.conteudo,.fluxo,.crud,.testes{grid-template-columns:1fr}.modelo{grid-column:auto}.section-head{align-items:start;gap:4px;flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="curso">
+  <section class="hero">
+    <!-- Remasterizado em 04/11/2026: o mini-sistema de TAREFAS virou o FastPousada (hóspedes, quartos, reservas). --><div class="eyebrow">Módulo IV</div>
+    <h1>Projetos que Funcionam</h1>
+    <p>Transforme telas em recursos úteis, com regras de negócio, validações e testes.</p>
+    <div class="meta"><span class="chip">4 aulas</span><span class="chip">CRUD completo</span><span class="chip">Regras e validações</span><span class="chip">FastPousada na prática</span></div>
+  </section>
+
+  <div class="section-head"><h2>Programa do módulo</h2><span>Clique em uma aula para ir ao conteúdo</span></div>
+  <nav class="grade" aria-label="Aulas do Módulo IV">
+    <a class="lesson-link" href="#aula1"><span class="n">1</span><h3>Modelando a necessidade</h3><p>Entender o problema antes de pedir código.</p></a>
+    <a class="lesson-link" href="#aula2"><span class="n">2</span><h3>Operações de dados</h3><p>Inserir, consultar, alterar e excluir.</p></a>
+    <a class="lesson-link" href="#aula3"><span class="n">3</span><h3>Validação e erros</h3><p>Mensagens úteis e recuperação segura.</p></a>
+    <a class="lesson-link" href="#aula4"><span class="n">4</span><h3>Teste e evolução</h3><p>Construção e melhoria do FastPousada.</p></a>
+  </nav>
+
+  <section class="aula" id="aula1">
+    <header class="aula-head"><span class="n">1</span><div><h3>Modelando a necessidade antes de pedir código</h3><p>O código deve implementar uma decisão de negócio já compreendida.</p></div></header>
+    <div class="conteudo">
+      <div class="fluxo"><div class="passo"><b>Problema</b><span>O que acontece hoje?</span></div><div class="passo"><b>Usuário</b><span>Quem executa a tarefa?</span></div><div class="passo"><b>Dados</b><span>Quais informações entram e saem?</span></div><div class="passo"><b>Regras</b><span>O que pode ou não ocorrer?</span></div><div class="passo"><b>Sucesso</b><span>Como comprovar o resultado?</span></div></div>
+      <div class="bloco"><h4>Antes da tecnologia</h4><ul><li>Descreva o processo com palavras simples.</li><li>Separe obrigatoriedade de preferência.</li><li>Liste exceções conhecidas.</li><li>Defina quem pode executar cada ação.</li></ul></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Modele o cadastro de Quartos do FastPousada: quem cadastra, quais campos são obrigatórios, quando um quarto fica indisponível, quando pode ser excluído e como saber que a operação funcionou.</p></div>
+      <div class="modelo"><b>PROMPT DE MODELAGEM</b><pre>Antes de escrever código, modele a rotina de Reservas do FastPousada. Descreva objetivo, atores (recepção e gerente),
+dados (hóspede, quarto, entrada, saída, tarifa, situação), regras (quarto ocupado, saída depois da entrada, cancelamento),
+exceções, permissões e critérios de sucesso. Aponte dúvidas que precisam de decisão. Somente depois proponha
+estrutura de tela, banco e endpoints.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula2">
+    <header class="aula-head"><span class="n">2</span><div><h3>Inserir, consultar, alterar e excluir dados</h3><p>As quatro operações precisam compartilhar regras, identificação e mensagens coerentes.</p></div></header>
+    <div class="conteudo">
+      <div class="crud"><div><strong>C</strong><b>Inserir</b><span>Valida, cria e devolve a identificação do registro.</span></div><div><strong>R</strong><b>Consultar</b><span>Lista, filtra e localiza sem alterar o banco.</span></div><div><strong>U</strong><b>Alterar</b><span>Carrega o atual, preserva campos e grava mudanças.</span></div><div><strong>D</strong><b>Excluir</b><span>Confirma, verifica vínculos e remove com segurança.</span></div></div>
+      <div class="bloco"><h4>Contrato entre tela e API</h4><ul><li>URLs e métodos HTTP definidos.</li><li>JSON de entrada e saída documentado.</li><li>Identificadores estáveis.</li><li>Códigos HTTP e mensagens operacionais.</li></ul></div>
+      <div class="bloco"><h4>Banco SQLite</h4><p>Use parâmetros em todas as instruções, transações nas operações compostas e restrições para proteger integridade mesmo quando a tela falhar.</p></div>
+      <div class="modelo"><b>PROMPT DE CRUD</b><pre>Implemente o CRUD de Quartos do FastPousada usando SQLite pela FacilApp API SQL. Documente campos (número, tipo,
+capacidade, tarifa base, situação), chaves, endpoints, JSON e códigos HTTP. Use consultas parametrizadas. Na alteração
+preserve valores não enviados; na exclusão verifique se o quarto tem reservas e peça confirmação na interface. Crie
+testes para as quatro operações.</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula3">
+    <header class="aula-head"><span class="n">3</span><div><h3>Validações, mensagens e tratamento de erros</h3><p>Erros bem tratados protegem os dados e ajudam o usuário a continuar o trabalho.</p></div></header>
+    <div class="conteudo">
+      <div class="bloco"><h4>Validação em camadas</h4><ol><li>A tela verifica formato e campos obrigatórios.</li><li>A API aplica regras de negócio e autorização.</li><li>O banco garante chaves, tipos e relacionamentos.</li></ol></div>
+      <div class="bloco"><h4>Mensagem útil</h4><p>Explique o que não foi possível fazer, o motivo seguro e a próxima ação. Não exponha senha, token, SQL interno, caminho sensível nem detalhes técnicos desnecessários.</p></div>
+      <div class="bloco"><h4>Falhas esperadas</h4><ul><li>Registro duplicado ou inexistente.</li><li>Dado inválido ou incompleto.</li><li>Operação sem permissão.</li><li>Conexão indisponível ou tempo excedido.</li></ul></div>
+      <div class="bloco atividade"><h4>Atividade</h4><p>Crie mensagens para quatro falhas do FastPousada (ex.: reserva em quarto ocupado, hóspede sem documento). Cada uma deve informar problema, impacto e ação recomendada sem revelar detalhes sensíveis.</p></div>
+      <div class="modelo"><b>EXEMPLO</b><pre>Não foi possível excluir o quarto 12 porque ele tem reservas. Cancele ou transfira as reservas, ou marque o quarto como inativo, e tente novamente.
+
+Evite: SQL constraint failed: FOREIGN KEY ...</pre></div>
+    </div>
+  </section>
+
+  <section class="aula" id="aula4">
+    <header class="aula-head"><span class="n">4</span><div><h3>Teste prático e evolução do FastPousada</h3><p>Uma funcionalidade só termina depois de ser executada no fluxo real.</p></div></header>
+    <div class="conteudo">
+      <div class="testes"><div class="teste"><b>Caminho feliz</b><span>Dados corretos e resultado esperado.</span></div><div class="teste"><b>Entrada inválida</b><span>Campos vazios, formatos e limites.</span></div><div class="teste"><b>Regra de negócio</b><span>Duplicidade, vínculos e permissões.</span></div><div class="teste"><b>Falha externa</b><span>API, rede e banco indisponíveis.</span></div></div>
+      <div class="bloco"><h4>Ciclo de evolução</h4><ol><li>Implemente a menor versão útil.</li><li>Teste e registre o desvio.</li><li>Corrija sem quebrar o que já funciona.</li><li>Adicione o próximo recurso.</li><li>Repita os testes anteriores.</li></ol></div>
+      <div class="bloco"><h4>Evidência de conclusão</h4><p>Compile, abra a tela, clique nas ações, confira o banco e registre os resultados. Uma mensagem “concluído” não substitui a execução real.</p></div>
+      <div class="modelo"><b>ROTEIRO DO FASTPOUSADA</b><pre>1. Criar as tabelas QUARTOS, HOSPEDES e RESERVAS no SQLite da FacilApp API SQL.
+2. Implementar endpoints de inserir, listar, alterar e excluir.
+3. Criar o browse de Hóspedes com filtro e o update em modal.
+4. Validar documento, datas da reserva, quarto ocupado e vínculos.
+5. Testar sucesso, erro e API fora do ar.
+6. Liberar a tela no menu (Acessos) e repetir todos os testes.</pre></div>
+      <div class="bloco atividade"><h4>Projeto final do módulo</h4><p>Entregue Quartos, Hóspedes e Reservas do FastPousada funcionando de ponta a ponta: banco, API, interface, regras, mensagens e evidências dos testes executados.</p></div>
+    </div>
+  </section>
+
+  <footer class="rodape"><span>FacilApp API SQL · Curso Programação 100% IA</span><span>Módulo IV · Projetos que Funcionam</span></footer>
+</main>
+</body>
+</html>

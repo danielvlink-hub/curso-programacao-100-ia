@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<script src="js/TemaInicial.js"></script>
+<link rel="stylesheet" href="fontes/offline-fonts.css">
+<link rel="stylesheet" href="css/TemaFacilApp.css?v=20260911060000">
+<link rel="stylesheet" href="dependencias/jodit-4/css/jodit.min.css">
+<link rel="stylesheet" href="css/browse.css?v=20260913130000">
+<script src="js/config.js"></script>
+<script src="js/SQL.js?v=20260914100000"></script>
+<script src="js/browse.js?v=20260913130000"></script>
+<script src="js/SQLModeloContrato.js?v=20260913160000"></script>
+<script src="js/Extenso.js?v=20260913190000"></script>
+<script src="js/ImpressaoBalanca.js"></script>
+<script src="dependencias/jodit-4/js/jodit.min.js"></script>
+<script src="dependencias/mammoth-1.8.0/mammoth.browser.min.js"></script>
+<script src="dependencias/rtfjs-3.0.9/WMFJS.bundle.min.js"></script>
+<script src="dependencias/rtfjs-3.0.9/EMFJS.bundle.min.js"></script>
+<script src="dependencias/rtfjs-3.0.9/RTFJS.bundle.min.js"></script>
+<script src="js/HtmlParaRtf.js?v=20260913210000"></script>
+<!-- PDF (13/09/2026): pdf-lib grava o PDF; importar PDF é pela API FacilApp (pdf-para-docx). -->
+<script src="dependencias/pdf-lib-1.17.1/pdf-lib.min.js"></script>
+<script src="js/PdfFacilApp.js?v=20260914010000"></script>
+<!-- Salvar: biblioteca do modelo TesteSalvar (13/09/2026). -->
+<script src="js/BrowserFS.js?v=20260914090000"></script>
+<title>FacilApp Doc</title>
+<style>
+  html,body{background:transparent!important}
+
+  /* A área do editor ocupa a janela inteira, abaixo da barra. */
+  .editor-area{flex:1;min-height:0;display:flex;flex-direction:column;padding:6px}
+  /* Barra do editor em 1 linha: botoes pequenos, sem quebrar (13/09/2026). */
+  .editor-area .jodit-toolbar__box .jodit-ui-group{flex-wrap:nowrap}
+  .editor-area .jodit-toolbar__box{overflow-x:auto;overflow-y:hidden}
+  .editor-area .jodit-ui-separator{margin:0 1px}
+  .editor-area .jodit-container{flex:1;min-height:0;border-radius:8px;border:1px solid var(--border-glass)}
+
+  /* Folha A4: o miolo do editor vira uma página branca centralizada, como no
+     WinDev. Papel é sempre branco, mesmo com tema escuro — é papel. */
+  .editor-area .jodit-workplace{background:var(--bg-app)!important;overflow:auto}
+  .editor-area{--pag-h:297mm;--mg-v:25mm;--mg-esq:20mm;--mg-dir:20mm}
+  /* O Jodit força padding:8px e margin:0 no texto (.jodit-container:not(.jodit_inline)
+     .jodit-wysiwyg). Por isso o seletor abaixo é mais forte e usa !important: as
+     margens laterais vêm da régua (13/09/2026). */
+  .editor-area .jodit-container:not(.jodit_inline) .jodit-workplace .jodit-wysiwyg{
+    width:100%!important; min-height:var(--pag-h); margin:0!important; box-sizing:border-box;
+    padding:6px var(--mg-dir) var(--mg-v) var(--mg-esq)!important;  /* texto começa logo abaixo da régua; margem de cima vale na impressão */
+    background:#fff; color:#000; border:1px solid var(--border-glass); border-top:0;
+    font-family:'Times New Roman',serif; font-size:12pt; line-height:1.4;
+  }
+  .editor-area .jodit-wysiwyg table{border-collapse:collapse}
+
+  /* Régua em centímetros no topo da folha, com as margens sombreadas (13/09/2026). */
+  .regua{position:sticky;top:0;z-index:5;width:100%;height:20px;margin:1px 0 0;box-sizing:border-box;
+    background:var(--bg-card-inner);border:1px solid var(--border-glass);border-bottom:0;overflow:hidden;
+    background-image:
+      repeating-linear-gradient(to right,var(--text-muted) 0 1px,transparent 1px 10mm),
+      repeating-linear-gradient(to right,var(--text-muted) 0 1px,transparent 1px 5mm),
+      repeating-linear-gradient(to right,var(--text-muted) 0 1px,transparent 1px 1mm);
+    background-size:100% 9px,100% 6px,100% 3px;background-repeat:no-repeat;background-position:0 100%,0 100%,0 100%}
+  .regua{user-select:none}
+  /* Zoom (13/09/2026): só a visualização da folha e da régua; o arquivo gravado não muda. */
+  .editor-area .jodit-container:not(.jodit_inline) .jodit-workplace .jodit-wysiwyg,.editor-area .regua{zoom:var(--zoom,1)}
+  .regua .mg{position:absolute;top:0;bottom:0;background:var(--bg-surface-hover);opacity:.75;pointer-events:none}
+  .regua .mg.esq{left:0;width:var(--mg-esq)}
+  .regua .mg.dir{right:0;width:var(--mg-dir)}
+  /* Marcadores de margem: arrastar muda o recuo lateral do texto. */
+  .regua .puxador{position:absolute;top:0;bottom:0;width:9px;margin-left:-4px;cursor:ew-resize;z-index:2}
+  .regua .puxador::after{content:'';position:absolute;left:0;bottom:0;border-left:4.5px solid transparent;border-right:4.5px solid transparent;
+    border-top:8px solid var(--contour-primary)}
+  .regua .puxador.esq{left:var(--mg-esq)}
+  .regua .puxador.dir{left:calc(100% - var(--mg-dir))}
+  .regua span{position:absolute;top:1px;font-size:8.5px;line-height:9px;color:var(--text-secondary);transform:translateX(-50%)}
+  /* Barra de cima mais junta: 4px entre botoes, e folga entre os grupos (13/09/2026). */
+  /* 3 grupos: botoes a esquerda, papel/orientacao/margem no centro, botoes a direita (13/09/2026). */
+  /* Papel/orientação/margem/zoom no MEIO dos botões (13/09/2026): o espaço entre os grupos de botões é
+     dividido igual dos dois lados, seja qual for a largura de cada grupo. */
+  .browse-toolbar{display:flex!important;align-items:center;gap:4px 10px}
+  .browse-toolbar .pagina-opcoes{flex:1 1 auto;justify-content:center;min-width:0}
+  .browse-toolbar .toolbar-left,.browse-toolbar .toolbar-right{flex:0 0 auto}
+  .browse-toolbar .toolbar-left,.browse-toolbar .toolbar-right{gap:4px}
+  .browse-toolbar .toolbar-left{flex:0 1 auto;flex-basis:auto}
+  .pagina-opcoes{display:flex;align-items:center;gap:4px}
+  .pagina-opcoes select{height:26px;padding:0 4px;border:1px solid var(--border-glass);border-radius:5px;
+    background:var(--bg-surface);color:var(--text-primary);font:inherit;font-size:11.5px}
+  .editor-area .jodit-wysiwyg table td,
+  .editor-area .jodit-wysiwyg table th{border:1px solid #777;padding:4px 6px}
+
+  /* Editor nas cores do tema (13/09/2026): barra, botões, listas e rodapé.
+     Só a folha continua branca, porque é papel. */
+  .editor-area .jodit-container:not(.jodit_inline),
+  .editor-area .jodit-toolbar__box:not(:empty),
+  .editor-area .jodit-status-bar{background:var(--bg-card-inner)!important;border-color:var(--border-glass)!important;color:var(--text-secondary)!important}
+  .editor-area .jodit-toolbar__box:not(:empty){border-bottom:1px solid var(--border-glass)!important}
+  .editor-area .jodit-toolbar-button__button,
+  .editor-area .jodit-toolbar-button__trigger{color:var(--text-primary)!important}
+  .editor-area .jodit-toolbar-button__icon svg,
+  .editor-area .jodit-toolbar-button__trigger svg{fill:var(--text-primary)!important;stroke:var(--text-primary)}
+  .editor-area .jodit-toolbar-button:hover:not([disabled]) .jodit-toolbar-button__button,
+  .editor-area .jodit-toolbar-button:hover:not([disabled]) .jodit-toolbar-button__trigger,
+  .editor-area .jodit-toolbar-button_with-trigger_true:hover:not([disabled]){background:var(--bg-surface-hover)!important}
+  .editor-area .jodit-ui-separator{border-color:var(--border-glass)!important}
+  .editor-area .jodit-status-bar a,.editor-area .jodit-status-bar .jodit-status-bar__item span{color:var(--text-muted)!important}
+  .jodit-popup__content,.jodit-dialog__panel,.jodit-ui-list{background:var(--bg-surface)!important;color:var(--text-primary)!important;border-color:var(--border-glass)!important}
+  .jodit-toolbar-button_size_small .jodit-toolbar-button__text,.jodit-ui-button__text{color:var(--text-primary)!important}
+  .jodit-popup__content .jodit-toolbar-button:hover .jodit-toolbar-button__button,
+  .jodit-ui-list__item:hover{background:var(--bg-surface-hover)!important}
+
+  /* Lista de macros, aberta pelo botão Macro Legenda. */
+  .macros-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px;margin:6px 0 0;
+    max-height:55vh;overflow:auto;padding-right:8px}
+  /* Rodape das macros com folga: o Fechar nao encosta na lista nem na rolagem (13/09/2026). */
+  .macros-dialogo .modal-footer-actions{margin-top:12px;padding:0 8px 2px 0;justify-content:flex-end}
+  .macro-item{height:24px;padding:0 8px;text-align:left;border:1px solid var(--border-glass);
+    border-radius:5px;background:var(--bg-card-inner);color:var(--text-primary);
+    font:inherit;font-size:11px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .macro-item:hover{background:var(--bg-surface-hover);color:var(--contour-primary)}
+</style>
+<script src="js/TemaBrowseBalanca.js"></script>
+</head>
+<body>
+<div class="browse-window" id="janela" style="display:flex;flex-direction:column">
+  <header class="browse-header" id="arrasto">
+    <div class="browse-title-group">
+      <span class="browse-title">FacilApp Doc</span>
+      <span class="browse-subtitle" id="modeloAtual">Editor de texto</span>
+    </div>
+    <button class="btn-close" id="fechar" type="button" title="Fechar">✕</button>
+  </header>
+
+  <div class="browse-toolbar">
+    <div class="toolbar-left">
+      <button class="toolbar-btn" id="importar" title="Abrir um arquivo .docx, .rtf, .doc, .html ou .pdf"><span class="material-symbols-rounded">folder_open</span>Abrir</button>
+      <input type="file" id="arquivoImportar" accept=".docx,.rtf,.doc,.html,.htm,.pdf" hidden>
+      <button class="toolbar-btn" id="macros"><span class="material-symbols-rounded">data_object</span>Macros de Data</button>
+    </div>
+
+      <div class="pagina-opcoes" title="Papel, orientação e margens da folha">
+        <select id="papel"><option value="A4">A4</option><option value="Carta">Carta</option><option value="Oficio">Ofício</option><option value="A5">A5</option></select>
+        <select id="orientacao"><option value="retrato">Retrato</option><option value="paisagem">Paisagem</option></select>
+        <select id="margem"><option value="normal">Margem normal</option><option value="estreita">Margem estreita</option><option value="larga">Margem larga</option></select>
+        <select id="zoom" title="Zoom da folha (só na tela)"><option value="0.5">50%</option><option value="0.75">75%</option><option value="1" selected>100%</option><option value="1.25">125%</option><option value="1.5">150%</option><option value="2">200%</option></select>
+      </div>
+    <div class="toolbar-right">
+      <button class="toolbar-btn" id="imprimir" title="Ver como o contrato fica preenchido com dados de exemplo"><span class="material-symbols-rounded">preview</span>Preview</button>
+      <button class="toolbar-btn" id="gravarComo" title="Salvar o modelo num arquivo, na pasta que escolher"><span class="material-symbols-rounded">save_as</span>Gravar como</button>
+    </div>
+  </div>
+
+  <div class="editor-area"><textarea id="editor"></textarea></div>
+</div>
+
+<script>
+'use strict';
+/* FacilApp Doc — editor de texto (cópia do Modelo de Contrato; ver OBS no topo do script).
+   Editor completo: tabelas, imagens, fonte, cor, parágrafo, alinhamento e
+   visual de folha A4. A biblioteca é o Jodit, licença MIT, servida de
+   dependencias/jodit-4 — nada de CDN, como o resto do projeto.
+   O SQL mora no SQL.js; aqui fica só a tela. */
+const B = window.FacilAppBrowse;
+const $ = id => document.getElementById(id);
+const parametros = new URLSearchParams(location.search);
+const idModelo = Number(parametros.get('id') || 0);
+const tipoContrato = String(parametros.get('tipo') || '');
+/* FacilApp Doc (13/09/2026): editor de texto do menu, copiado do Modelo de
+   Contrato. Abre e grava arquivo (Abrir / Gravar como); não grava em tabela,
+   não tem modelos de contrato e só usa as macros de data. O Modelo de
+   Contrato (aberto por Produtos) segue na ModeloContrato.html, sem mudança. */
+const MACROS_DOC = [
+  {chave:'#DATA#',       descricao:'Data de hoje (dd/mm/aaaa)'},
+  {chave:'#DATARODAPE#', descricao:'Data por extenso (13 de Setembro de 2026)'},
+  {chave:'#DIA#',        descricao:'Dia'},
+  {chave:'#MES#',        descricao:'Mês por extenso'},
+  {chave:'#ANO#',        descricao:'Ano'}
+];
+
+/* Macros de substituição. A lista do contrato do WinDev ainda não foi
+   enviada; estas são as que aparecem nas telas já implementadas e servem de
+   ponto de partida. Nenhuma é inventada além do que existe no cadastro. */
+/* Macros de substituição, no formato do WinDev: #NOME#.
+   O modelo guarda a legenda; na hora de gerar o contrato o sistema troca
+   cada uma pelo valor real e abre pronto para imprimir.
+   Esta lista é um ponto de partida com os campos que já existem no sistema;
+   a legenda completa do WinDev ainda não foi enviada. */
+const MACROS = [
+  {chave:'#NUMCONTRATO#',          descricao:'Número do contrato'},
+  {chave:'#VEND_NOME#',            descricao:'Vendedor: nome'},
+  {chave:'#VEND_ENDERECO#',        descricao:'Vendedor: endereço'},
+  {chave:'#VEND_CIDADE#',          descricao:'Vendedor: cidade'},
+  {chave:'#VEND_BAIRRO#',          descricao:'Vendedor: bairro'},
+  {chave:'#VEND_CEP#',             descricao:'Vendedor: CEP'},
+  {chave:'#VEND_CNPJ#',            descricao:'Vendedor: CNPJ'},
+  {chave:'#VEND_IE#',              descricao:'Vendedor: inscrição estadual'},
+  {chave:'#COMP_NOME#',            descricao:'Comprador: nome'},
+  {chave:'#COMP_ENDERECO#',        descricao:'Comprador: endereço'},
+  {chave:'#COMP_CIDADE#',          descricao:'Comprador: cidade'},
+  {chave:'#COMP_BAIRRO#',          descricao:'Comprador: bairro'},
+  {chave:'#COMP_CEP#',             descricao:'Comprador: CEP'},
+  {chave:'#COMP_CNPJ#',            descricao:'Comprador: CPF/CNPJ'},
+  {chave:'#COMP_IE#',              descricao:'Comprador: RG/IE'},
+  {chave:'#NOMEPRODUTO#',          descricao:'Produto'},
+  {chave:'#QTDE_SC#',              descricao:'Quantidade em sacas'},
+  {chave:'#QUANTIDADEPOREXTENSO#', descricao:'Quantidade por extenso'},
+  {chave:'#VALOR_SC#',             descricao:'Preço por saca'},
+  {chave:'#TOTAL#',                descricao:'Valor total'},
+  {chave:'#VALORPOREXTENSO#',      descricao:'Valor total por extenso'},
+  {chave:'#VENCTO#',               descricao:'Vencimento / entrega'},
+  {chave:'#DATARODAPE#',           descricao:'Cidade do vendedor e data (rodapé)'},
+  {chave:'#QTDE_KG#',               descricao:'Quantidade em quilos'},
+  {chave:'#VALOR_BRUTO_SC#',        descricao:'Preço bruto por saca'},
+  {chave:'#ENTREGA#',               descricao:'Local de entrega/carregamento'},
+  {chave:'#OBS#',                   descricao:'Observações do contrato'},
+  {chave:'#NOME#',        descricao:'Nome do produtor ou cliente'},
+  {chave:'#CPF_CNPJ#',    descricao:'CPF ou CNPJ'},
+  {chave:'#ENDERECO#',    descricao:'Endereço'},
+  {chave:'#CIDADE#',      descricao:'Cidade'},
+  {chave:'#BAIRRO#',      descricao:'Bairro'},
+  {chave:'#PROPRIEDADE#', descricao:'Propriedade'},
+  {chave:'#PRODUTO#',     descricao:'Produto'},
+  {chave:'#ARMAZEM#',     descricao:'Armazém'},
+  {chave:'#QUANTIDADE#',  descricao:'Quantidade'},
+  {chave:'#UMIDADE#',     descricao:'Umidade'},
+  {chave:'#PRECO#',       descricao:'Preço'},
+  {chave:'#AMAIS#',       descricao:'A mais'},
+  {chave:'#CONTRATO#',    descricao:'Número do contrato'},
+  {chave:'#DATA#',        descricao:'Data de hoje'},
+  {chave:'#EMPRESA#',     descricao:'Nome da empresa'}
+];
+
+/* Troca as legendas pelos valores reais. O que não tiver valor fica como
+   está, para o contrato mostrar o que falta em vez de apagar a legenda. */
+function substituirMacros(modelo, valores) {
+  let texto = String(modelo || '');
+  const dados = valores || {};
+  for (const chave of Object.keys(dados)) {
+    const valor = dados[chave];
+    if (valor === null || valor === undefined) continue;
+    /* Troca literal, sem expressao regular: a legenda pode ter caractere que
+       o regex trataria como comando, e aqui a busca e exata. */
+    texto = texto.split('#' + chave + '#').join(String(valor));
+  }
+  return texto;
+}
+
+let editor = null;
+
+function fechar() {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({origem:'FACILAPP_FECHAR_TELA', tela:'FacilAppDoc'}, '*');
+    return;
+  }
+  window.close();
+}
+
+function montarEditor() {
+  editor = Jodit.make('#editor', {
+    language: 'pt_br',
+    toolbarAdaptive: false,
+    toolbarButtonSize: 'small',
+    showPlaceholder: false,
+    /* Tamanhos de fonte a partir de 4px (o padrao do Jodit comeca em 8) - 13/09/2026. */
+    controls: {fontsize: {list: [4,5,6,7,8,9,10,11,12,14,16,18,24,30,32,34,36,48,60,72,96]}},
+    height: '100%',
+    /* Barra completa, na ordem de um processador de texto. */
+    buttons: [
+      'undo','redo','|',
+      'font','fontsize','paragraph','|',
+      'bold','italic','underline','strikethrough','superscript','subscript','|',
+      'brush','eraser','|',
+      'align','ul','ol','indent','outdent','lineHeight','|',
+      'table','image','link','hr','symbols','|',
+      'copyformat','selectall','|',
+      'preview','print','source','fullsize'
+    ],
+    /* Colar do Word mantendo a formatação, que é o uso real aqui. */
+    askBeforePasteHTML: false,
+    defaultActionOnPaste: 'insert_clear_html',
+    statusbar: true,
+  });
+  /* Tab dentro do texto (13/09/2026): em vez de sair do editor, insere recuo.
+     Em lista, Tab/Shift+Tab sobem e descem o nivel do item. */
+  /* Tab direto no campo editável, em captura: cada Tab insere o recuo e o cursor
+     continua no texto, então dá para dar quantos Tabs quiser. */
+  editor.editor.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab' || e.ctrlKey || e.altKey || e.metaKey) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const sel = editor.ew.getSelection && editor.ew.getSelection();
+    const no = sel && sel.anchorNode;
+    const naLista = no && (no.nodeType === 1 ? no : no.parentElement) && (no.nodeType === 1 ? no : no.parentElement).closest('li');
+    if (naLista) { editor.execCommand(e.shiftKey ? 'outdent' : 'indent'); return; }
+    if (e.shiftKey) return;
+    if (!editor.ed.execCommand('insertText', false, '  ')) editor.s.insertHTML('&emsp;&emsp;');
+    editor.synchronizeValues && editor.synchronizeValues();
+  }, true);
+}
+
+/* Macro Legenda: lista as macros e insere no ponto do cursor. */
+async function abrirMacros() {
+  const caixa = document.createElement('div');
+  const texto = document.createElement('p');
+  texto.className = 'facilapp-msg-texto';
+  texto.textContent = 'Clique para inserir a macro no ponto do cursor.';
+  const lista = document.createElement('div');
+  lista.className = 'macros-lista';
+  caixa.append(texto, lista);
+
+  const dialogo = document.createElement('dialog');
+  dialogo.className = 'facilapp-msg macros-dialogo';
+  const titulo = document.createElement('strong');
+  titulo.className = 'facilapp-msg-titulo';
+  titulo.textContent = 'Macro Legenda';
+  dialogo.append(titulo, caixa);
+
+  for (const macro of MACROS_DOC) {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'macro-item';
+    item.textContent = macro.chave + ' — ' + macro.descricao;
+    item.onclick = () => {
+      editor.s.insertHTML(macro.chave);
+      dialogo.close(); dialogo.remove();
+      editor.s.focus();
+    };
+    lista.append(item);
+  }
+
+  const acoes = document.createElement('div');
+  acoes.className = 'modal-footer-actions';
+  const fecharBtn = document.createElement('button');
+  fecharBtn.type = 'button';
+  fecharBtn.className = 'toolbar-btn facilapp-msg-cancelar';
+  fecharBtn.textContent = 'Fechar';
+  fecharBtn.onclick = () => { dialogo.close(); dialogo.remove(); };
+  acoes.append(fecharBtn);
+  dialogo.append(acoes);
+
+  document.body.append(dialogo);
+  dialogo.showModal();
+}
+
+function exemplo() {
+  /* Modelo de exemplo = CONTRATO DE COMPRA.docx da pasta C:\\FACILAPP_CEREAIS\\CONTRATOS,
+     refeito em HTML limpo (13/09/2026): mesmas legendas, mesma ordem, Arial 9pt,
+     tabelas 37/63%, assinaturas e testemunhas lado a lado. O logo do Word foi
+     trocado pelo FacilApp pequeno. */
+  const fonte = "font-family:Arial,Helvetica,sans-serif;font-size:9pt;";
+  const tabela = 'width:100%;border-collapse:collapse;margin:0 0 8pt;';
+  const rotulo = 'width:37%;border:1px solid #777;padding:3pt 5pt;font-weight:bold;vertical-align:middle;';
+  const valor = 'width:63%;border:1px solid #777;padding:3pt 5pt;font-weight:bold;vertical-align:middle;';
+  const linha = (r, v) => '<tr><td style="' + rotulo + '">' + r + '</td><td style="' + valor + '">' + v + '</td></tr>';
+  const assinatura = (titulo, nome, extra) =>
+    '<td style="width:50%;padding:0 10pt;text-align:center;vertical-align:top;border:none;">' +
+      (titulo ? '<p style="margin:0 0 22pt;font-weight:bold;">' + titulo + '</p>' : '<p style="margin:0 0 22pt;">&nbsp;</p>') +
+      '<p style="margin:0;">_________________________________</p>' +
+      '<p style="margin:2pt 0 0;">' + nome + '</p>' + (extra || '') + '</td>';
+  editor.value =
+    '<div style="' + fonte + 'color:#000;">' +
+    '<p style="text-align:center;margin:0 0 6pt;"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAxMjAgMzAiPjxyZWN0IHg9IjIiIHk9IjMiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgcng9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJiM2ExNiIgc3Ryb2tlLXdpZHRoPSIyLjYiLz48cGF0aCBkPSJNNyAxNS41bDQuNSA0LjVMMjEgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Q5NzcwNiIgc3Ryb2tlLXdpZHRoPSIzLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjx0ZXh0IHg9IjMyIiB5PSIyMiIgdGV4dExlbmd0aD0iODYiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgZm9udC1mYW1pbHk9IkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iODAwIiBmaWxsPSIjMmIzYTE2Ij5GYWNpbDx0c3BhbiBmaWxsPSIjZDk3NzA2Ij5BcHA8L3RzcGFuPjwvdGV4dD48L3N2Zz4=" alt="FacilApp" style="width:220px;height:auto;"></p>' +
+    '<p style="text-align:center;margin:0 0 4px;font-size:16px;line-height:1;font-weight:bold;"><strong>CONTRATO DE COMPRA</strong></p>' +
+    '<p style="text-align:center;margin:0 0 8pt;font-size:10pt;font-weight:bold;">Nº #NUMCONTRATO#</p>' +
+    '<table style="' + tabela + '"><tbody>' +
+      linha('VENDEDOR:', '#VEND_NOME#') +
+      linha('ENDEREÇO:', '#VEND_ENDERECO#, #VEND_CIDADE#, #VEND_BAIRRO#, #VEND_CEP#') +
+      linha('EMAIL:', '&nbsp;') +
+      linha('CNPJ / IE:', 'CNPJ: #VEND_CNPJ# - IE: #VEND_IE#') +
+      linha('COMPRADOR:', '#COMP_NOME#') +
+      linha('ENDEREÇO:', '#COMP_ENDERECO#, #COMP_CIDADE#, #COMP_BAIRRO#, #COMP_CEP#') +
+      linha('EMAIL:', '&nbsp;') +
+      linha('CPF/CNPJ / RG/IE:', 'CPF/CNPJ: #COMP_CNPJ# - RG/IE: #COMP_IE#') +
+    '</tbody></table>' +
+    '<p style="text-align:center;margin:0 0 4pt;font-size:14px;font-weight:bold;"><strong>CONDIÇÕES COMERCIAIS</strong></p>' +
+    '<table style="' + tabela + '"><tbody>' +
+      linha('PRODUTO:', '#NOMEPRODUTO#') +
+      linha('QUANTIDADE:', '#QTDE_SC# (#QUANTIDADEPOREXTENSO#) sacas de 60kg') +
+      linha('PREÇO UNITÁRIO:', 'R$ #VALOR_SC# por saca de 60kg') +
+      linha('TOTAL:', 'R$ #TOTAL# (#VALORPOREXTENSO#)') +
+      linha('ENTREGAR ATÉ:', '#VENCTO#') +
+      linha('TOTAL A RECEBER:', 'R$ #TOTAL# (#VALORPOREXTENSO#)') +
+      linha('PAGAMENTO:', '#VENCTO#') +
+    '</tbody></table>' +
+    '<p style="text-align:center;margin:14pt 0 20pt;">#DATARODAPE#</p>' +
+    '<table style="width:100%;border-collapse:collapse;border:none;margin:0 0 18pt;"><tbody><tr>' +
+      assinatura('VENDEDOR(A)', '#VEND_NOME#') + assinatura('COMPRADOR(A)', '#COMP_NOME#') +
+    '</tr></tbody></table>' +
+    '<p style="text-align:center;margin:0 0 4pt;font-weight:bold;">TESTEMUNHAS</p>' +
+    '<table style="width:100%;border-collapse:collapse;border:none;"><tbody><tr>' +
+      assinatura('', 'TESTEMUNHA DEMONSTRAÇÃO Nº 1', '<p style="margin:0;">CPF: 111.111.111-11</p><p style="margin:0;">RG: 11.111.111-1</p>') +
+      assinatura('', 'TESTEMUNHA DEMONSTRAÇÃO Nº 2', '<p style="margin:0;">CPF: 222.222.222-22</p><p style="margin:0;">RG: 22.222.222-2</p>') +
+    '</tr></tbody></table>' +
+    '</div>';
+}
+/* Modelo 2 = "INSTRUMENTO PARTICULAR DE CONTRATO DE COMPRA DE GRÃOS E GARANTIA
+   DE ALIENAÇÃO FIDUCIÁRIA.docx" (C:\FACILAPP_CEREAIS\CONTRATOS), refeito em HTML
+   limpo (13/09/2026): mesmas cláusulas, parágrafos e legendas, Arial 11pt
+   justificado, assinaturas 10pt sem bordas, logo FacilApp. */
+function exemplo2() {
+  const corpo = 'font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.15;color:#000;';
+  const par = txt => '<p style="text-align:justify;margin:0 0 8pt;">' + txt + '</p>';
+  const clausula = txt => '<p style="text-align:justify;margin:10pt 0 6pt;"><strong>' + txt + '</strong></p>';
+  const itens = lista => '<p style="text-align:left;margin:0 0 8pt;">' + lista.join('<br>') + '</p>';
+  const assinatura = (titulo, linhas) =>
+    '<td style="width:50%;padding:0 10pt;text-align:center;vertical-align:top;border:none;">' +
+      (titulo ? '<p style="margin:0 0 22pt;"><strong>' + titulo + '</strong></p>' : '<p style="margin:0 0 22pt;">&nbsp;</p>') +
+      '<p style="margin:0;"><strong>_________________________________</strong></p>' +
+      linhas.map(l => '<p style="margin:2pt 0 0;">' + l + '</p>').join('') + '</td>';
+  editor.value =
+    '<div style="' + corpo + '">' +
+    '<p style="text-align:center;margin:0 0 6pt;"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAxMjAgMzAiPjxyZWN0IHg9IjIiIHk9IjMiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgcng9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJiM2ExNiIgc3Ryb2tlLXdpZHRoPSIyLjYiLz48cGF0aCBkPSJNNyAxNS41bDQuNSA0LjVMMjEgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Q5NzcwNiIgc3Ryb2tlLXdpZHRoPSIzLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjx0ZXh0IHg9IjMyIiB5PSIyMiIgdGV4dExlbmd0aD0iODYiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgZm9udC1mYW1pbHk9IkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iODAwIiBmaWxsPSIjMmIzYTE2Ij5GYWNpbDx0c3BhbiBmaWxsPSIjZDk3NzA2Ij5BcHA8L3RzcGFuPjwvdGV4dD48L3N2Zz4=" alt="FacilApp" style="width:220px;height:auto;"></p>' +
+    '<p style="text-align:center;margin:0 0 4px;font-size:14px;line-height:1;"><strong>INSTRUMENTO PARTICULAR DE CONTRATO DE COMPRA DE GRÃOS E GARANTIA</strong></p>' +
+    '<p style="text-align:center;margin:0 0 12pt;">Contrato Nº: #NUMCONTRATO#</p>' +
+    par('Pelo presente instrumento particular, de um lado, #COMP_NOME#, inscrito(a) no CPF/CNPJ sob nº #COMP_CNPJ#, IE/RG nº #COMP_IE#, com endereço em #COMP_ENDERECO#, Bairro #COMP_BAIRRO#, Cidade #COMP_CIDADE#, CEP #COMP_CEP#, doravante denominado(a) COMPRADOR(A), e, de outro lado, #VEND_NOME#, inscrito(a) no CPF/CNPJ sob nº #VEND_CNPJ#, IE/RG nº #VEND_IE#, com endereço em #VEND_ENDERECO#, Bairro #VEND_BAIRRO#, Cidade #VEND_CIDADE#, CEP #VEND_CEP#, doravante denominado(a) VENDEDOR(A), têm entre si justo e contratado o presente contrato de compra de grãos, mediante as cláusulas e condições seguintes:') +
+    clausula('CLÁUSULA 1ª - DA MERCADORIA') +
+    par('A COMPRADORA adquire do(a) VENDEDOR(A) a mercadoria abaixo discriminada:') +
+    itens(['a) Mercadoria: #NOMEPRODUTO#', 'b) Quantidade em quilos: #QTDE_KG# Kg', 'c) Quantidade de sacas: #QTDE_SC# (#QUANTIDADEPOREXTENSO#)',
+      'd) Preço por saca: R$ #VALOR_BRUTO_SC#', 'e) Preço total: R$ #TOTAL# (#VALORPOREXTENSO#)', 'f) Entrega até: #VENCTO#',
+      'g) Local de entrega/carregamento: #ENTREGA#', 'h) Pagamento: #VENCTO#', 'i) Observações: #OBS#']) +
+    par('Parágrafo 1º - O produto deverá ter procedência nacional, odor, coloração e aspecto normais, livre de impurezas, contaminantes e insetos vivos não permitidos pela legislação, sendo todas as cargas aferidas e classificadas no recebimento.') +
+    par('Parágrafo 2º - Salvo ajuste diverso, serão admitidos os seguintes limites de tolerância: até 14,00% de umidade; até 8,00% de grãos avariados, brotados, imaturos, chochos, danificados, mofados, ardidos ou queimados; até 30,00% de grãos quebrados; até 8,00% de grãos esverdeados; até 1,00% de impurezas; e 0,00% de insetos vivos.') +
+    par('Parágrafo 3º - Caso o produto apresente qualidade inferior à contratada, a COMPRADORA poderá recusá-lo ou recebê-lo com aplicação de descontos, conforme classificação, tabela, critérios comerciais e legislação aplicável.') +
+    par('Parágrafo 4º - Do preço ajustado poderão ser descontados tributos, contribuições ou retenções legais eventualmente aplicáveis, inclusive FUNRURAL e SENAR, caso o(a) VENDEDOR(A) não comprove documentalmente sua inexigibilidade.') +
+    clausula('CLÁUSULA 2ª - DA ENTREGA') +
+    par('O produto será entregue no local indicado na Cláusula 1ª, item “g”, dentro do prazo contratado e nos padrões de qualidade estabelecidos neste instrumento.') +
+    par('Parágrafo 1º - As quantidades entregues serão comprovadas pelos documentos de recebimento, pesagem e classificação emitidos por ocasião da entrega de cada carga.') +
+    par('Parágrafo 2º - A COMPRADORA poderá fixar novo prazo para entrega de produto dentro da qualidade contratada ou considerar resolvido o presente contrato, com aplicação das penalidades cabíveis.') +
+    clausula('CLÁUSULA 3ª - DO PREÇO E PAGAMENTO') +
+    par('O preço ajustado será de R$ #VALOR_BRUTO_SC# por saca, totalizando R$ #TOTAL# (#VALORPOREXTENSO#), observadas as quantidades efetivamente entregues, classificadas e aceitas.') +
+    par('Parágrafo Único - O pagamento será realizado na data ajustada, mediante comprovação da entrega do produto, disponibilidade da mercadoria e apresentação dos documentos fiscais exigidos pela legislação.') +
+    clausula('CLÁUSULA 4ª - DA GARANTIA') +
+    par('Para garantir o fiel cumprimento das obrigações assumidas, o(a) VENDEDOR(A) dá em garantia a quantidade de #QTDE_SC# sacas de #NOMEPRODUTO#, correspondente a #QTDE_KG# Kg, obrigando-se a manter produto suficiente, livre e desembaraçado de ônus, restrições, dívidas, vendas anteriores ou garantias prestadas a terceiros.') +
+    par('Parágrafo 1º - Em caso de inadimplemento, mora, não entrega total ou parcial da mercadoria, ou descumprimento de qualquer obrigação contratual, a COMPRADORA poderá adotar as medidas administrativas e judiciais cabíveis para satisfação de seu crédito, inclusive cobrança, arresto, sequestro ou execução, sem prejuízo de multa, perdas e danos, encargos e honorários advocatícios.') +
+    par('Parágrafo 2º - O presente instrumento constitui título executivo extrajudicial, conforme legislação vigente, tanto em relação às obrigações de pagar quanto às obrigações de entregar mercadoria.') +
+    clausula('CLÁUSULA 5ª - DAS DECLARAÇÕES DO VENDEDOR') +
+    par('O(A) VENDEDOR(A) declara, sob as penas da lei, que:') +
+    itens(['a) possui poderes e condições para vender a mercadoria objeto deste contrato;',
+      'b) o produto está livre e desembaraçado de quaisquer ônus, dívidas, restrições, garantias ou vendas anteriores;',
+      'c) todas as informações prestadas à COMPRADORA são verdadeiras, completas e corretas;',
+      'd) produzirá e entregará a mercadoria em conformidade com a legislação ambiental, trabalhista, previdenciária, sanitária e demais normas aplicáveis;',
+      'e) não utilizará trabalho irregular, forçado, análogo ao escravo, infantil ou em desacordo com a legislação vigente;',
+      'f) responsabiliza-se por eventuais irregularidades relativas à origem, produção, propriedade, posse, qualidade ou disponibilidade da mercadoria.']) +
+    clausula('CLÁUSULA 6ª - DAS DISPOSIÇÕES GERAIS') +
+    par('Este contrato é firmado em caráter irrevogável e irretratável, obrigando as partes, seus herdeiros e sucessores.') +
+    par('Parágrafo 1º - O(A) VENDEDOR(A) não poderá ceder, transferir ou negociar o presente contrato, total ou parcialmente, sem autorização expressa da COMPRADORA.') +
+    par('Parágrafo 2º - O descumprimento de qualquer cláusula sujeitará a parte inadimplente às penalidades contratuais e legais, inclusive multa, perdas e danos, encargos, custas e honorários advocatícios.') +
+    par('Parágrafo 3º - Caso aplicável, o(a) VENDEDOR(A) poderá contratar seguro da lavoura ou do produto objeto deste contrato, ficando obrigado(a) a informar à COMPRADORA eventual sinistro, frustração de safra ou fato que comprometa a entrega da mercadoria.') +
+    clausula('CLÁUSULA 7ª - DO FORO') +
+    par('As partes elegem o Foro da Comarca competente, ou outro a critério da COMPRADORA quando legalmente permitido, para dirimir quaisquer controvérsias decorrentes deste contrato.') +
+    par('E, por estarem justas e contratadas, firmam o presente instrumento juntamente com duas testemunhas, para que produza seus jurídicos e legais efeitos.') +
+    '<p style="text-align:left;margin:14pt 0 20pt;font-size:10pt;">#DATARODAPE#</p>' +
+    '<table style="width:100%;border-collapse:collapse;border:none;margin:0 0 18pt;font-size:10pt;"><tbody><tr>' +
+      assinatura('VENDEDOR(A)', ['#VEND_NOME#']) + assinatura('COMPRADOR(A)', ['#COMP_NOME#']) +
+    '</tr></tbody></table>' +
+    '<p style="text-align:center;margin:0 0 4pt;font-size:10pt;"><strong>TESTEMUNHAS</strong></p>' +
+    '<table style="width:100%;border-collapse:collapse;border:none;font-size:10pt;"><tbody><tr>' +
+      assinatura('', ['ANA LIZA REGO BELO', 'CPF: 111.111.111-11', 'RG: 11.111.111-1']) +
+      assinatura('', ['JACINTO LEITE AQUINO REGO', 'CPF: 222.222.222-22', 'RG: 22.222.222-2']) +
+    '</tr></tbody></table>' +
+    '</div>';
+}
+
+
+/* Gera o contrato: troca as legendas pelos valores e abre pronto para
+   imprimir, como no WinDev. Os valores chegam por mensagem de quem pediu —
+   a tela de contratos, por exemplo. */
+let valoresDoContrato = null;
+window.addEventListener('message', evento => {
+  const dados = evento.data || {};
+  if (dados.origem !== 'MODELO_CONTRATO_GERAR') return;
+  valoresDoContrato = dados.valores || {};
+  editor.value = substituirMacros(editor.value, valoresDoContrato);
+  $('modeloAtual').textContent = 'Contrato gerado — pronto para imprimir';
+  imprimir();
+});
+
+/* Pré-visualiza a substituição sem alterar o modelo guardado. */
+function previaSubstituida() {
+  const pendentes = String(editor.value).match(/#[A-Z_]+#/g) || [];
+  if (pendentes.length) {
+    const unicas = Array.from(new Set(pendentes));
+    B.mensagem('Este modelo ainda tem ' + unicas.length + ' legenda(s) sem valor: '
+      + unicas.join(', ') + '. Elas serão trocadas quando o contrato for gerado a partir de um registro.',
+      {titulo:'Legendas do modelo'});
+    return;
+  }
+  B.mensagem('Nenhuma legenda pendente neste modelo.', {titulo:'Legendas do modelo'});
+}
+
+/* Gravar como (13/09/2026): abre a janela Salvar do Windows e o usuário
+   escolhe pasta e nome. Formatos: .doc (abre no Word com a formatação) e
+   .html. Os dois voltam pelo Importar. Onde o navegador não tem a janela
+   Salvar, o arquivo vai para a pasta de downloads. */
+function documentoParaArquivo(conteudo) {
+  const pg = paginaAtual();
+  return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">' +
+    '<head><meta charset="utf-8"><title>FacilApp Doc</title><style>' +
+    '@page{size:' + pg.w + 'mm ' + pg.h + 'mm;margin:' + pg.mv + 'mm ' + pg.dir + 'mm ' + pg.mv + 'mm ' + pg.esq + 'mm}' +
+    'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.4;color:#000}' +
+    'table{border-collapse:collapse}td,th{border:1px solid #777;padding:4px 6px}</style></head><body>' +
+    conteudo + '</body></html>';
+}
+let ultimoNomeArquivo = '';
+/* Conteúdo do arquivo conforme o tipo: .docx pelo gerador do Word; .rtf pelo
+   HtmlParaRtf.js (com papel e margens); .doc/.html como HTML. */
+function dadosDoArquivo(conteudo, tipo) {
+  const arquivo = documentoParaArquivo(conteudo);
+  const pg = paginaAtual();
+  if (tipo === 'docx') return SQLModeloContrato.gerarDocx(arquivo);
+  if (tipo === 'pdf') return FacilAppPdf.gerar(conteudo, {papelMm: {w: pg.w, h: pg.h}, margemMm: {cima: pg.mv, baixo: pg.mv, esq: pg.esq, dir: pg.dir}});
+  if (tipo === 'rtf') return FacilAppRtf.converter(conteudo, {papelMm: {w: pg.w, h: pg.h}, margemMm: {cima: pg.mv, baixo: pg.mv, esq: pg.esq, dir: pg.dir}});
+  return '\ufeff' + arquivo;
+}
+
+/* Gravar como (13/09/2026, modelo do Daniel): abre DIRETO a janela "Salvar
+   como" do Windows (showSaveFilePicker) com os tipos Word, Word 97-2003, RTF
+   e HTML — grava em qualquer pasta, inclusive no G: do Google Drive. O tipo
+   sai da extensão escolhida na janela.
+   Onde o navegador não deixa abrir essa janela (tela dentro do menu, navegador
+   sem suporte), usa a janela Salvar como do FacilApp, que grava no servidor
+   pela API. */
+async function gravarComo() {
+  const conteudo = editor.value;
+  if (!String(conteudo).replace(/<[^>]*>/g, '').trim()) {
+    B.mensagem('O documento está vazio.', {titulo:'Gravar como'});
+    return;
+  }
+  /* Só a janela "Salvar como" do Windows (13/09/2026). A janela do FacilApp foi excluída
+     do sistema a pedido do Daniel: se a do Windows não abrir, mostra o motivo. */
+  if (typeof window.showSaveFilePicker !== 'function') {
+    B.mensagem('Este navegador não abre a janela "Salvar como" do Windows.\nUse o Chrome ou o Edge.', {titulo:'Gravar como'});
+    return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: (ultimoNomeArquivo || 'Documento').replace(/\.[a-z0-9]{2,5}$/i, '') + '.docx',
+      types: [
+        {description: 'Documento do Word (*.docx)', accept: {'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']}},
+        {description: 'Documento do Word 97-2003 (*.doc)', accept: {'application/msword': ['.doc']}},
+        {description: 'Rich Text Format (*.rtf)', accept: {'application/rtf': ['.rtf']}},
+        {description: 'Documento PDF (*.pdf)', accept: {'application/pdf': ['.pdf']}},
+        {description: 'Página da Web (*.html)', accept: {'text/html': ['.html']}}
+      ]
+    });
+    const tipo = ((handle.name.match(/\.([a-z0-9]+)$/i) || [])[1] || 'docx').toLowerCase();
+    const writable = await handle.createWritable();
+    await writable.write(await dadosDoArquivo(conteudo, ['docx', 'doc', 'rtf', 'html', 'pdf'].includes(tipo) ? tipo : 'docx'));
+    await writable.close();
+    ultimoNomeArquivo = handle.name;
+    $('modeloAtual').textContent = 'Editor de texto · ' + handle.name;
+    return;
+  } catch (err) {
+    if (err && err.name === 'AbortError') return;
+    B.mensagem('Não foi possível abrir a janela "Salvar como" do Windows:\n' + (err && (err.message || err)), {titulo:'Gravar como'});
+  }
+}
+
+/* Preview (13/09/2026): mostra o contrato com dados simbólicos no lugar das
+   legendas, para ver como fica. Extensos pelo Extenso.js. Quando o contrato
+   vem de um registro real (MODELO_CONTRATO_GERAR), usa os valores reais. */
+function dadosSimbolicos() {
+  const qtdeSc = 1333.33, valorSc = 150, total = Math.round(qtdeSc * valorSc * 100) / 100;
+  const moeda = v => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const hoje = new Date(), venc = new Date(hoje.getTime() + 30 * 86400000);
+  const data = d => d.toLocaleDateString('pt-BR');
+  const X = window.FacilAppExtenso;
+  return {
+    NUMCONTRATO: '100003589',
+    VEND_NOME: 'PRODUTOR DEMONSTRAÇÃO', VEND_ENDERECO: 'Estrada Municipal, km 12', VEND_CIDADE: 'Pilar do Sul',
+    VEND_BAIRRO: 'Zona Rural', VEND_CEP: '18185-000', VEND_CNPJ: '123.456.789-00', VEND_IE: '123.456.789.110',
+    COMP_NOME: 'FACILAPP CEREAIS LTDA', COMP_ENDERECO: 'Av. das Indústrias, 1000', COMP_CIDADE: 'Pilar do Sul',
+    COMP_BAIRRO: 'Distrito Industrial', COMP_CEP: '18185-100', COMP_CNPJ: '12.345.678/0001-90', COMP_IE: '555.666.777.888',
+    NOMEPRODUTO: 'SOJA GRANEL', QTDE_SC: moeda(qtdeSc), QTDE_KG: moeda(qtdeSc * 60),
+    QUANTIDADEPOREXTENSO: X ? X.sacas(qtdeSc) : '',  /* só o número (feminino); a unidade (sacas, ton, cx) é digitada no contrato após a macro */
+    VALOR_SC: moeda(valorSc), VALOR_BRUTO_SC: moeda(valorSc), TOTAL: moeda(total),
+    VALORPOREXTENSO: X ? X.reais(total) : '',
+    VENCTO: data(venc), ENTREGA: 'Armazém FacilApp - Pilar do Sul/SP', OBS: 'Sem observações.',
+    DATARODAPE: X ? X.dataRodape('Pilar do Sul', hoje) : '',  /* cidade do vendedor (VEND_CIDADE) + data */
+    NOME: 'PRODUTOR DEMONSTRAÇÃO', CPF_CNPJ: '123.456.789-00', ENDERECO: 'Estrada Municipal, km 12', CIDADE: 'Pilar do Sul',
+    BAIRRO: 'Zona Rural', PROPRIEDADE: 'Fazenda Boa Safra', PRODUTO: 'SOJA GRANEL', ARMAZEM: 'Armazém FacilApp',
+    QUANTIDADE: moeda(qtdeSc), UMIDADE: '14,00', PRECO: moeda(valorSc), AMAIS: '0,00', CONTRATO: '100003589',
+    DATA: data(hoje), EMPRESA: 'FACILAPP CEREAIS LTDA'
+  };
+}
+
+function imprimir() {
+  if (!String(editor.value).replace(/<[^>]*>/g, '').trim()) {
+    B.mensagem('O documento está vazio.', {titulo:'Preview'});
+    return;
+  }
+  const hojeDoc = new Date();
+  const MESES_DOC = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const valores = {DATA: hojeDoc.toLocaleDateString('pt-BR'), DIA: String(hojeDoc.getDate()),
+    MES: MESES_DOC[hojeDoc.getMonth()], ANO: String(hojeDoc.getFullYear()),
+    DATARODAPE: window.FacilAppExtenso ? FacilAppExtenso.dataRodape('', hojeDoc) : hojeDoc.toLocaleDateString('pt-BR')};
+  const conteudo = substituirMacros(editor.value, valores);
+  /* A folha do contrato é A4 em pé, não paisagem como os relatórios. */
+  const pg = paginaAtual();
+  const estilo = '<style>@page{size:' + pg.w + 'mm ' + pg.h + 'mm;margin:' + pg.mv + 'mm ' + pg.dir + 'mm ' + pg.mv + 'mm ' + pg.esq + 'mm}'
+    + 'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.4;color:#000}'
+    + 'table{width:100%;border-collapse:collapse}'
+    + 'td,th{border:1px solid #777;padding:4px 6px}'
+    + 'tr{break-inside:avoid}</style>';
+  if (!window.FacilAppImpressao || !window.FacilAppImpressao.imprimir(estilo + '<section>' + conteudo + '</section>')) {
+    B.mensagem('Não foi possível preparar o preview.', {titulo:'Preview'});
+  }
+}
+
+/* Quando o editor e aberto a partir de um memo do cadastro, o texto vem por
+   mensagem e volta por mensagem — nao pelo banco. */
+let veioDeMemo = false;
+window.addEventListener('message', evento => {
+  const dados = evento.data || {};
+  if (dados.origem !== 'MODELO_CONTRATO_CARREGAR') return;
+  veioDeMemo = true;
+  editor.value = String(dados.conteudo || '');
+  $('modeloAtual').textContent = 'Editando o contrato do cadastro';
+});
+
+/* Modelo do produto (botões C, CF, V, VF e CPR da lista de Produtos):
+   ?id=<ID_PRODUTOS>&tipo=<C|CF|V|VF|CPR>, lendo e gravando
+   CER_PRODUTOS.CONTRATO_<tipo> — como a WIN_Contrato_Modelo do WinDev.
+   Ver SQLModeloContrato.js. */
+let caminhoWord = '';
+
+/* Confirmação numa janela da própria tela (nunca alert/confirm). */
+function perguntar(titulo, texto, rotuloSim) {
+  return new Promise(resolve => {
+    const dialogo = document.createElement('dialog');
+    dialogo.className = 'facilapp-msg';
+    const t = document.createElement('strong'); t.className = 'facilapp-msg-titulo'; t.textContent = titulo;
+    const p = document.createElement('p'); p.className = 'facilapp-msg-texto'; p.textContent = texto; p.style.whiteSpace = 'pre-line';
+    const acoes = document.createElement('div'); acoes.className = 'modal-footer-actions';
+    const nao = document.createElement('button'); nao.type = 'button'; nao.className = 'toolbar-btn'; nao.textContent = 'Cancelar';
+    const sim = document.createElement('button'); sim.type = 'button'; sim.className = 'toolbar-btn'; sim.textContent = rotuloSim || 'Confirmar';
+    const fim = valor => { dialogo.close(); dialogo.remove(); resolve(valor); };
+    nao.onclick = () => fim(false); sim.onclick = () => fim(true);
+    acoes.append(nao, sim); dialogo.append(t, p, acoes);
+    document.body.append(dialogo); dialogo.showModal(); nao.focus();
+  });
+}
+
+async function gravar() {
+  const conteudo = editor.value;
+  if (!String(conteudo).replace(/<[^>]*>/g, '').trim()) {
+    B.mensagem('O modelo está vazio.', {titulo:'Gravar Contrato'});
+    return;
+  }
+  /* Veio de um memo do cadastro: devolve o texto e quem grava e o cadastro. */
+  if (veioDeMemo && window.parent && window.parent !== window) {
+    window.parent.postMessage({origem:'MODELO_CONTRATO_GRAVAR', conteudo: conteudo}, '*');
+    return;
+  }
+  if (!idModelo || !tipoContrato) {
+    B.mensagem('Abra o modelo pelos botões C, CF, V, VF ou CPR da lista de Produtos para saber onde gravar.', {titulo:'Gravar Contrato'});
+    return;
+  }
+  /* Regra do Daniel (13/09/2026): gravar nunca mexe no arquivo .docx original.
+     1) O texto do editor vai para o campo CER_PRODUTOS.CONTRATO_<tipo>; a
+        impressão do contrato sai sempre desse campo.
+     2) Grava também o Word com nome padrão "<PRODUTO>-<TIPO>.docx" (ex.:
+        SOJA GRANEL-C.docx, SOJA GRANEL-VF.docx) na pasta dos contratos,
+        sempre o mesmo nome. Sem pergunta. */
+  try {
+    await SQLModeloContrato.gravar(idModelo, tipoContrato, conteudo);
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({origem:'MODELO_CONTRATO_GRAVADO', id: idModelo, tipo: tipoContrato}, '*');
+    }
+    let arquivoGravado = '', erroArquivo = '';
+    try {
+      arquivoGravado = await SQLModeloContrato.gravarArquivoPadrao(nomeProduto, tipoContrato,
+        documentoParaArquivo(conteudo), pastaContratos, caminhoWord);
+    } catch (errArq) { erroArquivo = errArq.message || String(errArq); }
+    B.mensagem(erroArquivo
+      ? 'Modelo gravado no cadastro do produto.\nO arquivo Word não foi gravado: ' + erroArquivo
+      : 'Modelo gravado no cadastro do produto e no arquivo:\n' + arquivoGravado, {titulo:'Gravar Contrato'});
+  } catch (err) {
+    B.mensagem('Falha ao gravar: ' + (err.message || err), {titulo:'Gravar Contrato'});
+    console.error('gravarModeloContrato', err);
+  }
+}
+
+/* Produto e pasta usados no nome padrão do Word gravado. */
+let nomeProduto = '';
+let pastaContratos = SQLModeloContrato.PASTA_PADRAO;
+
+async function carregar() {
+  const nomeTipo = (SQLModeloContrato.NOME_TIPO || {})[tipoContrato.toUpperCase()] || tipoContrato;
+  if (!idModelo) { $('modeloAtual').textContent = tipoContrato ? 'Novo modelo · ' + nomeTipo : 'Novo modelo'; return; }
+  try {
+    const r = await SQLModeloContrato.obter(idModelo, tipoContrato);
+    editor.value = r.conteudo || '';
+    caminhoWord = r.caminho || '';
+    nomeProduto = r.produto || ('PRODUTO ' + idModelo);
+    if (caminhoWord) pastaContratos = caminhoWord.replace(/[\\/][^\\/]*$/, '');
+    $('modeloAtual').textContent = 'Produto ' + idModelo + (r.produto ? ' - ' + r.produto : '') +
+      ' · ' + nomeTipo + ' (' + tipoContrato.toUpperCase() + ')';
+    /* Modelo em .docx: tenta abrir pela API em silêncio, sem mensagem na
+       abertura (pedido do Daniel, 13/09/2026). Se não abrir, o caminho fica
+       indicado no topo e o modelo entra pelo botão Importar. */
+    if (caminhoWord) {
+      $('modeloAtual').textContent += ' · Word: ' + caminhoWord;
+      try { editor.value = await SQLModeloContrato.lerWord(caminhoWord); }
+      catch (erroWord) { console.warn('Modelo em Word não aberto pela API:', erroWord.message || erroWord); }
+    }
+  } catch (err) {
+    B.mensagem('Falha ao carregar: ' + (err.message || err), {titulo:'FacilApp Doc'});
+  }
+}
+
+$('fechar').onclick = fechar;
+/* Importar (13/09/2026): o usuário escolhe um .docx ou .rtf no computador e o
+   texto formatado entra no editor. .docx pelo mammoth.js, .rtf pelo rtf.js
+   (dependencias/, ambos MIT). Nada é gravado até clicar em Gravar. */
+/* .docx gravado pelo próprio FacilApp Doc: zip sem compressão com o texto em
+   word/afchunk.htm. Procura a entrada e devolve o <body> dela; se não for um
+   desses, devolve '' e quem abre é o mammoth. */
+function htmlEmbutidoDocx(buffer) {
+  try {
+    const b = new Uint8Array(buffer), nome = 'word/afchunk.htm';
+    const u16 = i => b[i] | (b[i + 1] << 8), u32 = i => (b[i] | (b[i + 1] << 8) | (b[i + 2] << 16) | (b[i + 3] << 24)) >>> 0;
+    for (let i = 0; i + 30 < b.length; i++) {
+      if (b[i] !== 0x50 || b[i + 1] !== 0x4B || b[i + 2] !== 0x03 || b[i + 3] !== 0x04) continue;
+      const metodo = u16(i + 8), tam = u32(i + 18), lenNome = u16(i + 26), lenExtra = u16(i + 28);
+      const n = new TextDecoder().decode(b.subarray(i + 30, i + 30 + lenNome));
+      const ini = i + 30 + lenNome + lenExtra;
+      if (n === nome && metodo === 0) {
+        const texto = new TextDecoder('utf-8').decode(b.subarray(ini, ini + tam));
+        const doc = new DOMParser().parseFromString(texto, 'text/html');
+        return doc.body ? doc.body.innerHTML : '';
+      }
+      i = ini + tam - 1;
+    }
+  } catch (e) { console.warn('htmlEmbutidoDocx', e); }
+  return '';
+}
+
+/* Importar PDF (13/09/2026): a API FacilApp converte o PDF em DOCX
+   (POST /api/documentos/pdf-para-docx, pdf2docx) e o DOCX entra como os demais.
+   Enquanto converte, fica a mensagem "Importando PDF via FacilApp". */
+function mensagemImportandoPdf(nome) {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'facilapp-msg';
+  const titulo = document.createElement('strong');
+  titulo.className = 'facilapp-msg-titulo';
+  titulo.textContent = 'Importar PDF';
+  const texto = document.createElement('div');
+  texto.className = 'facilapp-msg-texto';
+  texto.textContent = 'Importando PDF via FacilApp... ' + nome;
+  dlg.append(titulo, texto);
+  dlg.addEventListener('cancel', e => e.preventDefault());
+  document.body.appendChild(dlg);
+  dlg.showModal();
+  return { fechar: () => { try { dlg.close(); dlg.remove(); } catch (e) {} } };
+}
+
+async function pdfParaDocxPelaApi(bytes, nome) {
+  const base = (window.SQL && typeof SQL.montarBaseURL === 'function') ? SQL.montarBaseURL() : '';
+  const form = new FormData();
+  form.append('arquivo', new Blob([bytes], {type: 'application/pdf'}), nome);
+  const resp = await fetch(base + '/api/documentos/pdf-para-docx', {method: 'POST', body: form});
+  if (!resp.ok) {
+    let detalhe = '';
+    try { detalhe = (await resp.text()).slice(0, 300); } catch (e) {}
+    throw new Error('a API respondeu HTTP ' + resp.status + (detalhe ? ' — ' + detalhe : ''));
+  }
+  return resp.arrayBuffer();
+}
+
+async function importarArquivo(arquivo) {
+  if (!arquivo) return;
+  const nome = arquivo.name || '';
+  const ext = (nome.split('.').pop() || '').toLowerCase();
+  try {
+    const bytes = await arquivo.arrayBuffer();
+    let html = '';
+    if (ext === 'docx') {
+      html = htmlEmbutidoDocx(bytes) || (await mammoth.convertToHtml({arrayBuffer: bytes})).value || '';
+    } else if (ext === 'doc' || ext === 'html' || ext === 'htm') {
+      /* .doc/.html gravados pelo Gravar como: são HTML, entra o corpo. */
+      const texto = new TextDecoder('utf-8').decode(bytes);
+      const doc = new DOMParser().parseFromString(texto, 'text/html');
+      if (!doc.body || !doc.body.innerHTML.trim() || !/<html|<body/i.test(texto)) {
+        B.mensagem('Este arquivo não pôde ser lido: ' + nome + '\n.doc antigo do Word não é suportado; salve como .docx.', {titulo:'Importar modelo'});
+        return;
+      }
+      html = doc.body.innerHTML;
+    } else if (ext === 'pdf') {
+      const aviso = mensagemImportandoPdf(nome);
+      try {
+        const docx = await pdfParaDocxPelaApi(bytes, nome);
+        html = (await mammoth.convertToHtml({arrayBuffer: docx})).value || '';
+      } finally {
+        aviso.fechar();
+      }
+      if (!html.replace(/<[^>]*>/g, '').trim()) {
+        B.mensagem('A conversão do PDF não trouxe texto: ' + nome, {titulo:'Importar modelo'});
+        return;
+      }
+    } else if (ext === 'rtf') {
+      if (window.RTFJS && RTFJS.loggingEnabled) RTFJS.loggingEnabled(false);
+      if (window.WMFJS && WMFJS.loggingEnabled) WMFJS.loggingEnabled(false);
+      if (window.EMFJS && EMFJS.loggingEnabled) EMFJS.loggingEnabled(false);
+      const partes = await new RTFJS.Document(bytes, {}).render();
+      const caixa = document.createElement('div');
+      partes.forEach(el => caixa.appendChild(el));
+      html = caixa.innerHTML;
+    } else {
+      B.mensagem('Formato não suportado: ' + nome + '\nUse arquivo .docx, .rtf, .doc, .html ou .pdf.', {titulo:'Importar modelo'});
+      return;
+    }
+    if (String(editor.value || '').replace(/<[^>]*>/g, '').trim()) {
+      const ok = await perguntar('Substituir o texto do editor?', 'O conteúdo atual do editor será trocado pelo arquivo:\n' + nome, 'Importar');
+      if (!ok) return;
+    }
+    editor.value = html;
+    /* Importou: sem mensagem (13/09/2026, pedido do Daniel) — só avisa se der erro. */
+  } catch (err) {
+    B.mensagem('Não foi possível importar ' + nome + ':\n' + (err.message || err), {titulo:'Importar modelo'});
+  }
+}
+/* Papel, orientação e margens (13/09/2026). Estado de tela (localStorage),
+   não dado do modelo. A régua ocupa a área inteira do editor e os marcadores
+   (triângulos) arrastam as margens esquerda e direita do texto; a lista de
+   margem aplica um padrão. A impressão usa as mesmas margens. */
+const PAPEIS = {A4: [210, 297], Carta: [216, 279], Oficio: [216, 330], A5: [148, 210]};
+const MARGENS = {normal: [25, 20], estreita: [12.7, 12.7], larga: [30, 30]};
+const CHAVE_PAGINA = 'facilapp_modelo_contrato_pagina';
+const PX_POR_MM = 96 / 25.4;
+const margens = {esq: 20, dir: 20};
+function paginaAtual() {
+  const [w0, h0] = PAPEIS[$('papel').value] || PAPEIS.A4;
+  const paisagem = $('orientacao').value === 'paisagem';
+  const [mv] = MARGENS[$('margem').value] || MARGENS.normal;
+  return {w: paisagem ? h0 : w0, h: paisagem ? w0 : h0, mv, esq: margens.esq, dir: margens.dir};
+}
+function guardarPagina() {
+  try {
+    localStorage.setItem(CHAVE_PAGINA, JSON.stringify({papel: $('papel').value, orientacao: $('orientacao').value,
+      margem: $('margem').value, esq: margens.esq, dir: margens.dir, zoom: $('zoom').value}));
+  } catch (e) {}
+}
+function aplicarMargens() {
+  const area = document.querySelector('.editor-area');
+  if (!area) return;
+  area.style.setProperty('--mg-esq', margens.esq + 'mm');
+  area.style.setProperty('--mg-dir', margens.dir + 'mm');
+}
+function zoomAtual() {
+  const z = Number($('zoom') && $('zoom').value);
+  return z > 0 ? z : 1;
+}
+function aplicarPagina() {
+  const pg = paginaAtual(), area = document.querySelector('.editor-area');
+  if (!area) return;
+  area.style.setProperty('--pag-h', pg.h + 'mm');
+  area.style.setProperty('--mg-v', pg.mv + 'mm');
+  area.style.setProperty('--zoom', String(zoomAtual()));
+  aplicarMargens();
+  let regua = document.getElementById('regua');
+  const trabalho = editor && editor.workplace;
+  if (!regua && trabalho) {
+    regua = document.createElement('div');
+    regua.id = 'regua';
+    regua.className = 'regua';
+    trabalho.insertBefore(regua, trabalho.firstChild);
+    ligarPuxadores(regua);
+  }
+  if (regua) {
+    regua.querySelectorAll('.mg, span').forEach(el => el.remove());
+    let html = '<div class="mg esq"></div><div class="mg dir"></div>';
+    const totalCm = Math.floor((regua.getBoundingClientRect().width / zoomAtual() || 0) / (PX_POR_MM * 10));
+    for (let cm = 1; cm <= totalCm; cm++) html += '<span style="left:' + (cm * 10) + 'mm">' + cm + '</span>';
+    regua.insertAdjacentHTML('afterbegin', html);
+  }
+  guardarPagina();
+}
+/* Arrasto dos marcadores, de 1 em 1 mm, sem deixar as margens se cruzarem. */
+function ligarPuxadores(regua) {
+  ['esq', 'dir'].forEach(lado => {
+    const alca = document.createElement('div');
+    alca.className = 'puxador ' + lado;
+    alca.title = lado === 'esq' ? 'Margem esquerda (arraste)' : 'Margem direita (arraste)';
+    regua.appendChild(alca);
+    alca.addEventListener('pointerdown', ev => {
+      ev.preventDefault();
+      alca.setPointerCapture(ev.pointerId);
+      const mover = e => {
+        const z = zoomAtual(), r = regua.getBoundingClientRect(), largMm = r.width / z / PX_POR_MM;
+        let mm = Math.round((lado === 'esq' ? e.clientX - r.left : r.right - e.clientX) / z / PX_POR_MM);
+        const outro = lado === 'esq' ? margens.dir : margens.esq;
+        mm = Math.max(0, Math.min(mm, Math.floor(largMm - outro - 20)));
+        margens[lado] = mm;
+        aplicarMargens();
+        alca.title = (lado === 'esq' ? 'Margem esquerda: ' : 'Margem direita: ') + (mm / 10).toFixed(1).replace('.', ',') + ' cm';
+      };
+      const soltar = () => {
+        alca.removeEventListener('pointermove', mover);
+        alca.removeEventListener('pointerup', soltar);
+        guardarPagina();
+      };
+      alca.addEventListener('pointermove', mover);
+      alca.addEventListener('pointerup', soltar);
+    });
+  });
+}
+try {
+  const salvo = JSON.parse(localStorage.getItem(CHAVE_PAGINA) || 'null');
+  if (salvo) {
+    $('papel').value = salvo.papel || 'A4';
+    $('orientacao').value = salvo.orientacao || 'retrato';
+    $('margem').value = salvo.margem || 'normal';
+    if (Number.isFinite(salvo.esq)) margens.esq = salvo.esq;
+    if (Number.isFinite(salvo.dir)) margens.dir = salvo.dir;
+    if (salvo.zoom && [...$('zoom').options].some(o => o.value === String(salvo.zoom))) $('zoom').value = String(salvo.zoom);
+  }
+} catch (e) {}
+['papel', 'orientacao', 'zoom'].forEach(id => $(id).addEventListener('change', aplicarPagina));
+$('margem').addEventListener('change', () => {
+  const [, mh] = MARGENS[$('margem').value] || MARGENS.normal;
+  margens.esq = mh;
+  margens.dir = mh;
+  aplicarPagina();
+});
+setTimeout(aplicarPagina, 0);
+addEventListener('resize', () => { clearTimeout(window.__reguaTempo); window.__reguaTempo = setTimeout(aplicarPagina, 150); });
+$('importar').onclick = () => { $('arquivoImportar').value = ''; $('arquivoImportar').click(); };
+$('arquivoImportar').onchange = e => importarArquivo(e.target.files && e.target.files[0]);
+$('macros').onclick = abrirMacros;
+$('imprimir').onclick = imprimir;
+$('gravarComo').onclick = gravarComo;
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.querySelector('dialog[open]')) fechar(); });
+
+montarEditor();
+/* Avisa o host que ja pode receber o texto do memo. */
+if (window.parent && window.parent !== window) {
+  window.parent.postMessage({origem:'MODELO_CONTRATO_PRONTO'}, '*');
+}
+if (B && typeof B.habilitarArrasto === 'function') B.habilitarArrasto($('arrasto'), $('janela'));
+</script>
+</body>
+</html>

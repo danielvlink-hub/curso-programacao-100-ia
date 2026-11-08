@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<script src="js/TemaInicial.js"></script>
+<link rel="stylesheet" href="fontes/offline-fonts.css">
+<link rel="stylesheet" href="css/TemaFacilApp.css?v=20260911060000">
+<link rel="stylesheet" href="css/browse.css?v=20260913130000">
+<link rel="stylesheet" href="dependencias/fortune-sheet-1.0.4/index.umd.min.css">
+<link rel="stylesheet" href="css/Planilha.css?v=20260914070000">
+<script src="js/browse.js?v=20260913130000"></script>
+<!-- FacilApp Planilha (13/09/2026): FortuneSheet 1.0.4 (MIT) sobre React 18; .xlsx pelo ExcelJS 4.4.0;
+     .xls/.ods pelo SheetJS. Tudo local em dependencias/, sem internet. -->
+<script src="dependencias/react-18.3.1/react.production.min.js"></script>
+<script src="dependencias/react-18.3.1/react-dom.production.min.js"></script>
+<script src="js/PlanilhaLocalePt.js?v=20260914060000"></script>
+<script src="dependencias/fortune-sheet-1.0.4/index.umd.min.js?v=20260914070000"></script>
+<script src="dependencias/exceljs-4.4.0/exceljs.min.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="js/PlanilhaExcel.js?v=20260914020000"></script>
+<title>FacilApp Planilha</title>
+<script src="js/TemaBrowseBalanca.js"></script>
+</head>
+<body>
+<div class="browse-window" id="janela" style="display:flex;flex-direction:column">
+  <header class="browse-header" id="arrasto">
+    <div class="browse-title-group">
+      <span class="browse-title">FacilApp Planilha</span>
+      <span class="browse-subtitle" id="arquivoAtual">Planilha nova</span>
+    </div>
+    <button class="btn-close" id="fechar" type="button" title="Fechar">✕</button>
+  </header>
+  <div class="browse-toolbar">
+    <div class="toolbar-left">
+      <button class="toolbar-btn" id="novo" type="button" title="Começar uma planilha em branco"><span class="material-symbols-rounded">note_add</span>Novo</button>
+      <button class="toolbar-btn" id="abrir" type="button" title="Abrir .xlsx, .xls, .ods, .csv ou planilha FacilApp (.json)"><span class="material-symbols-rounded">folder_open</span>Abrir</button>
+      <input type="file" id="arquivo" accept=".xlsx,.xlsm,.xls,.ods,.csv,.txt,.json" hidden>
+    </div>
+    <div class="planilha-status" id="status"></div>
+    <div class="toolbar-right">
+      <button class="toolbar-btn" id="gravarComo" type="button" title="Salvar em .xlsx, .csv ou .json, na pasta que escolher"><span class="material-symbols-rounded">save_as</span>Gravar como</button>
+    </div>
+  </div>
+  <div class="planilha-area"><div id="planilha"></div></div>
+</div>
+<script src="js/Planilha.js?v=20260914040000"></script>
+</body>
+</html>

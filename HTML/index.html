@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro" class="topbar-fonts-pending">
+<head>
+  <meta charset="UTF-8">
+  <!--
+    MENU PRINCIPAL DO FASTPOUSADA (curso "Programação 100% IA")
+    Daniel, 03/11/2026: "o menu está errado, deve pegar o menu do Gourmet e adaptar para o curso".
+    O QUE É: cópia adaptada do index.html do Gourmet (C:\COWORK-CHATGPT\Gourmet WEB\index.html, que lá é TRAVADO).
+      Ficou: barra superior (hambúrguer, marca, seletor de temas, atalhos, usuário/Sair), mega menu (favoritos, histórico,
+      busca, colunas de módulos), palco com as telas (navegarIframe) e aviso fixo quando o menu não carrega.
+      Saiu (é do restaurante): status/tempos do delivery, caixa, sino do Kanban, janelas de mesas/clientes, ícones 3D,
+      scripts de celular/WhatsApp/loja.
+    DE ONDE VEM O MENU: só do banco, pela API 7777 (assets/js/ApiCurso.js -> GET /api/menu), tabelas menu_catalogo_itens
+      + menu_usuarios. Regras do Gourmet: item não liberado (hide OU disable) SOME; módulos "Configurações" e "Administração" só
+      administrador; o menu é relido do banco toda vez que o mega menu abre.
+    CUIDADO: erro na montagem do menu tranca o usuário fora. Testar com administrador e com usuário comum.
+  -->
+  <script src="assets/js/avisos.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastPousada • Curso Programação 100% IA</title>
+  <link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+  <script>
+    // Tema salvo aplicado antes do CSS: evita piscar o tema padrão (mesma chave do Gourmet).
+    (function () {
+      try {
+        var t = localStorage.getItem('facilapp_tema_ativo') || localStorage.getItem('facilapp_tema_padrao');
+        if (t) document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+  <script src="assets/js/ApiCurso.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    :root { --font-GOURMET: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; }
+    * { box-sizing: border-box; }
+    /* Fontes de ícone ainda carregando: esconde o texto das ligaduras (ex.: "home") até a fonte chegar. */
+    html.topbar-fonts-pending .material-icons, html.topbar-fonts-pending .material-symbols-rounded { visibility: hidden; }
+
+    /* ===== BARRA SUPERIOR (cópia do Gourmet) ===== */
+    .GOURMET-topbar { position: fixed; top: 0; left: 0; right: 0; height: 46px; background: var(--fa-primary-dark, #4b5a32) !important;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 14px 0 0; z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,.28); font-family: var(--font-GOURMET); user-select: none; transition: background .25s ease; }
+    .top-left-cluster { display: flex; align-items: center; gap: 10px; height: 38px; background: var(--fa-panel, #f2ebe0) !important;
+      border-radius: 0 20px 20px 0; padding: 0 14px 0 10px; box-shadow: 2px 2px 6px rgba(0,0,0,.18); transition: background .25s ease; }
+    .btn-hamburguer { background: transparent !important; border: none !important; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 3px; border-radius: 6px; transition: background .15s; }
+    .btn-hamburguer:hover { background: rgba(125,125,125,.14) !important; }
+    .btn-hamburguer svg { fill: var(--fa-text, #4a452a) !important; }
+    .facilapp-brand-box { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .facilapp-brand-logo-wrap { display: flex; align-items: center; gap: 5px; }
+    .facilapp-logo-text { font-size: 16px; font-weight: 800; color: var(--fa-text, #2b3a16); letter-spacing: -.4px; line-height: 1; }
+    .facilapp-logo-text span { color: #d97706; }
+    .selo-gourmet-gold { display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #c25e38, #9c3f1e) !important;
+      color: #fff !important; font-size: 10px; font-weight: 700; letter-spacing: .3px; padding: 3px 9px; border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.20), inset 0 -2px 3px rgba(0,0,0,.20); }
+    .unit-selector { display: inline-flex; align-items: center; gap: 4px; background: var(--fa-field-bg, #fff) !important;
+      border: 1px solid var(--fa-border, #d5cbba) !important; border-radius: 6px; padding: 4px 9px; font-size: 11.5px; font-weight: 600;
+      color: var(--fa-text, #4a452a) !important; cursor: pointer; box-shadow: inset 0 1px 2px rgba(0,0,0,.06); }
+    .unit-selector:hover { border-color: var(--fa-primary, #a89f8c) !important; }
+    .channel-shortcuts { display: flex; align-items: center; gap: 1px; }
+    .channel-btn { width: 40px; height: 40px; background: transparent !important; border: none !important; border-radius: 9px; display: flex;
+      align-items: center; justify-content: center; cursor: pointer; transition: transform .15s ease, background .15s ease; padding: 2px; color: #e2ecc9; }
+    .channel-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.12) !important; }
+    .channel-btn.active { background: rgba(0,0,0,.22) !important; box-shadow: inset 0 2px 5px rgba(0,0,0,.38), 0 1px 0 rgba(255,255,255,.18); }
+    .channel-btn .material-icons { font-size: 26px; color: #ffffff; filter: drop-shadow(0 2px 3px rgba(0,0,0,.3)); }
+    .channel-btn:disabled { opacity: .35; cursor: not-allowed; transform: none !important; background: transparent !important; }
+    .top-right-cluster { display: flex; align-items: center; gap: 12px; }
+    .nome-usuario-topo { color: #fff; font-size: 11.5px; font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
+    .topbar-icon-action { background: transparent; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      padding: 4px; border-radius: 50%; transition: background .15s; }
+    .topbar-icon-action:hover { background: rgba(255,255,255,.15); }
+    .topbar-icon-action svg { width: 20px; height: 20px; fill: #fff; }
+
+    /* ===== POPOVERS (temas, usuário) ===== */
+    .tema-selector-popover, .caixa-popover-menu { position: absolute; top: calc(100% + 6px); background: #fff !important; border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,.2), 0 8px 10px -6px rgba(0,0,0,.1) !important; z-index: 2000 !important;
+      display: none; flex-direction: column; padding: 6px; }
+    .tema-selector-popover { left: 0; width: 190px; }
+    #popoverUsuario { right: 0; width: 170px; }
+    .tema-selector-popover.open, .caixa-popover-menu.open { display: flex !important; }
+    .tema-popover-head { font-size: 11px; font-weight: 700; color: #64748b; padding: 6px 8px; border-bottom: 1px solid #f1f5f9; margin-bottom: 4px;
+      display: flex; align-items: center; gap: 6px; }
+    .tema-options-list { display: flex; flex-direction: column; gap: 2px; max-height: min(300px, calc(100vh - 110px)); overflow-y: auto; overscroll-behavior: contain; }
+    .tema-opt-btn { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px; border: none; background: transparent !important;
+      color: #334155 !important; font-size: 12px; font-weight: 500; text-align: left; cursor: pointer; width: 100%; white-space: nowrap; }
+    .tema-opt-btn:hover { background: #f1f5f9 !important; color: #0f172a !important; }
+    .tema-color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .caixa-popover-header { font-size: 11px; color: #64748b; line-height: 1.5; padding: 4px 6px 8px; border-bottom: 1px solid #f1f5f9; margin-bottom: 6px; }
+    .caixa-action-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; border: none; background: #fff !important;
+      color: #334155 !important; font-size: 12.5px; font-weight: 500; text-align: left; cursor: pointer; width: 100%; }
+    .caixa-action-item:hover { background: #f1f5f9 !important; color: #0f172a !important; }
+
+    /* ===== MEGA MENU (cópia do Gourmet, já com o "padrão operacional") ===== */
+    .mega-menu-backdrop { position: fixed; inset: 44px 0 0 0; background: rgba(0,0,0,.4); z-index: 1500; display: none; }
+    .mega-menu-backdrop.open { display: block; }
+    .mega-menu-overlay { position: fixed; top: 44px; left: 0; width: min(1200px, calc(100vw - 32px)); max-height: calc(100vh - 44px);
+      background: var(--fa-panel, #fff); z-index: 1600; box-shadow: 0 10px 30px rgba(0,0,0,.25); border: 1px solid var(--fa-border, #cbd5e1);
+      border-top: 0; border-radius: 0 0 6px 6px; display: none; grid-template-columns: 210px minmax(0,1fr); overflow: hidden;
+      animation: megaMenuSlideDown .2s ease-out; }
+    @keyframes megaMenuSlideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .mega-menu-overlay.open { display: grid; }
+    .mega-sidebar-left { background: var(--fa-panel-alt, #f8fafc); border-right: 1px solid var(--fa-border, #e2e8f0); padding: 16px 14px; display: flex;
+      flex-direction: column; justify-content: space-between; font-size: 13px; }
+    .mega-sec-title { font-size: 16px; font-weight: 500; color: var(--fa-primary, #2b5993); display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+    .mega-side-link { display: block; font-size: 13px; color: var(--fa-text, #374151); text-decoration: none; padding: 3px 6px; cursor: pointer; line-height: 1.3; }
+    .mega-side-link:hover { color: var(--fa-primary, #0288d1); text-decoration: underline; }
+    .mega-side-link.sem-registro { color: var(--fa-muted, #94a3b8) !important; cursor: default !important; pointer-events: none !important; }
+    .mega-footer-info { font-size: 10px; color: var(--fa-muted, #64748b); line-height: 1.3; padding-top: 10px; border-top: 1px solid var(--fa-border, #f1f5f9); }
+    .mega-content-right { padding: 14px 12px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; background: var(--fa-panel, #fff);
+      max-height: calc(100vh - 60px); }
+    .mega-search-input { width: 100%; height: 34px; border: 1px solid var(--fa-border, #cbd5e1); border-radius: 3px; padding: 0 10px; font-size: 13px;
+      outline: none; background: var(--fa-field-bg, #fff); color: var(--fa-text, #333); }
+    .mega-search-input:focus { border-color: var(--fa-primary, #2b5993); }
+    .mega-links-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px 36px; align-content: start; }
+    .mega-group-box { display: flex; flex-direction: column; gap: 3px; }
+    .mega-group-title { font-size: 16px; font-weight: 700; color: var(--fa-primary, #2b5993); margin: 0 0 5px; }
+    .mega-item-link { font-size: 13px; line-height: 1.25; padding: 0 10px; color: var(--fa-text, #334155); text-decoration: none; cursor: pointer; display: block; }
+    .mega-item-link:hover { color: var(--fa-primary, #0288d1); text-decoration: underline; }
+    /* Tela prevista (ainda sem arquivo): cinza e sem clique — mesmo .disabled do Gourmet, sem risco. */
+    .mega-item-link.disabled { color: var(--fa-muted, #64748b) !important; text-decoration: none !important; opacity: .6; cursor: default; }
+    .mega-item-link.disabled:hover { text-decoration: none; }
+    .mega-fav-star { display: inline-block; margin-left: 4px; color: currentColor; font-size: 11px; cursor: pointer; transition: color .15s, transform .1s; }
+    .mega-fav-star:hover { color: #f59e0b; transform: scale(1.15); }
+    .mega-fav-star.fav-ativo { color: #f59e0b; }
+
+    /* ===== FAIXA DE DASHBOARDS (Daniel, 04/11/2026: "a faixa de dashboard precisa ser trazida do index, pois é parte
+       integrante do menu e do acessos") — mesma barra de abas do index do curso antigo (sheet-row/sheet-tab), com as
+       cores do tema (--fa-*). As abas vêm de menu_catalogo_itens tipo 'dashboard', já filtradas pelas permissões. */
+    :root { --altura-faixa-dash: 34px; }
+    .faixa-dashboards { position: fixed; top: 46px; left: 0; right: 0; height: var(--altura-faixa-dash); z-index: 900; display: flex;
+      align-items: flex-end; overflow-x: auto; overflow-y: hidden; background: var(--fa-panel-alt, #f1f5f9);
+      border-bottom: 1px solid var(--fa-border, #d8ddcf); padding: 0 14px; gap: 4px; scrollbar-width: thin; }
+    .faixa-dashboards::-webkit-scrollbar { height: 4px; }
+    .faixa-dashboards::-webkit-scrollbar-thumb { background: var(--fa-border, #cbd5e1); border-radius: 3px; }
+    body.sem-faixa-dash .faixa-dashboards { display: none; }
+    /* Aba no modelo de browse do Gourmet (contas_receber.html .browse-tab): 29px, ativa 32px na cor primária. */
+    .sheet-tab { height: 29px; min-width: 125px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 0 13px; border: 1px solid var(--fa-border, #d8ddcf); border-bottom: 0; border-radius: 6px 6px 0 0; cursor: pointer;
+      background: var(--fa-field-bg, #f8fafc); color: var(--fa-muted, #64748b); white-space: nowrap; font: 800 12px var(--font-GOURMET); }
+    .sheet-tab:hover { color: var(--fa-text, #1e293b); }
+    .sheet-tab.active { height: 32px; background: var(--fa-primary, #4b5a32); border-color: var(--fa-primary-dark, #35470e); color: var(--fa-button-text, #fff); }
+    .sheet-tab .material-icons { font-size: 16px; color: inherit; }
+
+    /* ===== PALCO ===== */
+    .stage-container { width: 100%; margin-top: calc(46px + var(--altura-faixa-dash)); height: calc(100vh - 46px - var(--altura-faixa-dash));
+      position: relative; overflow: hidden; background: var(--fa-bg, #f5f7fa); }
+    body.sem-faixa-dash .stage-container { margin-top: 46px; height: calc(100vh - 46px); }
+    /* O TemaFacilApp.css (do Gourmet, sem faixa) fixa ".stage-container { margin-top:45px !important }". Aqui o palco desce
+       a altura da faixa; seletor mais forte + !important para vencer o tema sem alterar o arquivo do tema. */
+    html body main.stage-container { margin-top: calc(46px + var(--altura-faixa-dash)) !important; height: calc(100vh - 46px - var(--altura-faixa-dash)) !important; }
+    html body.sem-faixa-dash main.stage-container { margin-top: 46px !important; height: calc(100vh - 46px) !important; }
+    .stage-container::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; visibility: hidden; opacity: 0; background: var(--fa-bg, #f5f7fa); }
+    .stage-container.stage-changing::after { visibility: visible; opacity: 1; }
+    .stage-iframe { width: 100%; height: 100%; border: none; display: block; background: transparent; }
+    .stage-iframe.stage-loading { visibility: hidden; }
+  </style>
+  <script>
+    (function prepararMenuSuperior() {
+      var liberado = false;
+      function liberar() { if (liberado) return; liberado = true; document.documentElement.classList.remove('topbar-fonts-pending'); }
+      if (!document.fonts || typeof document.fonts.load !== 'function') { liberar(); return; }
+      Promise.allSettled([document.fonts.load('400 12px Roboto'), document.fonts.load('700 12px Roboto'), document.fonts.load('18px "Material Icons"')])
+        .then(function () { requestAnimationFrame(function () { requestAnimationFrame(liberar); }); });
+      setTimeout(liberar, 4000);   // fonte ausente ou máquina lenta
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- 1. BARRA SUPERIOR -->
+  <header class="GOURMET-topbar">
+    <div class="top-left-cluster">
+      <button class="btn-hamburguer" id="btnMegaToggle" onclick="alternarMegaMenu()" title="Menu geral do sistema">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 6h18v2.5H3V6zm0 5.5h18v2.5H3v-2.5zm0 5.5h18v2.5H3V17z"/></svg>
+      </button>
+      <div class="facilapp-brand-box" onclick="alternarMegaMenu()" title="FacilApp FastPousada">
+        <div class="facilapp-brand-logo-wrap">
+          <svg viewBox="0 0 26 26" width="24" height="24">
+            <rect x="1.5" y="1.5" width="23" height="23" rx="5" fill="none" stroke="#2b3a16" stroke-width="2.6"/>
+            <path d="M6 13.5l4.5 4.5L20 8" fill="none" stroke="#d97706" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="facilapp-logo-text">Facil<span>App</span></span>
+        </div>
+        <span class="selo-gourmet-gold">FastPousada</span>
+      </div>
+      <div style="position:relative;">
+        <div class="unit-selector" onclick="alternarSeletorTemas(event)" title="Selecionar o tema visual do sistema">
+          <span id="txtNomeTemaOuUnidade">Tema ...</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="#6b6348" style="margin-left:2px;"><path d="M7 10l5 5 5-5z"/></svg>
+        </div>
+        <div class="tema-selector-popover" id="popoverSeletorTemas" onclick="event.stopPropagation()">
+          <div class="tema-popover-head"><span class="material-icons" style="font-size:14px; color:#0288d1;">palette</span>Escolha o Tema Visual:</div>
+          <div class="tema-options-list">
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('default')">
+              <span class="tema-color-dot" style="background:#145f97;"></span>
+              <span>Padrão Azul Executivo</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('jotape')">
+              <span class="tema-color-dot" style="background:#59651f;"></span>
+              <span>Verde</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('v1-cyberpunk')">
+              <span class="tema-color-dot" style="background:linear-gradient(135deg, #5e439b 50%, #f4a6c8 50%); border:1px solid #f4a6c8;"></span>
+              <span>V1 Cyberpunk</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('dark-tech')">
+              <span class="tema-color-dot" style="background:#075985; border:1px solid #38bdf8;"></span>
+              <span>Dark Tech Noturno</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('obsidian-gold')">
+              <span class="tema-color-dot" style="background:#b48c48;"></span>
+              <span>Obsidian Gold Dourado</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('deep-teal')">
+              <span class="tema-color-dot" style="background:#00897b;"></span>
+              <span>Deep Teal Esmeralda</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('codex-dark')">
+              <span class="tema-color-dot" style="background:#1e293b;"></span>
+              <span>Codex Dark</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('verde-escuro')">
+              <span class="tema-color-dot" style="background:#59651f; border:1px solid #9caf77;"></span>
+              <span>Verde Escuro</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('gourmet-dark')">
+              <span class="tema-color-dot" style="background:#0288d1; border:1px solid #94a3b8;"></span>
+              <span>Dark (Azul Escuro)</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('gourmet-orange-escuro')">
+              <span class="tema-color-dot" style="background:#d9531e; border:1px solid #f59e0b;"></span>
+              <span>Orange Escuro</span>
+            </button>
+            <!-- 28/09/2026 (Daniel): temas de luxo, so' acrescentados -->
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('emperor-24k')">
+              <span class="tema-color-dot" style="background:#e6c158; border:1px solid #050608;"></span>
+              <span>Emperor 24K</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('champagne-imperial')">
+              <span class="tema-color-dot" style="background:#ecd599; border:1px solid #090807;"></span>
+              <span>Champagne Imperial</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('whiskey-brass')">
+              <span class="tema-color-dot" style="background:#c9974c; border:1px solid #080809;"></span>
+              <span>Whiskey Brass</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('monaco-gold')">
+              <span class="tema-color-dot" style="background:#dfb547; border:1px solid #040806;"></span>
+              <span>Monaco Gold</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('venetian-ducat')">
+              <span class="tema-color-dot" style="background:#cca23e; border:1px solid #07080a;"></span>
+              <span>Venetian Ducat</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('solar-gold')">
+              <span class="tema-color-dot" style="background:#e5a93b; border:1px solid #08080a;"></span>
+              <span>Solar Eclipse 24K</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('slate-pro')">
+              <span class="tema-color-dot" style="background:#d99b38; border:1px solid #0f1115;"></span>
+              <span>Slate Charcoal Pro</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('matte-gold')">
+              <span class="tema-color-dot" style="background:#c5a059; border:1px solid #111214;"></span>
+              <span>Obsidian Matte Gold</span>
+
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('nordic-graphite')">
+              <span class="tema-color-dot" style="background:#4a90e2; border:1px solid #121418;"></span>
+              <span>Nordic Graphite</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('deep-pine')">
+              <span class="tema-color-dot" style="background:#38a169; border:1px solid #0d1310;"></span>
+              <span>Deep Pine & Sage</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('executive-midnight')">
+              <span class="tema-color-dot" style="background:#3182ce; border:1px solid #0b0f17;"></span>
+              <span>Executive Midnight</span>
+
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('cinza-windows')">
+              <span class="tema-color-dot" style="background:#0067c0; border:1px solid #e4e4e4;"></span>
+              <span>Cinza Windows</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('azul-ardosia')">
+              <span class="tema-color-dot" style="background:#3d5a80; border:1px solid #d5dde6;"></span>
+              <span>Azul Ardósia</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('papel-areia')">
+              <span class="tema-color-dot" style="background:#5f6b4e; border:1px solid #ddd6ca;"></span>
+              <span>Papel Areia</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('grafite-suave')">
+              <span class="tema-color-dot" style="background:#4a78ad; border:1px solid #1f2227;"></span>
+              <span>Grafite Suave</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('royal-gold')">
+              <span class="tema-color-dot" style="background:#d4af37; border:1px solid #08090d;"></span>
+              <span>Royal Onyx 24K</span>
+
+            </button>
+            <!-- 13/10/2026 (Daniel: "trazer todos"): os 2 temas-base do AgroFácil que faltavam -->
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('verde-claro')">
+              <span class="tema-color-dot" style="background:#506b3d; border:1px solid #bfd4b7;"></span>
+              <span>Verde Claro Agro</span>
+            </button>
+            <button class="tema-opt-btn" onclick="aplicarTemaSistema('agro-dark')">
+              <span class="tema-color-dot" style="background:#4e7d41; border:1px solid #101a10;"></span>
+              <span>Verde Agro Noturno</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTRO: atalhos do menu superior (menu_catalogo_itens, tipo_menu='superior') -->
+    <div class="channel-shortcuts" id="atalhosMenuSuperior"></div>
+
+    <div class="top-right-cluster">
+      <span class="nome-usuario-topo" id="txtNomeUsuarioTopo"></span>
+      <div style="position:relative;">
+        <button class="topbar-icon-action" title="Usuário" onclick="alternarUsuarioPopover(event)">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+        </button>
+        <div class="caixa-popover-menu" id="popoverUsuario" onclick="event.stopPropagation()">
+          <div class="caixa-popover-header" id="popUsuarioCabecalho"></div>
+          <button class="caixa-action-item" style="color:#dc2626 !important; font-weight:700;" onclick="encerrarSessao()">
+            <span class="material-icons" style="font-size:16px; color:#dc2626;">power_settings_new</span>Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 1b. FAIXA DE DASHBOARDS (abas montadas por renderizarFaixaDashboards) -->
+  <nav class="faixa-dashboards" id="faixaDashboards" aria-label="Dashboards"></nav>
+
+  <!-- 2. MEGA MENU -->
+  <div class="mega-menu-backdrop" id="megaBackdrop" onclick="fecharMegaMenu()"></div>
+  <aside class="mega-menu-overlay" id="megaOverlay">
+    <div class="mega-sidebar-left">
+      <div>
+        <div style="margin-bottom:14px;">
+          <div class="mega-sec-title"><span class="material-icons" style="font-size:14px;">star_border</span>Favoritos</div>
+          <div id="listaFavoritosMenu"></div>
+        </div>
+        <div>
+          <div class="mega-sec-title"><span class="material-icons" style="font-size:14px;">history</span>Histórico</div>
+          <div id="listaHistoricoMenu"></div>
+        </div>
+      </div>
+      <div class="mega-footer-info">
+        <div>Curso Programação 100% IA</div>
+        <div>FacilApp © 2026</div>
+      </div>
+    </div>
+    <div class="mega-content-right">
+      <input type="text" class="mega-search-input" placeholder="Procure uma página pelo nome ou categoria" oninput="filtrarMegaLinks(this.value)">
+      <div class="mega-links-grid" id="megaLinksGrid"></div>
+    </div>
+  </aside>
+
+  <!-- 3. PALCO -->
+  <main class="stage-container">
+    <iframe id="mainStageFrame" class="stage-iframe" src="about:blank" title="Palco"></iframe>
+  </main>
+
+  <script>
+    /* =========================================================================
+     * MENU DO FASTPOUSADA — funções adaptadas do index.html do Gourmet.
+     * Mapa de itens: cada item ATIVO do menu vira uma entrada em ACOES_MENU (rótulo -> caminho .html), usada pelo
+     * clique, pelos Favoritos e pelo Histórico (que guardam só o rótulo, como no Gourmet).
+     * ========================================================================= */
+    const ACOES_MENU = {};
+    const CHAVE_TELA_ATIVA = 'fastpousada_tela_ativa';
+    const CHAVE_HISTORICO_MENU = 'fastpousada_historico_menu';
+    const CHAVE_FAVORITOS_MENU = 'fastpousada_favoritos_menu';
+    const MAX_ITENS_HISTORICO_MENU = 6;
+    let telaInicial = '';           // 1º dashboard liberado: abre ao entrar e ao fechar uma tela
+
+    /** menuEstaAtivo(valor, padrao) — mesma leitura de flags do Gourmet (1/X/S/SIM/TRUE/true = ligado). */
+    function menuEstaAtivo(valor, padrao = true) {
+      if (valor === undefined || valor === null || valor === '') return padrao;
+      if (typeof valor === 'string') return ['1', 'X', 'S', 'SIM', 'TRUE'].includes(valor.trim().toUpperCase());
+      return Boolean(Number(valor) || valor === true);
+    }
+
+    /** Item liberado = não escondido, não desabilitado e ativo. Regra do Gourmet (22/10/2026): o resto SOME, nada riscado. */
+    function itemLiberado(item) {
+      return !menuEstaAtivo(item.hide, false) && !menuEstaAtivo(item.disable, false) && menuEstaAtivo(item.ativo, true);
+    }
+
+    /** Item ainda sem tela (arquivo vazio no catálogo), não escondido: aparece cinza como "tela prevista". */
+    function itemPrevisto(item) {
+      return !String(item.path || '').trim() && !menuEstaAtivo(item.hide, false) && menuEstaAtivo(item.ativo, true);
+    }
+    /** O que aparece no menu: liberado (clicável) ou previsto (cinza). */
+    function itemVisivel(item) { return itemLiberado(item) || itemPrevisto(item); }
+
+    /** Caminho aceito no palco: só telas .html desta pasta (sem "..", sem endereço externo). */
+    function caminhoValido(p) {
+      return /^[A-Za-z0-9_./-]+\.html([?#].*)?$/.test(String(p || '')) && !String(p).includes('..');
+    }
+
+    /* ---------------------------------------------------------------- palco */
+    /**
+     * navegarIframe(url) — abre uma tela no palco.
+     * ENTRADAS: caminho relativo de um .html desta pasta. EFEITOS: fecha mega menu e popovers, guarda a tela ativa na
+     * aba (volta nela no F5) e passa o tema para a tela. "api-console" abre o console da API em outra aba.
+     */
+    function navegarIframe(url) {
+      fecharMegaMenu(); fecharUsuarioPopover(); fecharSeletorTemas();
+      if (!ApiCurso.token()) { ApiCurso.sair('sessao'); return; }
+      if (url === 'api-console') { window.open(ApiCurso.base() + '/', '_blank', 'noopener'); return; }
+      if (!caminhoValido(url)) { if (window.FacilAppAviso) FacilAppAviso('Tela inválida no menu: ' + url); return; }
+      try { sessionStorage.setItem(CHAVE_TELA_ATIVA, url); } catch (e) {}
+      const frame = document.getElementById('mainStageFrame');
+      const palco = frame.closest('.stage-container');
+      palco.classList.add('stage-changing');
+      frame.classList.add('stage-loading');
+      frame.onload = () => {
+        propagarTemaParaIframe(frame, document.documentElement.getAttribute('data-theme') || 'default');
+        requestAnimationFrame(() => requestAnimationFrame(() => { frame.classList.remove('stage-loading'); palco.classList.remove('stage-changing'); }));
+      };
+      frame.onerror = () => { frame.classList.remove('stage-loading'); palco.classList.remove('stage-changing'); };
+      frame.src = url + (url.includes('?') ? '&' : '?') + '_v=' + Date.now();   // sem cache: sempre a versão do disco
+      document.querySelectorAll('.channel-btn, .sheet-tab').forEach(b => b.classList.toggle('active', b.dataset.path === url));
+    }
+
+    /** Ponte de tema para a tela do palco (postMessage; em file:// não dá para mexer no documento do filho). */
+    function propagarTemaParaIframe(frame, tema) {
+      if (!frame || !frame.contentWindow) return;
+      try { frame.contentWindow.postMessage({ origem: 'FACILAPP_TEMA_ALTERADO', tema, skinId: tema, skin: tema }, '*'); } catch (e) {}
+      if (window.location.protocol === 'file:') return;
+      try { const d = frame.contentWindow.document; d.documentElement.setAttribute('data-theme', tema); if (d.body) d.body.setAttribute('data-theme', tema); } catch (e) {}
+    }
+
+    // Tela pediu para fechar (X): padrão do Gourmet é postMessage FACILAPP_FECHAR_* — volta para a tela inicial.
+    window.addEventListener('message', function (evento) {
+      const origem = String((evento.data || {}).origem || '');
+      if (/^FACILAPP_FECHAR_/.test(origem) && telaInicial) navegarIframe(telaInicial);
+      if (origem === 'FACILAPP_MENU_ALTERADO') recarregarMenuDoBanco();   // Acessos/Usuários gravaram: relê o menu
+    });
+
+    /* ---------------------------------------------------------------- menu (banco via API 7777) */
+    /**
+     * carregarMenuDoBanco() — lê o menu do usuário logado.
+     * SAÍDA: { lateral, superior, dashboards } (vazio em qualquer falha, e mostra o aviso fixo com o motivo).
+     * NUNCA lança exceção: falha de rede não pode travar a tela.
+     */
+    async function carregarMenuDoBanco() {
+      const vazio = { lateral: [], superior: [], dashboards: [] };
+      try {
+        const menu = await ApiCurso.menu();
+        if (!menu || !Array.isArray(menu.lateral)) throw new Error('a API devolveu o menu em formato inesperado');
+        if (!menu.lateral.length && !(menu.dashboards || []).length) throw new Error('o catálogo de menu está vazio (menu_catalogo_itens)');
+        ocultarErroMenu();
+        return { lateral: menu.lateral, superior: menu.superior || [], dashboards: menu.dashboards || [] };
+      } catch (erro) {
+        console.error('[Menu] Falha ao carregar o menu da API:', erro);
+        mostrarErroMenu(erro);
+        return vazio;
+      }
+    }
+
+    async function recarregarMenuDoBanco() {
+      const menu = await carregarMenuDoBanco();
+      if (menu.lateral.length || menu.dashboards.length) desenharMenu(menu);
+      return menu;
+    }
+
+    /**
+     * renderizarFaixaDashboards(dashboards) — abas da faixa abaixo da barra superior.
+     * ENTRADAS: menu.dashboards da API (tipo_menu 'dashboard'). REGRAS: só os liberados para o usuário (mesma regra do
+     * mega menu: hide/disable some) e com caminho .html válido. Sem nenhum, a faixa some e o palco sobe (body.sem-faixa-dash).
+     * EFEITOS: clique abre o dashboard no palco; a aba do que está aberto fica marcada (navegarIframe).
+     */
+    function renderizarFaixaDashboards(dashboards) {
+      const faixa = document.getElementById('faixaDashboards');
+      faixa.innerHTML = '';
+      const atual = (() => { try { return sessionStorage.getItem(CHAVE_TELA_ATIVA) || ''; } catch (e) { return ''; } })();
+      const lista = (dashboards || []).filter(itemLiberado).filter(d => caminhoValido(d.path));
+      lista.forEach(d => {
+        const aba = document.createElement('button');
+        aba.type = 'button';
+        aba.className = 'sheet-tab' + (d.path === atual ? ' active' : '');
+        aba.dataset.path = d.path;
+        aba.title = String(d.title || '');
+        const ic = document.createElement('span');
+        ic.className = 'material-icons';
+        ic.textContent = String(d.icon || 'dashboard');
+        aba.append(ic, document.createTextNode(String(d.title || '')));
+        aba.addEventListener('click', () => navegarIframe(d.path));
+        faixa.appendChild(aba);
+      });
+      document.body.classList.toggle('sem-faixa-dash', !lista.length);
+    }
+
+    function desenharMenu(menu) {
+      renderizarFaixaDashboards(menu.dashboards);
+      renderizarMenuPrincipalDoUsuario(menu.lateral, menu.dashboards);
+      renderizarMenuSuperiorDoUsuario(menu.superior);
+    }
+
+    /**
+     * renderizarMenuPrincipalDoUsuario(lateral, dashboards) — monta as colunas do mega menu.
+     * REGRAS: só item liberado aparece; módulo sem item visível não mostra só o título; "Configurações" e
+     * "Administração" só administrador; coluna fixa do catálogo (1–4) respeitada, os demais seguem a ordem do banco (mesma distribuição do Gourmet).
+     * Daniel, 04/11/2026 ("aqui será o menu da pousada conforme o md, e o menu superior também"): o mega menu é o menu
+     * do FastPousada (organograma FASTPOUSADA-ORGANOGRAMA.md); os dashboards ficam só na faixa de cima. Item ainda SEM
+     * TELA (arquivo vazio no catálogo) aparece cinza, sem clique, "tela prevista para uma próxima aula". Item com tela
+     * mas bloqueado (oculto/desabilitado no Acessos ou no usuário) continua SUMINDO, como no Gourmet.
+     * O 1º dashboard liberado vira a tela inicial.
+     */
+    function renderizarMenuPrincipalDoUsuario(lateral, dashboards) {
+      const grade = document.getElementById('megaLinksGrid');
+      grade.innerHTML = '';
+      Object.keys(ACOES_MENU).forEach(k => delete ACOES_MENU[k]);
+      const admin = ApiCurso.ehAdministrador();
+      const colunas = [1, 2, 3, 4].map(() => {
+        const c = document.createElement('div');
+        c.style.cssText = 'display:flex; flex-direction:column; gap:12px;';
+        grade.appendChild(c);
+        return c;
+      });
+
+      const modulos = [];
+      const dashLiberados = (dashboards || []).filter(itemLiberado).filter(d => caminhoValido(d.path));
+      telaInicial = dashLiberados.length ? dashLiberados[0].path : '';
+      (lateral || []).forEach(m => {
+        if (menuEstaAtivo(m.hide, false) || !menuEstaAtivo(m.ativo, true)) return;
+        const nome = String(m.module || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+        // Gourmet: Configurações, Acessos e Tokens só Dono/Gerente. No curso o equivalente é o administrador, e o
+        // módulo Administração (Usuários/Acessos) também é só dele — a API recusa (403) para os demais.
+        if ((nome === 'CONFIGURACOES' || nome === 'ADMINISTRACAO') && !admin) return;
+        modulos.push({ module: m.module, column: m.column, submenu: (m.submenu || []).filter(itemVisivel) });
+      });
+
+      const caixas = [];
+      modulos.forEach(modulo => {
+        const caixa = document.createElement('div');
+        caixa.className = 'mega-group-box';
+        const titulo = document.createElement('div');
+        titulo.className = 'mega-group-title';
+        titulo.textContent = modulo.module || 'Menu';
+        caixa.appendChild(titulo);
+        modulo.submenu.forEach(item => {
+          const rotulo = String(item.title || '').trim();
+          const caminho = String(item.path || '').trim();
+          if (!rotulo) return;
+          if (itemPrevisto(item)) {                       // tela ainda não feita: cinza, sem clique
+            const futuro = document.createElement('a');
+            futuro.className = 'mega-item-link disabled';
+            futuro.title = 'Tela prevista para uma próxima aula';
+            futuro.textContent = rotulo;
+            caixa.appendChild(futuro);
+            return;
+          }
+          if (!(caminhoValido(caminho) || caminho === 'api-console')) return;
+          ACOES_MENU[rotulo] = caminho;
+          const link = document.createElement('a');
+          link.className = 'mega-item-link';
+          link.appendChild(document.createTextNode(rotulo + ' '));
+          link.addEventListener('click', () => executarItemMenu(rotulo));
+          const estrela = document.createElement('span');
+          estrela.className = 'mega-fav-star';
+          estrela.dataset.label = rotulo;
+          estrela.title = 'Favoritar';
+          estrela.textContent = '☆';
+          estrela.addEventListener('click', ev => { ev.stopPropagation(); alternarFavoritoMenu(rotulo); });
+          link.appendChild(estrela);
+          caixa.appendChild(link);
+        });
+        caixa.dataset.colunaFixa = String(Math.max(0, Math.min(4, Number(modulo.column || 0))));
+        if (caixa.childElementCount > 1) caixas.push(caixa);
+      });
+
+      // Distribuição nas 4 colunas (igual ao Gourmet): mede a altura real e passa o grupo inteiro para a próxima coluna.
+      const sonda = document.createElement('div');
+      sonda.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;width:300px;display:flex;flex-direction:column;';
+      document.body.appendChild(sonda);
+      const alturas = new Map();
+      caixas.forEach(c => { sonda.appendChild(c); alturas.set(c, (c.offsetHeight || (34 + (c.childElementCount - 1) * 24)) + 14); });
+      sonda.remove();
+      const capacidade = Math.max(320, window.innerHeight - 140);
+      const usado = [0, 0, 0, 0];
+      let atual = 0;
+      caixas.forEach(c => {
+        const fixa = Number(c.dataset.colunaFixa || 0);
+        if (fixa >= 1 && fixa <= 4) atual = fixa - 1;
+        else if (atual < 3 && usado[atual] > 0 && usado[atual] + alturas.get(c) > capacidade) atual++;
+        colunas[atual].appendChild(c);
+        usado[atual] += alturas.get(c);
+      });
+      atualizarEstrelasFavoritosMenu();
+      renderizarFavoritosMenu();
+      renderizarHistoricoMenu();
+    }
+
+    /** renderizarMenuSuperiorDoUsuario(lista) — atalhos da barra de cima (ícone Material do catálogo). Só os liberados. */
+    function renderizarMenuSuperiorDoUsuario(lista) {
+      const cont = document.getElementById('atalhosMenuSuperior');
+      cont.innerHTML = '';
+      // Atalho sem tela ainda aparece apagado (botão desabilitado do Gourmet, .channel-btn:disabled), com o aviso no título.
+      (lista || []).filter(itemVisivel).forEach(item => {
+        const caminho = String(item.path || '');
+        const previsto = itemPrevisto(item);
+        if (!previsto && !caminhoValido(caminho)) return;
+        const b = document.createElement('button');
+        b.className = 'channel-btn';
+        b.title = String(item.title || '') + (previsto ? ' (tela prevista para uma próxima aula)' : '');
+        b.dataset.path = caminho;
+        b.disabled = previsto;
+        const ic = document.createElement('span');
+        ic.className = 'material-icons';
+        ic.textContent = String(item.icon || 'apps');
+        b.appendChild(ic);
+        if (!previsto) b.addEventListener('click', () => navegarIframe(caminho));
+        cont.appendChild(b);
+      });
+    }
+
+    function mostrarErroMenu(erro) {
+      try {
+        let motivo = String((erro && (erro.message || erro)) || 'erro desconhecido').replace(/\s+/g, ' ').trim();
+        if (motivo.length > 240) motivo = motivo.slice(0, 240) + '…';
+        let aviso = document.getElementById('erroMenuBanco');
+        if (!aviso) {
+          aviso = document.createElement('div');
+          aviso.id = 'erroMenuBanco';
+          aviso.setAttribute('role', 'alert');
+          aviso.style.cssText = 'position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:2147483000; max-width:min(760px, calc(100vw - 24px));' +
+            'display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:8px; background:#7f1d1d; color:#fff; font:12.5px/1.4 Roboto, Arial, sans-serif;' +
+            'box-shadow:0 8px 24px rgba(0,0,0,.45); border:1px solid #fca5a5;';
+          aviso.innerHTML = '<div style="flex:1; min-width:0;"></div>' +
+            '<button type="button" id="erroMenuBancoRetentar" style="flex:0 0 auto; height:26px; padding:0 10px; border:0; border-radius:5px; background:#fff; color:#7f1d1d; font-weight:800; cursor:pointer;">Tentar de novo</button>' +
+            '<button type="button" id="erroMenuBancoFechar" title="Fechar" style="flex:0 0 26px; width:26px; height:26px; padding:0; border:0; border-radius:5px; background:rgba(255,255,255,.2); color:#fff; font-size:16px; cursor:pointer;">×</button>';
+          document.body.appendChild(aviso);
+          aviso.querySelector('#erroMenuBancoRetentar').addEventListener('click', () => { recarregarMenuDoBanco(); });
+          aviso.querySelector('#erroMenuBancoFechar').addEventListener('click', () => { aviso.remove(); });
+        }
+        aviso.firstChild.innerHTML = '<b>Menu não carregado do banco de dados.</b><br>Motivo: ' +
+          motivo.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) +
+          '<br><span style="opacity:.85;">Verifique se o serviço FacilAppCursoSqlite (API 7777) está rodando e clique em "Tentar de novo".</span>';
+      } catch (e) { /* o aviso nunca pode derrubar a tela */ }
+    }
+    function ocultarErroMenu() { document.getElementById('erroMenuBanco')?.remove(); }
+
+    /* ---------------------------------------------------------------- mega menu, favoritos, histórico */
+    async function alternarMegaMenu() {
+      const overlay = document.getElementById('megaOverlay');
+      if (overlay.classList.contains('open')) { fecharMegaMenu(); return; }
+      overlay.classList.add('open');
+      document.getElementById('megaBackdrop').classList.add('open');
+      document.getElementById('btnMegaToggle').classList.add('active');
+      // Abre na hora com o que está na tela e relê o banco em seguida (bloqueio recém-gravado já vale).
+      const menu = await carregarMenuDoBanco();
+      if (menu.lateral.length || menu.dashboards.length) desenharMenu(menu);
+    }
+    function fecharMegaMenu() {
+      document.getElementById('megaOverlay')?.classList.remove('open');
+      document.getElementById('megaBackdrop')?.classList.remove('open');
+      document.getElementById('btnMegaToggle')?.classList.remove('active');
+    }
+
+    function lerListaMenu(chave) { try { return JSON.parse(localStorage.getItem(chave) || '[]'); } catch (e) { return []; } }
+    function gravarListaMenu(chave, lista) { try { localStorage.setItem(chave, JSON.stringify(lista)); } catch (e) {} }
+
+    /** Clique num item: registra no histórico e abre a tela. Rótulo que não existe mais no menu do usuário não abre. */
+    function executarItemMenu(rotulo) {
+      const caminho = ACOES_MENU[rotulo];
+      if (!caminho) return;
+      const lista = [rotulo].concat(lerListaMenu(CHAVE_HISTORICO_MENU).filter(x => x !== rotulo)).slice(0, MAX_ITENS_HISTORICO_MENU);
+      gravarListaMenu(CHAVE_HISTORICO_MENU, lista);
+      renderizarHistoricoMenu();
+      navegarIframe(caminho);
+    }
+    function alternarFavoritoMenu(rotulo) {
+      const lista = lerListaMenu(CHAVE_FAVORITOS_MENU);
+      const i = lista.indexOf(rotulo);
+      if (i >= 0) lista.splice(i, 1); else lista.unshift(rotulo);
+      gravarListaMenu(CHAVE_FAVORITOS_MENU, lista);
+      atualizarEstrelasFavoritosMenu();
+      renderizarFavoritosMenu();
+    }
+    // Monta a lista lateral (Favoritos/Histórico) só com rótulos que o usuário ainda pode abrir.
+    function desenharListaLateral(idCont, chave, textoVazio) {
+      const cont = document.getElementById(idCont);
+      cont.innerHTML = '';
+      const lista = lerListaMenu(chave).filter(r => ACOES_MENU[r]);
+      if (!lista.length) {
+        const a = document.createElement('a'); a.className = 'mega-side-link sem-registro'; a.textContent = textoVazio; cont.appendChild(a); return;
+      }
+      lista.forEach(r => { const a = document.createElement('a'); a.className = 'mega-side-link'; a.textContent = r; a.addEventListener('click', () => executarItemMenu(r)); cont.appendChild(a); });
+    }
+    function renderizarHistoricoMenu() { desenharListaLateral('listaHistoricoMenu', CHAVE_HISTORICO_MENU, 'Nenhum acesso recente ainda.'); }
+    function renderizarFavoritosMenu() { desenharListaLateral('listaFavoritosMenu', CHAVE_FAVORITOS_MENU, 'Clique na ☆ ao lado de um item do menu para favoritar.'); }
+    function atualizarEstrelasFavoritosMenu() {
+      const fav = new Set(lerListaMenu(CHAVE_FAVORITOS_MENU));
+      document.querySelectorAll('.mega-fav-star').forEach(e => { const a = fav.has(e.dataset.label); e.textContent = a ? '★' : '☆'; e.classList.toggle('fav-ativo', a); });
+    }
+    function filtrarMegaLinks(termo) {
+      termo = String(termo || '').toLowerCase().trim();
+      document.querySelectorAll('.mega-item-link').forEach(l => { l.style.display = (!termo || l.innerText.toLowerCase().includes(termo)) ? 'block' : 'none'; });
+    }
+
+    /* ---------------------------------------------------------------- popovers e tema */
+    function alternarUsuarioPopover(e) { if (e) e.stopPropagation(); fecharSeletorTemas(); document.getElementById('popoverUsuario').classList.toggle('open'); }
+    function fecharUsuarioPopover() { document.getElementById('popoverUsuario')?.classList.remove('open'); }
+    function alternarSeletorTemas(e) { if (e) e.stopPropagation(); fecharUsuarioPopover(); document.getElementById('popoverSeletorTemas').classList.toggle('open'); }
+    function fecharSeletorTemas() { document.getElementById('popoverSeletorTemas')?.classList.remove('open'); }
+    document.addEventListener('click', () => { fecharUsuarioPopover(); fecharSeletorTemas(); });
+
+    const NOMES_TEMAS = {
+      'default': 'Padrão Azul', 'jotape': 'Verde', 'v1-cyberpunk': 'V1 Cyberpunk', 'dark-tech': 'Dark Tech', 'obsidian-gold': 'Obsidian Gold',
+      'deep-teal': 'Deep Teal', 'codex-dark': 'Codex Dark', 'verde-escuro': 'Verde Escuro', 'gourmet-dark': 'Dark (Azul Escuro)',
+      'gourmet-orange-escuro': 'Orange Escuro', 'emperor-24k': 'Emperor 24K', 'champagne-imperial': 'Champagne Imperial',
+      'monaco-gold': 'Monaco Gold', 'venetian-ducat': 'Venetian Ducat', 'solar-gold': 'Solar Eclipse 24K', 'slate-pro': 'Slate Charcoal Pro',
+      'matte-gold': 'Obsidian Matte Gold', 'nordic-graphite': 'Nordic Graphite', 'deep-pine': 'Deep Pine & Sage',
+      'executive-midnight': 'Executive Midnight', 'cinza-windows': 'Cinza Windows', 'azul-ardosia': 'Azul Ardósia', 'papel-areia': 'Papel Areia',
+      'grafite-suave': 'Grafite Suave', 'royal-gold': 'Royal Onyx 24K', 'verde-claro': 'Verde Claro Agro', 'agro-dark': 'Verde Agro Noturno',
+      'whiskey-brass': 'Whiskey Brass'
+    };
+    /** aplicarTemaSistema(tema) — mesma persistência do Gourmet (localStorage facilapp_tema_*) e repassa a todas as telas. */
+    function aplicarTemaSistema(tema) {
+      document.documentElement.setAttribute('data-theme', tema);
+      document.body.setAttribute('data-theme', tema);
+      try { localStorage.setItem('facilapp_tema_ativo', tema); localStorage.setItem('facilapp_tema_padrao', tema); } catch (e) {}
+      document.getElementById('txtNomeTemaOuUnidade').innerText = (NOMES_TEMAS[tema] || tema) + ' ...';
+      document.querySelectorAll('iframe').forEach(f => propagarTemaParaIframe(f, tema));
+      fecharSeletorTemas();
+    }
+
+    /** encerrarSessao() — confirma e sai (sessão da aba apagada pelo ApiCurso.sair). */
+    async function encerrarSessao() {
+      fecharUsuarioPopover();
+      const ok = window.FacilAppConfirmar ? await FacilAppConfirmar('Deseja sair do sistema?', { confirmar: 'Sair', cancelar: 'Ficar' }) : true;
+      if (ok) ApiCurso.sair();
+    }
+
+    /* ---------------------------------------------------------------- início */
+    window.addEventListener('DOMContentLoaded', async () => {
+      const tema = document.documentElement.getAttribute('data-theme') || 'verde-claro';
+      document.getElementById('txtNomeTemaOuUnidade').innerText = (NOMES_TEMAS[tema] || tema) + ' ...';
+      if (!ApiCurso.token()) { ApiCurso.sair(); return; }
+      const u = ApiCurso.usuario() || {};
+      document.getElementById('txtNomeUsuarioTopo').textContent = String(u.nome || u.login || '').toUpperCase();
+      document.getElementById('popUsuarioCabecalho').innerHTML = '';
+      const cab = document.getElementById('popUsuarioCabecalho');
+      cab.appendChild(document.createTextNode(String(u.nome || u.login || '')));
+      cab.appendChild(document.createElement('br'));
+      cab.appendChild(document.createTextNode(u.administrador ? 'Administrador' : 'Usuário'));
+
+      const menu = await carregarMenuDoBanco();
+      desenharMenu(menu);
+      if (!menu.lateral.length && !menu.dashboards.length) return;   // sem menu: só o aviso, nenhuma tela por baixo
+      let tela = '';
+      try { tela = sessionStorage.getItem(CHAVE_TELA_ATIVA) || ''; } catch (e) {}
+      // Só reabre a tela salva se ela ainda estiver liberada para este usuário.
+      const liberadas = new Set(Object.values(ACOES_MENU).concat(menu.superior.filter(itemLiberado).map(i => i.path),
+        menu.dashboards.filter(itemLiberado).map(i => i.path)));
+      const destino = tela && liberadas.has(tela) ? tela : telaInicial;
+      if (destino) navegarIframe(destino);
+    });
+  </script>
+</body>
+</html>
