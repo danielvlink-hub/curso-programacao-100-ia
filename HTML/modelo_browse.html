@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelo de Browse — Hóspedes</title>
+<!--
+  MODELO DE BROWSE (padrão Gourmet / FacilApp) — exemplo: cadastro de Hóspedes do FastPousada
+  Daniel, 08/11/2026: "exemplo modelos de browse iguais ao do Gourmet e update separado, modal flutuante, center".
+  O QUE FAZ
+    - Browse (lista) com Tabulator: busca, filtro de situação, paginação, CSV, XLSX e recarregar.
+    - Novo / Alterar abrem o UPDATE SEPARADO (modelo_browse_update.html) num IFRAME dentro de uma janela
+      flutuante CENTRALIZADA (fundo escuro, arrastável pela barra de título). Duplo clique na linha também altera.
+    - Excluir pede confirmação com FacilAppConfirmar (nunca confirm() do navegador).
+  COMO CONVERSA COM O UPDATE (postMessage, mesmo padrão do acessos.html):
+    update -> browse: { origem: 'FACILAPP_MODELO_GRAVADO' }  = gravou: fecha a janela e recarrega a lista
+                      { origem: 'FACILAPP_MODELO_CANCELADO' } = fecha sem recarregar
+  DADOS: camada DADOS_DEMO abaixo (localStorage do navegador), só para o modelo funcionar sozinho.
+    Na tela real, troque cada função de DADOS_DEMO pela chamada da FacilApp API SQL via ApiCurso.js
+    (ex.: ApiCurso.listarHospedes / incluirHospede / alterarHospede / excluirHospede) — a regra de verdade fica na API.
+  PADRÃO VISUAL: cores só por --fa-* (TemaFacilApp.css), cabeçalho 35px, campos e linhas 22px, ✕ à direita do cabeçalho.
+  COMO COPIAR PARA UMA TELA NOVA: troque o título/ícone, as colunas da grade, o nome do update e as funções de dados.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) {
+        document.documentElement.setAttribute('data-theme', t);
+        var f = document.querySelector('#janelaUpdate iframe'); if (f && f.contentWindow) f.contentWindow.postMessage(m, '*');
+      }
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="dependencias/tabulator-6.5.0/css/tabulator.min.css">
+<script src="dependencias/tabulator-6.5.0/js/tabulator.min.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="assets/js/modelo_dados_demo.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  /* ===== BROWSE (cabeçalho 35px, linhas 22px) ===== */
+  .browse-window { position: fixed; inset: 6px; background: var(--fa-panel, #fff); border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.18); display: flex; flex-direction: column; overflow: hidden; }
+  .browse-header { height: 35px; flex: 0 0 35px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 12px;
+    background: var(--fa-panel-alt, #f1f5f9); border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .browse-title-group { display: flex; align-items: center; gap: 8px; }
+  .browse-icon-badge { width: 24px; height: 24px; border-radius: 6px; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff);
+    display: flex; align-items: center; justify-content: center; }
+  .browse-icon-badge .material-icons { font-size: 16px; }
+  .browse-title { font-size: 14px; font-weight: 700; }
+  .browse-subtitle { font-size: 11px; color: var(--fa-muted, #64748b); margin-left: 6px; }
+  .btn-fechar { width: 26px; height: 26px; border: 1px solid var(--fa-primary-dark, #35470e); border-radius: 6px; background: var(--fa-primary, #4b5a32);
+    color: var(--fa-button-text, #fff); font: 700 16px/1 Arial, sans-serif; cursor: pointer; }
+  .browse-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 7px; padding: 6px 12px; border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 6px; }
+  .btn { height: 22px; padding: 0 9px; border: 0; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); white-space: nowrap; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn .material-icons { font-size: 15px; }
+  .btn.alt { background: var(--fa-field-bg, #f8fafc); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+  .busca { position: relative; }
+  .busca .material-icons { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--fa-muted, #64748b); }
+  .campo { height: 22px; padding: 0 8px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 4px; background: var(--fa-field-bg, #fff);
+    color: var(--fa-text, #1e293b); outline: none; }
+  .busca .campo { width: 280px; padding-left: 26px; }
+  .campo:focus { border-color: var(--fa-primary, #4b5a32); }
+  .grid-container { flex: 1; min-height: 0; margin: 6px 12px 10px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; overflow: hidden; display: flex; }
+  #grade { flex: 1; border: 0 !important; }
+  .tabulator { background: transparent !important; color: var(--fa-text, #1e293b) !important; font-size: 12px; }
+  .tabulator .tabulator-header { background: var(--fa-panel-alt, #eef3e6) !important; border-bottom: 1px solid var(--fa-border, #d8ddcf) !important;
+    font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase; color: var(--fa-text, #1e293b) !important; }
+  .tabulator .tabulator-header .tabulator-col { background: transparent !important; border-right: 1px solid var(--fa-border, #d8ddcf) !important; }
+  .tabulator .tabulator-row { min-height: 22px; background: var(--fa-panel, #fff) !important; border-bottom: 1px solid var(--fa-border, #e5e7eb) !important; }
+  .tabulator .tabulator-row.tabulator-row-even { background: color-mix(in srgb, var(--fa-panel-alt, #f1f5f9) 45%, var(--fa-panel, #fff)) !important; }
+  .tabulator .tabulator-row.tabulator-selected, .tabulator .tabulator-row:hover { background: var(--fa-field-bg, #f8fafc) !important; }
+  .tabulator .tabulator-cell { padding: 2px 8px !important; border-right: 1px solid var(--fa-border, #e5e7eb) !important; }
+  .tabulator .tabulator-footer { background: transparent !important; border-top: 1px solid var(--fa-border, #d8ddcf) !important; font-size: 11px !important; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 9px; font-size: 10.5px; font-weight: 700; }
+  .badge.ativo { background: #dcfce7; color: #166534; } .badge.inativo { background: #fee2e2; color: #991b1b; }
+  .acoes-linha { display: flex; gap: 3px; justify-content: center; }
+  .row-btn { width: 22px; height: 22px; padding: 0; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 5px; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); }
+  .row-btn .material-icons { font-size: 15px; }
+  .row-btn.delete:hover { background: #b3261e; border-color: #b3261e; }
+  .rodape { display: flex; justify-content: space-between; padding: 0 12px 6px; font-size: 11px; color: var(--fa-muted, #64748b); }
+  /* ===== JANELA DO UPDATE: flutuante, CENTRALIZADA, fundo escuro, arrastável pela barra ===== */
+  #janelaUpdate { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.42); }
+  #janelaUpdate.aberta { display: flex; }
+  #janelaUpdate .caixa { position: relative; width: min(640px, calc(100vw - 24px)); height: min(370px, calc(100vh - 24px)); background: var(--fa-panel, #fff);
+    border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px; overflow: hidden; display: grid; grid-template-rows: 35px 1fr; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  #janelaUpdate .barra { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 14px; background: var(--fa-panel-alt, #f1f5f9);
+    border-bottom: 1px solid var(--fa-border, #d8ddcf); font-weight: 700; font-size: 13px; cursor: move; user-select: none; }
+  #janelaUpdate .barra .titulo { display: flex; align-items: center; gap: 7px; }
+  #janelaUpdate .barra .material-icons { font-size: 18px; color: var(--fa-primary, #4b5a32); }
+  #janelaUpdate iframe { width: 100%; height: 100%; border: 0; background: transparent; }
+</style>
+</head>
+<body>
+<div class="browse-window">
+  <header class="browse-header">
+    <div class="browse-title-group">
+      <div class="browse-icon-badge"><span class="material-icons">person</span></div>
+      <div><span class="browse-title">Hóspedes</span><span class="browse-subtitle">Modelo de browse com update separado (dados de demonstração)</span></div>
+    </div>
+    <button type="button" class="btn-fechar" title="Fechar" onclick="fecharBrowse()">×</button>
+  </header>
+  <div class="browse-toolbar">
+    <div class="toolbar-left">
+      <button type="button" class="btn" onclick="abrirUpdate()"><span class="material-icons">person_add</span>Novo Hóspede</button>
+      <div class="busca"><span class="material-icons">search</span><input id="inputFiltro" class="campo" placeholder="Buscar por nome, documento, telefone ou cidade..." oninput="filtrar()" autocomplete="off"></div>
+      <select id="selSituacao" class="campo" onchange="filtrar()"><option value="">Todas as situações</option><option value="1">Ativos</option><option value="0">Inativos</option></select>
+    </div>
+    <div class="toolbar-right">
+      <button type="button" class="btn alt" onclick="exportarCSV()"><span class="material-icons">description</span>CSV</button>
+      <button type="button" class="btn alt" onclick="exportarExcel()"><span class="material-icons">table_view</span>XLSX</button>
+      <button type="button" class="btn alt" title="Recarregar" onclick="carregar()"><span class="material-icons">refresh</span></button>
+    </div>
+  </div>
+  <div class="grid-container"><div id="grade"></div></div>
+  <div class="rodape"><span id="lblTotal"></span><span>Duplo clique na linha para alterar</span></div>
+</div>
+
+<!-- JANELA DO UPDATE (o formulário fica em modelo_browse_update.html) -->
+<div id="janelaUpdate">
+  <div class="caixa" id="caixaUpdate">
+    <div class="barra" id="barraUpdate"><div class="titulo"><span class="material-icons">badge</span><span id="tituloUpdate">Novo Hóspede</span></div>
+      <button type="button" class="btn-fechar" title="Fechar" onclick="fecharUpdate()">×</button></div>
+    <iframe title="Cadastro de Hóspede"></iframe>
+  </div>
+</div>
+
+<script>
+  let grade = null;
+  const el = id => document.getElementById(id);
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const LANG = { default: { pagination: { page_size: 'Registros por página', first: 'Primeira', last: 'Última', prev: 'Anterior', next: 'Próxima',
+    counter: { showing: 'Exibindo', of: 'de', rows: 'registros', pages: 'páginas' } } } };
+
+  /* ---------------------------------------------------------------- browse */
+  /** iniciarGrade() — cria o Tabulator: 1 linha selecionada, paginação local, ações na última coluna. */
+  function iniciarGrade() {
+    grade = new Tabulator('#grade', {
+      data: [], layout: 'fitColumns', height: '100%', pagination: 'local', paginationSize: 50, paginationCounter: 'rows',
+      locale: true, langs: LANG, selectableRows: 1, placeholder: 'Nenhum hóspede cadastrado.',
+      columns: [
+        { title: 'Nome', field: 'nome', minWidth: 200, formatter: c => '<strong>' + esc(c.getValue()) + '</strong>' },
+        { title: 'Documento', field: 'documento', width: 140 },
+        { title: 'Telefone', field: 'telefone', width: 130 },
+        { title: 'Cidade', field: 'cidade', width: 150, formatter: c => esc(c.getValue()) + (c.getRow().getData().uf ? ' / ' + esc(c.getRow().getData().uf) : '') },
+        { title: 'Situação', field: 'ativo', width: 100, hozAlign: 'center', headerHozAlign: 'center',
+          formatter: c => c.getValue() ? '<span class="badge ativo">● Ativo</span>' : '<span class="badge inativo">✕ Inativo</span>' },
+        { title: 'Ações', width: 70, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, download: false,
+          formatter: () => '<div class="acoes-linha"><button type="button" class="row-btn edit" title="Alterar"><span class="material-icons">edit</span></button>' +
+            '<button type="button" class="row-btn delete" title="Excluir"><span class="material-icons">delete</span></button></div>',
+          cellClick: (e, cell) => {
+            const h = cell.getRow().getData();
+            if (e.target.closest('.edit')) abrirUpdate(h.id);
+            else if (e.target.closest('.delete')) excluir(h);
+          } }
+      ]
+    });
+    grade.on('rowDblClick', (e, row) => abrirUpdate(row.getData().id));
+    grade.on('dataFiltered', (f, linhas) => { el('lblTotal').textContent = linhas.length + ' hóspede(s)'; });
+  }
+
+  /** carregar() — lê a lista (DEMO; na tela real: await ApiCurso.listarHospedes()). */
+  async function carregar() {
+    try { await grade.replaceData(await DADOS_DEMO.listar()); filtrar(); }
+    catch (erro) { grade.setData([]); aviso('Não foi possível carregar: ' + erro.message); }
+  }
+
+  function filtrar() {
+    const t = el('inputFiltro').value.trim().toLowerCase(), sit = el('selSituacao').value;
+    grade.setFilter(d => (!t || [d.nome, d.documento, d.telefone, d.cidade].some(v => String(v || '').toLowerCase().includes(t))) &&
+      (sit === '' || String(Number(d.ativo)) === sit));
+  }
+  function exportarCSV() { grade.download('csv', 'hospedes.csv', { delimiter: ';', bom: true }); }
+  function exportarExcel() { grade.download('xlsx', 'hospedes.xlsx', { sheetName: 'Hóspedes' }); }
+
+  /** excluir(h) — confirma com FacilAppConfirmar e exclui (DEMO; na tela real: ApiCurso.excluirHospede(id)). */
+  async function excluir(h) {
+    const ok = await FacilAppConfirmar('Excluir o hóspede "' + h.nome + '"?', { confirmar: 'Excluir' });
+    if (!ok) return;
+    try { await DADOS_DEMO.excluir(h.id); await carregar(); aviso('Hóspede excluído.'); }
+    catch (erro) { aviso('Não foi possível excluir: ' + erro.message); }
+  }
+
+  /* ---------------------------------------------------------------- janela do update */
+  /** abrirUpdate(id) — abre modelo_browse_update.html na janela central; sem id = inclusão. */
+  function abrirUpdate(id) {
+    const janela = el('janelaUpdate'), caixa = el('caixaUpdate');
+    caixa.style.left = ''; caixa.style.top = '';              // sempre reabre no centro
+    el('tituloUpdate').textContent = id ? 'Alterar Hóspede' : 'Novo Hóspede';
+    janela.querySelector('iframe').src = 'modelo_browse_update.html?' + (id ? 'id=' + encodeURIComponent(id) : 'novo=1') + '&_v=' + Date.now();
+    janela.classList.add('aberta');
+  }
+  function fecharUpdate() { el('janelaUpdate').classList.remove('aberta'); el('janelaUpdate').querySelector('iframe').src = 'about:blank'; }
+
+  /** Recados do update (postMessage). Só aceita da própria janela do iframe. */
+  window.addEventListener('message', e => {
+    const f = el('janelaUpdate').querySelector('iframe');
+    if (!f || e.source !== f.contentWindow) return;
+    const o = (e.data || {}).origem;
+    if (o === 'FACILAPP_MODELO_GRAVADO') { fecharUpdate(); carregar(); aviso('Hóspede gravado.'); }
+    if (o === 'FACILAPP_MODELO_CANCELADO') fecharUpdate();
+  });
+
+  /** Arrastar a janela pela barra (flutuante). Ao soltar, fica onde o usuário deixou até fechar. */
+  (function () {
+    const barra = el('barraUpdate'), caixa = el('caixaUpdate'); let ini = null;
+    barra.addEventListener('mousedown', e => {
+      if (e.target.closest('button')) return;
+      const r = caixa.getBoundingClientRect(); ini = { x: e.clientX - r.left, y: e.clientY - r.top };
+      caixa.style.position = 'fixed'; caixa.style.left = r.left + 'px'; caixa.style.top = r.top + 'px';
+      el('janelaUpdate').querySelector('iframe').style.pointerEvents = 'none'; e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!ini) return;
+      caixa.style.left = Math.max(0, Math.min(innerWidth - 80, e.clientX - ini.x)) + 'px';
+      caixa.style.top = Math.max(0, Math.min(innerHeight - 35, e.clientY - ini.y)) + 'px';
+    });
+    document.addEventListener('mouseup', () => { if (ini) { ini = null; el('janelaUpdate').querySelector('iframe').style.pointerEvents = ''; } });
+  })();
+
+  function fecharBrowse() {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_MODELO' }, '*'); } catch (e) {}
+    if (window.parent === window) history.back();
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && el('janelaUpdate').classList.contains('aberta')) fecharUpdate(); });
+
+  // Carrega só depois que o Tabulator terminar de montar (dados antes disso dão erro "verticalFillMode").
+  window.addEventListener('DOMContentLoaded', () => { iniciarGrade(); grade.on('tableBuilt', carregar); });
+</script>
+</body>
+</html>

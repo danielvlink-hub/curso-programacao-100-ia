@@ -20,7 +20,8 @@ Depois de instalar, abra o **Menu do Curso (FastPousada)** e entre com o usuári
 
 | Pasta | O que tem |
 |---|---|
-| `HTML\` | Login, menu, cadastros e os dashboards dos Módulos I a VI |
+| `HTML\` | Login, menu, cadastros, os dashboards dos Módulos I a VI e os modelos de browse/update |
+| `PROMPTS\` | Um prompt pronto por tela do FastPousada, mais o padrão de treinamento "?" e botão IA |
 | `API FACILAPP SQLite\` | Código-fonte da API, da bandeja e do MCP, scripts de build e do instalador |
 | `FacilAppDoc\`, `FacilAppPlanilha\` | Kits de documento e planilha |
 | `Dependencias\` | Bibliotecas de terceiros usadas nas telas (cada uma com sua licença) |

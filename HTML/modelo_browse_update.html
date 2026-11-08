@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro de Hóspede</title>
+<!--
+  MODELO DE UPDATE SEPARADO (padrão Gourmet / FacilApp) — exemplo: Hóspede do FastPousada
+  Daniel, 08/11/2026: "update separado, modal flutuante, center".
+  ABRE: dentro da janela central do modelo_browse.html (iframe). ?id=<id> = alterar; ?novo=1 = incluir.
+  O QUE FAZ: carrega o registro (alteração), valida, grava e avisa o browse.
+  AVISA O BROWSE (postMessage): FACILAPP_MODELO_GRAVADO (gravou) ou FACILAPP_MODELO_CANCELADO (Cancelar ou Esc).
+  REGRAS: validação aqui é de conveniência (mensagem perto do usuário); a regra de verdade fica na API.
+    Só avisar "gravado" DEPOIS que a gravação respondeu ok. Se falhar, a tela continua aberta com os dados digitados.
+  DADOS: DADOS_DEMO (localStorage) só para o modelo funcionar sozinho — na tela real use ApiCurso.obterHospede /
+    incluirHospede / alterarHospede (FacilApp API SQL).
+  PADRÃO VISUAL: campos de 22px, rótulos em caixa alta, cores --fa-*, rodapé com Cancelar e Gravar à direita.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<script src="assets/js/modelo_dados_demo.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  main { height: 100%; display: flex; }
+  .card { flex: 1; display: grid; grid-template-rows: auto minmax(0,1fr) 36px; padding: 10px 14px 8px; gap: 6px; }
+  #erro { display: none; padding: 5px 8px; border-radius: 5px; background: #fde8e7; color: #9b1c1c; font-size: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px 12px; align-content: start; overflow: auto; }
+  .c2 { grid-column: span 2; } .c3 { grid-column: span 3; } .c4 { grid-column: 1 / -1; }
+  label.rot { display: block; font-size: 11px; font-weight: 700; color: var(--fa-muted, #64748b); margin-bottom: 3px; text-transform: uppercase; }
+  .req { color: #b42318; }
+  input[type=text], input[type=email], select, textarea { width: 100%; height: 22px; padding: 0 7px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf);
+    border-radius: 4px; background: var(--fa-field-bg, #fff); color: var(--fa-text, #1e293b); outline: none; font-family: inherit; }
+  textarea { height: 58px; padding: 4px 7px; resize: none; }
+  input:focus, select:focus, textarea:focus { border-color: var(--fa-primary, #4b5a32); }
+  input.invalido { border-color: #b42318; background: #fff7f7; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; cursor: pointer; padding-top: 18px; }
+  footer { display: flex; justify-content: space-between; align-items: center; gap: 6px; border-top: 1px solid var(--fa-border, #d8ddcf); padding-top: 6px; }
+  footer .dica { font-size: 11px; color: var(--fa-muted, #64748b); }
+  footer .acoes { display: flex; gap: 6px; }
+  .btn { height: 22px; padding: 0 12px; border: 0; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); }
+  .btn .material-icons { font-size: 15px; }
+  .btn.cancel { background: var(--fa-field-bg, #f1f5f9); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+  .btn:disabled { opacity: .5; cursor: wait; }
+</style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <div id="erro"></div>
+    <div class="grid">
+      <div class="c3"><label class="rot">Nome <span class="req">*</span></label><input id="nome" type="text" maxlength="120" placeholder="Ex.: Maria da Silva"></div>
+      <div><label class="check"><input type="checkbox" id="ativo" checked> Ativo</label></div>
+      <div class="c2"><label class="rot">CPF / Documento</label><input id="documento" type="text" maxlength="20" placeholder="Ex.: 123.456.789-09"></div>
+      <div class="c2"><label class="rot">Telefone <span class="req">*</span></label><input id="telefone" type="text" maxlength="20" placeholder="Ex.: (15) 99700-1234"></div>
+      <div class="c4"><label class="rot">E-mail</label><input id="email" type="email" maxlength="120" placeholder="Ex.: maria@email.com"></div>
+      <div class="c3"><label class="rot">Cidade</label><input id="cidade" type="text" maxlength="80" placeholder="Ex.: Sorocaba"></div>
+      <div><label class="rot">UF</label><input id="uf" type="text" maxlength="2" style="text-transform:uppercase" placeholder="SP"></div>
+      <div class="c4"><label class="rot">Observação</label><textarea id="observacao" maxlength="500" placeholder="Ex.: prefere quarto no térreo"></textarea></div>
+    </div>
+    <footer>
+      <span class="dica">Campos com <span class="req">*</span> são obrigatórios.</span>
+      <div class="acoes">
+        <button class="btn cancel" type="button" onclick="cancelar()">Cancelar</button>
+        <button class="btn" type="button" id="btnGravar" onclick="gravar()"><span class="material-icons">save</span>Gravar</button>
+      </div>
+    </footer>
+  </section>
+</main>
+<script>
+  const params = new URLSearchParams(location.search);
+  const idEdicao = params.get('id') || null;
+  const $ = id => document.getElementById(id);
+  const CAMPOS = ['nome', 'documento', 'telefone', 'email', 'cidade', 'uf', 'observacao'];
+  function mostrarErro(msg) { const e = $('erro'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
+
+  /** iniciar() — na alteração, carrega o registro (DEMO; na tela real: ApiCurso.obterHospede(id)). */
+  async function iniciar() {
+    if (idEdicao) {
+      try {
+        const h = await DADOS_DEMO.obter(idEdicao);
+        if (!h) { mostrarErro('Hóspede não encontrado.'); $('btnGravar').disabled = true; return; }
+        CAMPOS.forEach(c => $(c).value = h[c] || '');
+        $('ativo').checked = !!h.ativo;
+      } catch (erro) { mostrarErro(erro.message); return; }
+    }
+    $('nome').focus();
+  }
+
+  /** validar() — devolve a 1ª mensagem de erro e marca o campo; '' = tudo certo. */
+  function validar(d) {
+    document.querySelectorAll('.invalido').forEach(x => x.classList.remove('invalido'));
+    const marcar = (id, m) => { $(id).classList.add('invalido'); $(id).focus(); return m; };
+    if (d.nome.length < 3) return marcar('nome', 'Informe o nome do hóspede (mínimo 3 letras).');
+    if (d.telefone.replace(/\D/g, '').length < 10) return marcar('telefone', 'Informe o telefone com DDD.');
+    if (d.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return marcar('email', 'E-mail inválido.');
+    return '';
+  }
+
+  /** gravar() — valida, inclui ou altera e só então avisa o browse (DEMO; na tela real: ApiCurso.incluirHospede / alterarHospede). */
+  async function gravar() {
+    mostrarErro('');
+    const d = {}; CAMPOS.forEach(c => d[c] = $(c).value.trim()); d.uf = d.uf.toUpperCase(); d.ativo = $('ativo').checked;
+    const msg = validar(d); if (msg) { mostrarErro(msg); return; }
+    const btn = $('btnGravar'); btn.disabled = true;
+    try {
+      if (idEdicao) await DADOS_DEMO.alterar(idEdicao, d); else await DADOS_DEMO.incluir(d);
+      window.parent.postMessage({ origem: 'FACILAPP_MODELO_GRAVADO' }, '*');
+    } catch (erro) { mostrarErro(erro.message); btn.disabled = false; }
+  }
+
+  function cancelar() { window.parent.postMessage({ origem: 'FACILAPP_MODELO_CANCELADO' }, '*'); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cancelar(); if (e.key === 'Enter' && e.ctrlKey) gravar(); });
+  window.addEventListener('DOMContentLoaded', iniciar);
+</script>
+</body>
+</html>

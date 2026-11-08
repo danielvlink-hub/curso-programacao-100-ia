@@ -13,6 +13,10 @@ onde está cada coisa e quais regras seguir. Mantenha este arquivo atualizado co
 - **Telas** — `HTML\`: `login_Geral.html`, menu (`index.html`), cadastros e `DASHBOARDS\` (um dashboard por módulo).
   Abertas como arquivo local (`file://`).
 - **Kits** — `FacilAppDoc\`, `FacilAppPlanilha\`; bibliotecas de terceiros em `Dependencias\`.
+- **Prompts** — `PROMPTS\`: um prompt pronto por tela do FastPousada (ordem em `PROMPTS\00_LEIA-ME.md`), o padrão de
+  browse/update e o padrão de treinamento "?" e botão IA.
+- **Modelos de tela** — `HTML\modelo_browse.html` (lista) + `HTML\modelo_browse_update.html` (update separado em janela
+  flutuante centralizada). Toda tela de cadastro nova começa copiando os dois.
 
 ## Banco
 
