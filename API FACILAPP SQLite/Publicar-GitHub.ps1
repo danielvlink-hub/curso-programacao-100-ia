@@ -9,7 +9,7 @@ $curso = Split-Path -Parent $project
 $api = Join-Path $curso 'API FACILAPP SQLite'
 New-Item -ItemType Directory -Force -Path $Destino | Out-Null
 
-$xd = @("$curso\Telas", "$curso\.claude", 'instalador', "$api\bin", "$api\obj", "$api\staging", "$api\saida", "$api\Backups",
+$xd = @("$curso\Telas", "$curso\Backup_Chat", "$curso\.claude", 'instalador', "$api\bin", "$api\obj", "$api\staging", "$api\saida", "$api\Backups",
         "$api\Mcp\bin", "$api\Mcp\obj", "$api\Tray\bin", "$api\Tray\obj", '.git', '.claude')
 $xf = @("$curso\CLAUDE.md", "$curso\README.md", '*.pdb', '*.db', 'Thumbs.db', 'desktop.ini',
         "$curso\HTML\DASHBOARDS\js\facilflow.js", "$curso\HTML\DASHBOARDS\js\db_pedidos.js")

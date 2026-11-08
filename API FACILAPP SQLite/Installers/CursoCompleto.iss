@@ -44,7 +44,7 @@ Name: "ptbr"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 [Files]
 ; Pasta do curso, sem Telas e sem o que é gerado na compilação da API
 Source: "{#CursoRoot}\*"; DestDir: "{app}"; \
-  Excludes: "\Telas,\CLAUDE.md,\README.md,.claude,.git,\HTML\DASHBOARDS\js\facilflow.js,\HTML\DASHBOARDS\js\db_pedidos.js,\API FACILAPP SQLite\bin,\API FACILAPP SQLite\obj,\API FACILAPP SQLite\staging,\API FACILAPP SQLite\saida,\API FACILAPP SQLite\Backups,\API FACILAPP SQLite\Mcp\bin,\API FACILAPP SQLite\Mcp\obj,\API FACILAPP SQLite\Tray\bin,\API FACILAPP SQLite\Tray\obj,*.pdb,Thumbs.db,desktop.ini"; \
+  Excludes: "\Telas,\Backup_Chat,\CLAUDE.md,\README.md,.claude,.git,\HTML\DASHBOARDS\js\facilflow.js,\HTML\DASHBOARDS\js\db_pedidos.js,\API FACILAPP SQLite\bin,\API FACILAPP SQLite\obj,\API FACILAPP SQLite\staging,\API FACILAPP SQLite\saida,\API FACILAPP SQLite\Backups,\API FACILAPP SQLite\Mcp\bin,\API FACILAPP SQLite\Mcp\obj,\API FACILAPP SQLite\Tray\bin,\API FACILAPP SQLite\Tray\obj,*.pdb,Thumbs.db,desktop.ini"; \
   Flags: recursesubdirs createallsubdirs ignoreversion
 ; CLAUDE.md e README.md públicos (só o conteúdo do curso; o CLAUDE.md interno da raiz não vai)
 Source: "{#SourcePath}CLAUDE-publico.md"; DestDir: "{app}"; DestName: "CLAUDE.md"; Flags: ignoreversion
