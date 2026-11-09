@@ -1,0 +1,7 @@
+BANCO DO CURSO (usuarios.db) — os dados de exemplo das aulas: cadastros, reservas, operação, caixa, configurações e menu.
+A chave da OpenAI NÃO vem junto: cadastre a sua na tela de Configurações da IA (ou no console da API, 127.0.0.1:7777).
+
+Para usar este banco no seu computador:
+  1. Pare o serviço da API do curso (FacilAppCursoSqlite).
+  2. Copie este usuarios.db para C:\ProgramData\FacilApp\CursoApiSqlite\ (substituindo o que estiver lá).
+  3. Inicie o serviço de novo e entre com o usuário do curso.

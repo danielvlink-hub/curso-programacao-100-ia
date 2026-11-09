@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quartos — cadastro</title>
+<!--
+  UPDATE — Quartos (FastPousada, Bloco 1, aula gravada de 08/11/2026)
+  ABRE: dentro da janela central do BrowseQuartos.html (iframe). ?id=<id> altera; ?novo=1 inclui.
+  O QUE FAZ: formulário montado da ficha assets/js/cadastros/Quartos.js pelo motor CadastroPadrao.update:
+    Ativo na linha 1 (Daniel: "na linha 1, na frente dos campos"), campos mínimos, obrigatórios marcados,
+    no máximo 3px de espaço, janela do tamanho do conteúdo (sem barra). Grava pela API e SÓ DEPOIS avisa o browse.
+-->
+<script>
+  // tema escolhido no menu (e troca ao vivo)
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) {
+        document.documentElement.setAttribute('data-theme', t);
+        var f = document.querySelector('#janelaUpdate iframe');
+        if (f && f.contentWindow) f.contentWindow.postMessage(m, '*');
+      }
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/CadastroPadrao.js"></script>
+<script src="assets/js/cadastros/Quartos.js"></script>
+</head>
+<body>
+<script>
+  window.addEventListener('DOMContentLoaded', function () { CadastroPadrao.update(window.FICHA); });
+</script>
+</body>
+</html>

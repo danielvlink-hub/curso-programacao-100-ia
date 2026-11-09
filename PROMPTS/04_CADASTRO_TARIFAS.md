@@ -13,7 +13,7 @@ BACKEND
   (responder qual tarifa conflita); valor sempre gravado em número, nunca texto.
 
 FRONT-END
-- HTML/tarifas.html + tarifas_update.html. Colunas: Tipo, Descrição, Diária (R$ 0,00), Início, Fim, Situação, Ações.
+- HTML/BrowseTarifas.html + UpdateTarifas.html. Colunas: Tipo, Descrição, Diária (R$ 0,00), Início, Fim, Situação, Ações.
 - Filtro por tipo de quarto e opção "só vigentes hoje".
 - Update: Tipo (ComboBusca), Descrição*, Diária*, Início*, Fim*, Ativo. Valor digitado em reais com vírgula.
 - Menu: módulo Cadastros → "Tarifas", ícone sell.

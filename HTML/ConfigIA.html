@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inteligência Artificial</title>
+<!--
+  INTELIGÊNCIA ARTIFICIAL — chave da OpenAI do FastPousada (aula gravada de 08/11/2026)
+  Daniel: "antes disso crie um local na área da API para cadastrar a chave da OpenAI".
+  O QUE FAZ: o administrador digita a chave, clica em Testar (a API lista os modelos liberados para a conta), escolhe o
+    modelo e grava. A chave vai direto para a API, que guarda criptografada no Windows (DPAPI, ProgramData).
+  REGRAS: a chave NUNCA volta para a tela (só os 4 últimos dígitos); não fica no navegador, no banco nem no log.
+    Só administrador (a API recusa os demais). O campo da chave é limpo depois de gravar.
+  DADOS: ApiCurso.iaConfig / testarIa / salvarIaConfig / apagarIaConfig (rotas /api/ia/* — IA.cs).
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<script src="assets/js/ApiCurso.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  .janela { position: fixed; top: 6px; left: 50%; transform: translateX(-50%); width: min(620px, calc(100vw - 12px)); background: var(--fa-panel, #fff);
+    border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.18); overflow: hidden; }
+  .cab { height: 35px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 12px; background: var(--fa-panel-alt, #f1f5f9);
+    border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .cab .tit { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+  .badge-ico { width: 24px; height: 24px; border-radius: 6px; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); display: flex; align-items: center; justify-content: center; }
+  .badge-ico .material-icons { font-size: 16px; }
+  .btn-fechar { width: 26px; height: 26px; border: 1px solid var(--fa-primary-dark, #35470e); border-radius: 6px; background: var(--fa-primary, #4b5a32);
+    color: var(--fa-button-text, #fff); font: 700 16px/1 Arial, sans-serif; cursor: pointer; }
+  .corpo { padding: 8px 14px 3px; display: flex; flex-direction: column; gap: 3px; }
+  .situacao { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px; font-weight: 700; }
+  .situacao.ok { background: #dcfce7; color: #166534; } .situacao.nao { background: #fef3c7; color: #92400e; }
+  .situacao .material-icons { font-size: 18px; }
+  label.rot { display: block; font-size: 11px; font-weight: 700; color: var(--fa-muted, #64748b); margin: 4px 0 3px; text-transform: uppercase; }
+  .linha { display: flex; gap: 6px; align-items: center; }
+  .campo { display: block; width: 100%; height: 22px; padding: 0 7px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 4px;
+    background: var(--fa-field-bg, #fff); color: var(--fa-text, #1e293b); outline: none; font-family: inherit; }
+  .campo:focus { border-color: var(--fa-primary, #4b5a32); }
+  .dica { font-size: 11px; color: var(--fa-muted, #64748b); }
+  .btn { height: 22px; padding: 0 10px; border: 0; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); white-space: nowrap; flex: 0 0 auto; }
+  .btn .material-icons { font-size: 15px; }
+  .btn.alt { background: var(--fa-field-bg, #f8fafc); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+  .btn:disabled { opacity: .55; cursor: wait; }
+  footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--fa-border, #d8ddcf); padding-top: 3px; margin-top: 3px; }
+  footer .acoes { display: flex; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="janela">
+  <header class="cab">
+    <div class="tit"><div class="badge-ico"><span class="material-icons">smart_toy</span></div>Inteligência Artificial</div>
+    <button type="button" class="btn-fechar" title="Fechar" onclick="fechar()">×</button>
+  </header>
+  <div class="corpo">
+    <div class="situacao nao" id="situacao"><span class="material-icons">hourglass_empty</span><span id="txtSituacao">Consultando...</span></div>
+    <label class="rot" for="chave">Chave da OpenAI</label>
+    <div class="linha">
+      <input id="chave" class="campo" type="password" autocomplete="off" spellcheck="false" placeholder="sk-... (deixe vazio para manter a chave gravada)">
+      <button type="button" class="btn alt" id="btnTestar" onclick="testar()"><span class="material-icons">wifi_tethering</span>Testar chave</button>
+    </div>
+    <span class="dica">A chave vai direto para a FacilApp API SQL e fica criptografada no servidor. Ela não volta para a tela.</span>
+    <label class="rot" for="nome">Nome da assistente</label>
+    <input id="nome" class="campo" maxlength="40" autocomplete="off" value="Luninha" placeholder="Ex.: Luninha">
+    <label class="rot" for="modelo">Modelo</label>
+    <!-- digita o nome ou escolhe na lista da conta (Daniel, 08/11/2026: "iremos usar a Luna 6.0") -->
+    <input id="modelo" class="campo" list="listaModelos" autocomplete="off" spellcheck="false" placeholder="Digite o nome do modelo ou clique em Testar chave e escolha na lista (ex.: o modelo Luna)">
+    <datalist id="listaModelos"></datalist>
+    <span class="dica" id="dicaModelos"></span>
+
+    <!-- Botão VOZ (Daniel, 08/11/2026: "crie o Botão VOZ, usando Live, conversa humana") -->
+    <div class="linha">
+      <div style="flex:2">
+        <label class="rot" for="modeloVoz">Modelo de voz (Botão VOZ)</label>
+        <input id="modeloVoz" class="campo" list="listaModelosVoz" autocomplete="off" spellcheck="false"
+               placeholder="Clique em Testar chave (modelo realtime / live)">
+        <datalist id="listaModelosVoz"></datalist>
+      </div>
+      <div style="flex:1">
+        <label class="rot" for="voz">Voz</label>
+        <input id="voz" class="campo" list="listaVozes" autocomplete="off" spellcheck="false" placeholder="marin">
+        <datalist id="listaVozes">
+          <option value="marin"><option value="cedar"><option value="coral"><option value="sage"><option value="shimmer">
+          <option value="alloy"><option value="ash"><option value="ballad"><option value="echo"><option value="verse">
+        </datalist>
+      </div>
+    </div>
+    <span class="dica">Sem modelo de voz, o botão VOZ das telas fica desligado. A conversa por voz cobra por minuto de áudio.</span>
+
+    <footer>
+      <button type="button" class="btn alt" id="btnRemover" onclick="remover()"><span class="material-icons">delete</span>Remover chave</button>
+      <div class="acoes">
+        <button type="button" class="btn alt" onclick="fechar()">Cancelar</button>
+        <button type="button" class="btn" id="btnGravar" onclick="gravar()"><span class="material-icons">save</span>Gravar</button>
+      </div>
+    </footer>
+  </div>
+</div>
+<script>
+  const el = id => document.getElementById(id);
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+
+  /**
+   * mostrar(r) — situação gravada (r = resposta de /api/ia/config) e preenche os campos.
+   * ENTRADA: { configurada, modelo, final, nome, modelo_voz, voz }. A chave nunca vem; só os 4 últimos dígitos.
+   */
+  function mostrar(r) {
+    const ok = r && r.configurada && r.modelo;
+    el('situacao').className = 'situacao ' + (ok ? 'ok' : 'nao');
+    el('situacao').querySelector('.material-icons').textContent = ok ? 'check_circle' : 'warning';
+
+    if (ok) {
+      el('txtSituacao').textContent =
+        'IA ligada — ' + (r.nome || 'Luninha') + ', modelo ' + r.modelo +
+        (r.modelo_voz ? ', voz ' + r.modelo_voz + ' (' + r.voz + ')' : ', voz desligada') +
+        ', chave terminada em ' + r.final + '.';
+    } else {
+      el('txtSituacao').textContent = r && r.configurada
+        ? 'Chave gravada, falta escolher o modelo.'
+        : 'IA desligada: nenhuma chave cadastrada. Os botões IA e VOZ das telas ficam desabilitados.';
+    }
+
+    if (r && r.nome)       el('nome').value = r.nome;
+    if (r && r.modelo)     el('modelo').value = r.modelo;
+    if (r && r.modelo_voz) el('modeloVoz').value = r.modelo_voz;
+    if (r && r.voz)        el('voz').value = r.voz;
+  }
+
+  /** carregar() — lê a configuração atual na API (só administrador). */
+  async function carregar() {
+    try {
+      mostrar(await ApiCurso.iaConfig());
+    } catch (erro) {
+      el('txtSituacao').textContent = erro.message;
+    }
+  }
+
+  /**
+   * testar() — a API consulta a OpenAI com a chave digitada (ou a gravada) e devolve os modelos de TEXTO e de VOZ.
+   * REGRAS: sugere o Luna para o texto e um modelo "live" para a voz, quando a conta tiver (Daniel, 08/11/2026).
+   */
+  async function testar() {
+    const btn = el('btnTestar');
+    btn.disabled = true;
+    try {
+      const r = await ApiCurso.testarIa(el('chave').value.trim());
+      const modelos = r.modelos || [];
+      const modelosVoz = r.modelos_voz || [];
+
+      el('listaModelos').innerHTML = '';
+      modelos.forEach(m => el('listaModelos').appendChild(new Option(m, m)));
+      el('listaModelosVoz').innerHTML = '';
+      modelosVoz.forEach(m => el('listaModelosVoz').appendChild(new Option(m, m)));
+
+      // Luna automático só com o campo vazio; entre os Luna, o mais NOVO (Daniel, 08/11/2026: "seleciono 6.0 e volta 5.6")
+      const versao = m => parseFloat((m.match(/(\d+(?:\.\d+)?)/) || [0, 0])[1]);
+      const luna = modelos.filter(m => /luna/i.test(m)).sort((a, b) => versao(b) - versao(a))[0];
+      if (!el('modelo').value && luna) el('modelo').value = luna;
+      // voz: prefere um modelo "realtime" (o gpt-live-1 não funciona no modo realtime — teste do Daniel, 08/11/2026)
+      const realtime = modelosVoz.filter(m => /realtime/i.test(m));
+      if (realtime.length && !/realtime/i.test(el('modeloVoz').value)) el('modeloVoz').value = realtime[realtime.length - 1];
+
+      el('dicaModelos').textContent =
+        (modelos.length ? 'Modelos de texto: ' + modelos.join(', ') + '.' : 'Nenhum modelo de texto liberado nesta conta.') +
+        (modelosVoz.length ? ' Modelos de voz: ' + modelosVoz.join(', ') + '.' : ' Nenhum modelo de voz ao vivo nesta conta.');
+      aviso('Chave aceita pela OpenAI. Escolha os modelos e grave.');
+    } catch (erro) {
+      aviso('Erro: ' + erro.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  /** gravar() — manda tudo para a API (chave vazia mantém a gravada) e limpa o campo da chave depois. */
+  async function gravar() {
+    if (!el('modelo').value.trim()) { aviso('Erro: informe o modelo (digite ou clique em Testar chave).'); return; }
+    const btn = el('btnGravar');
+    btn.disabled = true;
+    try {
+      const r = await ApiCurso.salvarIaConfig(
+        el('chave').value.trim(),
+        el('modelo').value.trim(),
+        el('nome').value.trim(),
+        el('modeloVoz').value.trim(),
+        el('voz').value.trim()
+      );
+      mostrar(r);
+      el('chave').value = '';
+      aviso('Configuração da IA gravada.');
+    } catch (erro) {
+      aviso('Erro: ' + erro.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  /** remover() — apaga a configuração da IA no servidor (pede confirmação em vermelho). */
+  async function remover() {
+    const ok = await FacilAppConfirmar('Remover a chave da OpenAI? Os botões IA e VOZ das telas ficam desligados.', { confirmar: 'Remover', perigo: true });
+    if (!ok) return;
+    try {
+      mostrar(await ApiCurso.apagarIaConfig());
+      aviso('Chave removida.');
+    } catch (erro) {
+      aviso('Erro: ' + erro.message);
+    }
+  }
+
+  /** fechar() — ✕ da tela: fecha no palco do menu (ou volta, se aberta sozinha). */
+  function fechar() {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_MODELO' }, '*'); } catch (e) {}
+    if (window.parent === window) history.back();
+  }
+  window.addEventListener('DOMContentLoaded', carregar);
+</script>
+</body>
+</html>

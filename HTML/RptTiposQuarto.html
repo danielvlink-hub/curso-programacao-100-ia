@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tipos de quarto — relatório</title>
+<!--
+  RELATÓRIO — Tipos de quarto (FastPousada, Bloco 1, aula gravada de 08/11/2026)
+  O QUE FAZ: filtros da ficha + situação, prévia da folha A4 (altura do conteúdo), Gerar PDF (jsPDF, cabeçalho da
+    tabela repetido e "Página X de Y"), Imprimir, CSV e XLSX. ✕ volta para a lista quando veio dela (?de=browse).
+  Montado pelo motor CadastroPadrao.relatorio com a ficha assets/js/cadastros/TiposQuarto.js.
+-->
+<script>
+  // tema escolhido no menu (e troca ao vivo)
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) {
+        document.documentElement.setAttribute('data-theme', t);
+        var f = document.querySelector('#janelaUpdate iframe');
+        if (f && f.contentWindow) f.contentWindow.postMessage(m, '*');
+      }
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="dependencias/jspdf-2.5.1/jspdf.umd.min.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/CadastroPadrao.js"></script>
+<script src="assets/js/cadastros/TiposQuarto.js"></script>
+</head>
+<body>
+<script>
+  window.addEventListener('DOMContentLoaded', function () { CadastroPadrao.relatorio(window.FICHA); });
+</script>
+</body>
+</html>

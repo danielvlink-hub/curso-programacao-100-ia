@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recebimentos</title>
+<!--
+  BROWSE — Recebimentos (FastPousada, Bloco 4, aula gravada de 08/11/2026). Daniel: "Sim, Bloco 4".
+  O QUE É: todo dinheiro que entrou (data/hora, hóspede, quarto, forma, valor, caixa, observação, situação), com busca,
+    filtros de mês, forma e situação, total no rodapé (sem estornados), botão Caixa, Relatório, CSV, XLSX e a Luninha
+    do caixa (IA e VOZ). Somente leitura: o recebimento nasce na conta do hóspede. A lixeira vira "Estornar" (motivo).
+  COMO: ficha assets/js/cadastros/Recebimentos.js + motor CadastroPadrao.js. Regras na API (Caixa.cs e Operacao.cs).
+-->
+<script>
+  // tema escolhido no menu (e troca ao vivo)
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) {
+        document.documentElement.setAttribute('data-theme', t);
+        var f = document.querySelector('#janelaUpdate iframe');
+        if (f && f.contentWindow) f.contentWindow.postMessage(m, '*');
+      }
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="dependencias/tabulator-6.5.0/css/tabulator.min.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="dependencias/tabulator-6.5.0/js/tabulator.min.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/BotaoVoz.js"></script>
+<script src="assets/js/CadastroPadrao.js"></script>
+<script src="assets/js/IACaixa.js"></script>
+<script src="assets/js/cadastros/Recebimentos.js"></script>
+</head>
+<body>
+<script>
+  // monta a lista desta ficha (o motor cria a tela inteira)
+  window.addEventListener('DOMContentLoaded', function () { CadastroPadrao.browse(window.FICHA); });
+</script>
+</body>
+</html>

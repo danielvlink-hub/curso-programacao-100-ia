@@ -106,7 +106,117 @@ public sealed class MenuCatalog(string databasePath)
         cmd.CommandText = "SELECT COUNT(*) FROM menu_catalogo_itens";
         if (Convert.ToInt64(cmd.ExecuteScalar()) == 0) Seed(cmd);
 
+        // 4) Telas já construídas nas aulas: liga no menu (só uma vez; depois o catálogo é do administrador).
+        AtualizarTelasDasAulas(cmd);
+
         tx.Commit();
+    }
+
+    /*
+     * AtualizarTelasDasAulas — liga no menu as telas que as aulas já construíram.
+     * Daniel, 08/11/2026 (aula de Hóspedes): "anexe ao menu superior e menu geral, deixe ativo para testes" /
+     * "ativa e linka o html aqui ao terminar".
+     * REGRAS: item previsto (arquivo vazio) recebe o arquivo e deixa de ser desabilitado; item que o administrador já
+     * mudou (tem arquivo) não é tocado. Item novo só é criado se o código ainda não existe. Idempotente.
+     */
+    private static void AtualizarTelasDasAulas(SqliteCommand cmd)
+    {
+        void Ligar(string codigo, string arquivo)
+        {
+            cmd.Parameters.Clear();
+            cmd.CommandText = """
+                UPDATE menu_catalogo_itens SET arquivo_destino=$arq, desabilitado_padrao=0, ativo_padrao=1
+                WHERE codigo=$c AND COALESCE(arquivo_destino,'')=''
+                """;
+            cmd.Parameters.AddWithValue("$c", codigo);
+            cmd.Parameters.AddWithValue("$arq", arquivo);
+            cmd.ExecuteNonQuery();
+            cmd.Parameters.Clear();
+        }
+        bool Existe(string codigo)
+        {
+            cmd.Parameters.Clear();
+            cmd.CommandText = "SELECT COUNT(*) FROM menu_catalogo_itens WHERE codigo=$c";
+            cmd.Parameters.AddWithValue("$c", codigo);
+            var existe = Convert.ToInt64(cmd.ExecuteScalar()) > 0;
+            cmd.Parameters.Clear();
+            return existe;
+        }
+        long? IdDe(string codigo)
+        {
+            cmd.Parameters.Clear();
+            cmd.CommandText = "SELECT id_item FROM menu_catalogo_itens WHERE codigo=$c";
+            cmd.Parameters.AddWithValue("$c", codigo);
+            var v = cmd.ExecuteScalar();
+            cmd.Parameters.Clear();
+            return v is null or DBNull ? null : Convert.ToInt64(v);
+        }
+
+        // Aula de Hóspedes (08/11/2026)
+        Ligar("cad_hospedes", "BrowseHospedes.html");
+        if (!Existe("sup_hospedes")) InsertSeed(cmd, "superior", null, "sup_hospedes", "Hóspedes", "person", 0, 15, "BrowseHospedes.html", false);
+        if (!Existe("rel_hospedes") && IdDe("mod_relatorios") is { } rel)
+            InsertSeed(cmd, "lateral", rel, "rel_hospedes", "Relação de Hóspedes", "print", 0, 5, "RptHospedes.html", false);
+
+        // Bloco 1 (08/11/2026): cadastros da hospedagem
+        Ligar("cad_tipos_quarto", "BrowseTiposQuarto.html");
+        Ligar("cad_quartos", "BrowseQuartos.html");
+        Ligar("cad_tarifas", "BrowseTarifas.html");
+        Ligar("cad_servicos", "BrowseServicosProdutos.html");
+        Ligar("cad_pagamentos", "BrowseFormasPagamento.html");
+        // Bloco 2 (08/11/2026): reservas e mapa — menu geral e barra de cima (os itens de cima já existiam, cinza)
+        Ligar("op_reservas", "BrowseReservas.html");
+        Ligar("op_ocupacao", "mapa_ocupacao.html");
+        Ligar("sup_reservas", "BrowseReservas.html");
+        Ligar("sup_ocupacao", "mapa_ocupacao.html");
+        // Bloco 3 (08/11/2026): operação do dia — menu geral e barra de cima
+        Ligar("op_checkin", "checkin.html");
+        Ligar("op_estadia", "estadia.html");
+        Ligar("op_checkout", "checkout.html");
+        Ligar("sup_checkin", "checkin.html");
+        Ligar("sup_checkout", "checkout.html");
+        if (!Existe("sup_estadia")) InsertSeed(cmd, "superior", null, "sup_estadia", "Estadia e consumos", "receipt_long", 0, 45, "estadia.html", false);
+        // Bloco 4 (08/11/2026): caixa e recebimentos — menu geral (Financeiro) e barra de cima
+        Ligar("fin_caixa", "caixa.html");
+        Ligar("fin_recebimentos", "BrowseRecebimentos.html");
+        if (!Existe("sup_caixa")) InsertSeed(cmd, "superior", null, "sup_caixa", "Caixa", "point_of_sale", 0, 50, "caixa.html", false);
+        if (!Existe("sup_recebimentos")) InsertSeed(cmd, "superior", null, "sup_recebimentos", "Recebimentos", "paid", 0, 51, "BrowseRecebimentos.html", false);
+        // Bloco 5 (08/11/2026): relatórios, configurações e o painel de hoje — menu geral e barra de cima
+        Ligar("rel_ocupacao", "RptOcupacao.html");
+        Ligar("rel_faturamento", "RptFaturamento.html");
+        Ligar("adm_config", "configuracoes.html");
+        if (!Existe("op_hoje") && IdDe("mod_operacao") is { } opMod)
+            InsertSeed(cmd, "lateral", opMod, "op_hoje", "Painel de hoje", "today", 0, 5, "painel.html", false);
+        if (!Existe("sup_hoje")) InsertSeed(cmd, "superior", null, "sup_hoje", "Hoje", "today", 0, 12, "painel.html", false);
+        if (!Existe("sup_rel_ocupacao")) InsertSeed(cmd, "superior", null, "sup_rel_ocupacao", "Ocupação", "analytics", 0, 70, "RptOcupacao.html", false);
+        if (!Existe("sup_rel_faturamento")) InsertSeed(cmd, "superior", null, "sup_rel_faturamento", "Faturamento", "bar_chart", 0, 71, "RptFaturamento.html", false);
+        // barra de cima com ícones (Daniel, 08/11/2026: "ligar todas as páginas ao menu geral e superior com ícones")
+        if (!Existe("sup_tipos_quarto")) InsertSeed(cmd, "superior", null, "sup_tipos_quarto", "Tipos de quarto", "bed", 0, 60, "BrowseTiposQuarto.html", false);
+        if (!Existe("sup_quartos")) InsertSeed(cmd, "superior", null, "sup_quartos", "Quartos", "meeting_room", 0, 61, "BrowseQuartos.html", false);
+        if (!Existe("sup_tarifas")) InsertSeed(cmd, "superior", null, "sup_tarifas", "Tarifas", "sell", 0, 62, "BrowseTarifas.html", false);
+        if (!Existe("sup_servicos")) InsertSeed(cmd, "superior", null, "sup_servicos", "Serviços e produtos", "room_service", 0, 63, "BrowseServicosProdutos.html", false);
+        if (!Existe("sup_pagamentos")) InsertSeed(cmd, "superior", null, "sup_pagamentos", "Formas de pagamento", "credit_card", 0, 64, "BrowseFormasPagamento.html", false);
+
+        // Aula do Botão IA (08/11/2026): tela da chave da OpenAI, em Administração (só administrador vê esse módulo)
+        if (!Existe("adm_ia") && IdDe("mod_administracao") is { } adm)
+            InsertSeed(cmd, "lateral", adm, "adm_ia", "Inteligência Artificial", "smart_toy", 0, 25, "ConfigIA.html", false);
+    }
+
+    /// <summary>Exceções do usuário para o item de menu com este código (null = sem restrição).</summary>
+    public MenuPermission? PermissaoPorCodigo(long userId, string codigo)
+    {
+        using var db = Open();
+        using var cmd = db.CreateCommand();
+        cmd.CommandText = """
+            SELECT u.id_item,COALESCE(u.incluir,1),COALESCE(u.alterar,1),COALESCE(u.excluir,1),COALESCE(u.ativo,1),
+                   COALESCE(u.oculto,0),COALESCE(u.desabilitado,0)
+            FROM menu_usuarios u JOIN menu_catalogo_itens c ON c.id_item=u.id_item
+            WHERE u.id_usuario=$u AND c.codigo=$c LIMIT 1
+            """;
+        cmd.Parameters.AddWithValue("$u", userId);
+        cmd.Parameters.AddWithValue("$c", codigo);
+        using var r = cmd.ExecuteReader();
+        return r.Read() ? new(r.GetInt64(0), r.GetInt32(1), r.GetInt32(2), r.GetInt32(3), r.GetInt32(4), r.GetInt32(5), r.GetInt32(6)) : null;
     }
 
     private static bool ColumnExists(SqliteCommand cmd, string table, string column)

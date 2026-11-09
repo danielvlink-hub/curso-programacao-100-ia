@@ -19,10 +19,10 @@ BACKEND
   * valor_diaria padrão = tarifa vigente do tipo do quarto na data de entrada.
 
 FRONT-END
-- HTML/reservas.html + reservas_update.html.
+- HTML/BrowseReservas.html + UpdateReservas.html.
 - Browse: Nº, Hóspede, Quarto, Entrada, Saída, Noites, Diária, Total previsto, Situação (etiqueta colorida), Ações.
   Filtro por período (padrão: de hoje a +30 dias), situação e busca por hóspede.
-- Update: Hóspede (ComboBusca em /api/hospedes, com botão "+" que abre hospedes_update.html), Entrada, Saída,
+- Update: Hóspede (ComboBusca em /api/hospedes, com botão "+" que abre UpdateHospedes.html), Entrada, Saída,
   Adultos, Crianças → botão "Ver quartos livres" lista só os disponíveis (/api/quartos/disponiveis);
   Diária vem da tarifa e pode ser ajustada; mostra Noites e Total previsto ao vivo; Observação.
 - Ação "Cancelar reserva" na linha (pede o motivo com FacilAppPerguntar).

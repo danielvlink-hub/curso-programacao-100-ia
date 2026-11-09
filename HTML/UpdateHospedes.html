@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro de Hóspede</title>
+<!--
+  UPDATE DE HÓSPEDES — FastPousada (aula gravada de 08/11/2026)
+  Daniel: "Crie o BrowseHospedes e UpdateHospedes, gere CRUD..." / "também tem a rota de consulta de CEP".
+  ABRE: dentro da janela central do BrowseHospedes.html (iframe). ?id=<id> = alterar; ?novo=1 = incluir.
+  O QUE FAZ: escolhe Pessoa ou Empresa, carrega o registro (alteração), preenche o endereço pelo CEP, valida, grava pela
+    API e só então avisa o browse.
+  AVISA O BROWSE (postMessage): FACILAPP_MODELO_GRAVADO {id} (gravou) ou FACILAPP_MODELO_CANCELADO (Cancelar ou Esc).
+  REGRAS: a validação daqui é de conveniência; a regra de verdade fica na API (Hospedes.cs). Se a API recusar,
+    a janela continua aberta com o que foi digitado e mostra a mensagem dela.
+  DADOS: ApiCurso.obterHospede / incluirHospede / alterarHospede / consultarCepHospede.
+  PADRÃO VISUAL: campos 22px, rótulos em caixa alta, cores --fa-*, rodapé com Cancelar e Gravar à direita.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<script src="assets/js/ApiCurso.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Daniel, 08/11/2026: "sempre que possível sem barra lateral" — a janela tem a altura do conteúdo, então sem rolagem. */
+  html, body { height: 100%; overflow: hidden; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  main { display: block; }
+  /* rodapé com altura automática (Daniel, 08/11/2026: "ajuste a altura do botão para não sobrepor o traço e ficar abaixo no
+     mínimo 3px") — o tema repinta os <button> com altura própria; uma linha fixa de 36px fazia o botão subir sobre o traço. */
+  /* Daniel, 08/11/2026: "lembra da regra: no máximo 3px de espaço" — nada cresce para ocupar sobra; a janela do browse
+     se ajusta à altura do conteúdo (mensagem FACILAPP_MODELO_ALTURA). */
+  .card { display: flex; flex-direction: column; padding: 8px 14px 3px; gap: 3px; }
+  .card > .grid { flex: 0 1 auto; min-height: 0; }
+  #erro { display: none; padding: 5px 8px; border-radius: 5px; background: #fde8e7; color: #9b1c1c; font-size: 12px; }
+  .tipos { display: flex; gap: 14px; align-items: center; font-size: 12px; font-weight: 700; }
+  .tipos label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+  /* Daniel, 08/11/2026: "coloca [o Ativo] na linha 1, na frente dos campos" */
+  .tipos .sep { width: 1px; height: 16px; background: var(--fa-border, #d8ddcf); }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px 12px; align-content: start; overflow: auto; padding-bottom: 0; }
+  .c1 { grid-column: span 1; } .c2 { grid-column: span 2; } .c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c6 { grid-column: 1 / -1; }
+/* celular (até 760 px — Daniel, 08/11/2026): 2 colunas; campo pequeno (número, complemento, cidade, UF) fica com metade */
+@media (max-width: 760px) {
+  html { height: auto !important; min-height: 100%; overflow-y: auto !important; }   /* a página rola: os botões nunca somem */
+  body { height: auto !important; min-height: 100%; overflow: visible !important; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 8px; }
+  .c2, .c3, .c4 { grid-column: 1 / -1; }
+  .grid input[type=text], .grid input[type=email], .grid input[type=date], .grid select { height: 30px; font-size: 14px; }
+}
+  .so-pj, .so-pf { } .oculto { display: none !important; }
+  label.rot { display: block; font-size: 11px; font-weight: 700; color: var(--fa-muted, #64748b); margin-bottom: 3px; text-transform: uppercase; }
+  .req { color: #b42318; }
+  input[type=text], input[type=email], input[type=date], select, textarea { width: 100%; height: 22px; padding: 0 7px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf);
+    border-radius: 4px; background: var(--fa-field-bg, #fff); color: var(--fa-text, #1e293b); outline: none; font-family: inherit; }
+  textarea { height: 44px; padding: 4px 7px; resize: none; }
+  /* bloco, não em linha: tira a folga de linha de texto (≈3px) que o navegador põe embaixo dos campos */
+  input[type=text], input[type=email], input[type=date], select, textarea { display: block; }
+  input:focus, select:focus, textarea:focus { border-color: var(--fa-primary, #4b5a32); }
+  input.invalido { border-color: #b42318; background: #fff7f7; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; cursor: pointer; padding-top: 18px; }
+  .dica-cep { font-size: 10.5px; color: var(--fa-muted, #64748b); margin-top: 2px; min-height: 13px; }
+  footer { display: flex; justify-content: space-between; align-items: center; gap: 6px; border-top: 1px solid var(--fa-border, #d8ddcf);
+    padding-top: 3px; margin-top: 0; flex: 0 0 auto; }
+  footer .acoes .btn { margin-top: 0 !important; }
+  footer .dica { font-size: 11px; color: var(--fa-muted, #64748b); }
+  footer .acoes { display: flex; gap: 6px; }
+  .btn { height: 22px; padding: 0 12px; border: 0; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); }
+  .btn .material-icons { font-size: 15px; }
+  .btn.cancel { background: var(--fa-field-bg, #f1f5f9); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+  .btn:disabled { opacity: .5; cursor: wait; }
+</style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <div id="erro"></div>
+    <div class="tipos">
+      <label><input type="radio" name="tipo" id="tipoPF" value="PF" checked onchange="aplicarTipo()"> Pessoa</label>
+      <label><input type="radio" name="tipo" id="tipoPJ" value="PJ" onchange="aplicarTipo()"> Empresa</label>
+      <span class="sep"></span>
+      <label><input type="checkbox" id="ativo" checked> Ativo</label>
+    </div>
+    <div class="grid">
+      <div class="c6"><label class="rot" id="rotNome">Nome <span class="req">*</span></label><input id="nome" type="text" maxlength="150" placeholder="Ex.: Maria da Silva"></div>
+      <div class="c3 so-pj"><label class="rot">Nome fantasia</label><input id="nome_fantasia" type="text" maxlength="150" placeholder="Ex.: Pousada Sol"></div>
+      <div class="c3 so-pj"><label class="rot">Inscrição estadual</label><input id="inscricao_estadual" type="text" maxlength="30"></div>
+      <div class="c2"><label class="rot" id="rotDocumento">CPF / Documento</label><input id="documento" type="text" maxlength="20" placeholder="Ex.: 123.456.789-09"></div>
+      <div class="c2"><label class="rot" id="rotTelefone">Telefone <span class="req">*</span></label><input id="telefone" type="text" maxlength="20" placeholder="Ex.: (15) 99700-1234"></div>
+      <!-- Daniel, 08/11/2026: "e-mail após telefone" -->
+      <div class="c2"><label class="rot">E-mail</label><input id="email" type="email" maxlength="120" placeholder="Ex.: maria@email.com"></div>
+      <div class="c2 so-pf"><label class="rot">Nascimento</label><input id="data_nascimento" type="date"></div>
+      <div class="c2"><label class="rot">CEP</label><input id="cep" type="text" maxlength="9" placeholder="00000-000" onblur="buscarCep()"><div class="dica-cep" id="dicaCep">Digite o CEP: o endereço vem sozinho.</div></div>
+      <div class="c4"><label class="rot">Endereço</label><input id="logradouro" type="text" maxlength="150"></div>
+      <div class="c1"><label class="rot">Número</label><input id="numero" type="text" maxlength="20"></div>
+      <div class="c1"><label class="rot">Complemento</label><input id="complemento" type="text" maxlength="60"></div>
+      <div class="c2"><label class="rot">Bairro</label><input id="bairro" type="text" maxlength="80"></div>
+      <div class="c1"><label class="rot">Cidade</label><input id="cidade" type="text" maxlength="80" placeholder="Ex.: Sorocaba"></div>
+      <div class="c1"><label class="rot">UF</label><input id="uf" type="text" maxlength="2" style="text-transform:uppercase" placeholder="SP"></div>
+      <div class="c6"><label class="rot">Observação</label><textarea id="observacao" maxlength="500" placeholder="Ex.: prefere quarto no térreo"></textarea></div>
+    </div>
+    <footer>
+      <span class="dica">Campos com <span class="req">*</span> são obrigatórios. Ctrl+Enter grava, Esc cancela.</span>
+      <div class="acoes">
+        <button class="btn cancel" type="button" onclick="cancelar()">Cancelar</button>
+        <button class="btn" type="button" id="btnGravar" onclick="gravar()"><span class="material-icons">save</span>Gravar</button>
+      </div>
+    </footer>
+  </section>
+</main>
+<script>
+  const params = new URLSearchParams(location.search);
+  const idEdicao = params.get('id') || null;
+  const $ = id => document.getElementById(id);
+  const CAMPOS = ['nome', 'nome_fantasia', 'documento', 'inscricao_estadual', 'telefone', 'email', 'data_nascimento',
+    'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'observacao'];
+  const tipoAtual = () => ($('tipoPJ').checked ? 'PJ' : 'PF');
+  function mostrarErro(msg) { const e = $('erro'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
+
+  /**
+   * aplicarTipo() — mostra os campos de Pessoa ou de Empresa e troca os rótulos.
+   * REGRAS: empresa = razão social, fantasia, CNPJ e IE, telefone opcional; pessoa = nome, CPF, nascimento, telefone obrigatório.
+   */
+  function aplicarTipo() {
+    const pj = tipoAtual() === 'PJ';
+    document.querySelectorAll('.so-pj').forEach(x => x.classList.toggle('oculto', !pj));
+    document.querySelectorAll('.so-pf').forEach(x => x.classList.toggle('oculto', pj));
+    setTimeout(avisarAltura, 0);
+    $('rotNome').innerHTML = (pj ? 'Razão social' : 'Nome') + ' <span class="req">*</span>';
+    $('rotDocumento').textContent = pj ? 'CNPJ' : 'CPF / Documento';
+    $('rotTelefone').innerHTML = 'Telefone' + (pj ? '' : ' <span class="req">*</span>');
+    $('nome').placeholder = pj ? 'Ex.: Pousada Sol Ltda' : 'Ex.: Maria da Silva';
+    $('documento').placeholder = pj ? '00.000.000/0000-00' : 'Ex.: 123.456.789-09';
+  }
+
+  /**
+   * avisarAltura() — manda ao browse a altura do conteúdo, para a janela ficar do tamanho exato (sem sobra).
+   * Daniel, 08/11/2026: "no máximo 3px de espaço". Chamado ao abrir e ao trocar Pessoa/Empresa.
+   */
+  function avisarAltura() {
+    const card = document.querySelector('.card');
+    const altura = Math.ceil(Math.max(card.getBoundingClientRect().height, card.scrollHeight));
+    window.parent.postMessage({ origem: 'FACILAPP_MODELO_ALTURA', altura: altura }, '*');
+  }
+  // reavisa quando o conteúdo muda de altura (fontes carregando, Pessoa/Empresa, mensagem de erro)
+  if (window.ResizeObserver) new ResizeObserver(() => avisarAltura()).observe(document.querySelector('.card'));
+
+  /** iniciar() — na alteração, carrega o hóspede da API. */
+  async function iniciar() {
+    if (idEdicao) {
+      try {
+        const h = await ApiCurso.obterHospede(idEdicao);
+        CAMPOS.forEach(c => $(c).value = h[c] || '');
+        $('ativo').checked = !!h.ativo;
+        (h.tipo === 'PJ' ? $('tipoPJ') : $('tipoPF')).checked = true;
+      } catch (erro) { mostrarErro(erro.message); $('btnGravar').disabled = true; return; }
+    }
+    aplicarTipo();
+    $('nome').focus();
+  }
+
+  /**
+   * buscarCep() — ao sair do campo CEP com 8 números, a API consulta e preenche endereço, bairro, cidade e UF.
+   * Daniel, 08/11/2026: "também tem a rota de consulta de CEP". Não apaga o número nem o complemento.
+   */
+  async function buscarCep() {
+    const cep = $('cep').value.replace(/\D/g, '');
+    if (cep.length !== 8) { $('dicaCep').textContent = cep.length ? 'CEP com 8 números.' : 'Digite o CEP: o endereço vem sozinho.'; return; }
+    $('cep').value = cep.slice(0, 5) + '-' + cep.slice(5);
+    $('dicaCep').textContent = 'Consultando o CEP...';
+    try {
+      const c = await ApiCurso.consultarCepHospede(cep);
+      if (c.endereco) $('logradouro').value = c.endereco;
+      if (c.bairro) $('bairro').value = c.bairro;
+      if (c.cidade) $('cidade').value = c.cidade;
+      if (c.uf) $('uf').value = c.uf;
+      $('dicaCep').textContent = 'Endereço preenchido pelo CEP.';
+      if (!$('numero').value) $('numero').focus();
+    } catch (erro) { $('dicaCep').textContent = erro.message; }
+  }
+
+  /** validar(d) — devolve a 1ª mensagem de erro e marca o campo; '' = tudo certo (a API confere de novo). */
+  function validar(d) {
+    document.querySelectorAll('.invalido').forEach(x => x.classList.remove('invalido'));
+    const marcar = (id, m) => { $(id).classList.add('invalido'); $(id).focus(); return m; };
+    const fone = d.telefone.replace(/\D/g, '');
+    if (d.nome.length < 3) return marcar('nome', d.tipo === 'PJ' ? 'Informe a razão social (mínimo 3 letras).' : 'Informe o nome do hóspede (mínimo 3 letras).');
+    if (d.tipo === 'PF' && fone.length < 10) return marcar('telefone', 'Informe o telefone com DDD.');
+    if (fone.length > 0 && fone.length < 10) return marcar('telefone', 'Telefone incompleto: informe com DDD.');
+    if (d.tipo === 'PJ' && d.documento && d.documento.replace(/\D/g, '').length !== 14) return marcar('documento', 'CNPJ precisa ter 14 números.');
+    if (d.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return marcar('email', 'E-mail inválido.');
+    if (d.uf && !/^[A-Z]{2}$/.test(d.uf)) return marcar('uf', 'UF com 2 letras (ex.: SP).');
+    return '';
+  }
+
+  /** gravar() — valida, inclui ou altera pela API e só então avisa o browse. Se a API recusar, a janela continua aberta. */
+  async function gravar() {
+    mostrarErro('');
+    const d = { tipo: tipoAtual(), ativo: $('ativo').checked };
+    CAMPOS.forEach(c => d[c] = $(c).value.trim());
+    d.uf = d.uf.toUpperCase();
+    if (d.tipo === 'PJ') d.data_nascimento = ''; else { d.nome_fantasia = ''; d.inscricao_estadual = ''; }
+    const msg = validar(d); if (msg) { mostrarErro(msg); return; }
+    const btn = $('btnGravar'); btn.disabled = true;
+    try {
+      let id = idEdicao;
+      if (idEdicao) await ApiCurso.alterarHospede(idEdicao, d); else id = await ApiCurso.incluirHospede(d);
+      window.parent.postMessage({ origem: 'FACILAPP_MODELO_GRAVADO', id: Number(id) }, '*');
+    } catch (erro) { mostrarErro(erro.message); btn.disabled = false; }
+  }
+
+  function cancelar() { window.parent.postMessage({ origem: 'FACILAPP_MODELO_CANCELADO' }, '*'); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cancelar(); if (e.key === 'Enter' && e.ctrlKey) gravar(); });
+  window.addEventListener('DOMContentLoaded', iniciar);
+</script>
+</body>
+</html>

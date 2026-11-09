@@ -12,7 +12,7 @@ BACKEND
 - Regras na API: descrição única; preço não negativo; não excluir item já lançado em consumo (inativar).
 
 FRONT-END
-- HTML/servicos_produtos.html + servicos_produtos_update.html.
+- HTML/BrowseServicosProdutos.html + UpdateServicosProdutos.html.
 - Colunas: Descrição, Tipo, Categoria, Preço (R$), Unidade, Situação, Ações. Filtro por tipo e categoria.
 - Update: Descrição*, Tipo* (Serviço/Produto), Categoria (ComboBusca com as categorias já usadas, aceita nova),
   Preço*, Unidade, Ativo.

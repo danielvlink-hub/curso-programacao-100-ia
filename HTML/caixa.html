@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caixa</title>
+<!--
+  CAIXA — FastPousada, Bloco 4 (aula gravada de 08/11/2026). Daniel: "Sim, Bloco 4".
+  O QUE FAZ
+    - Caixa FECHADO: informe o troco inicial e abra o SEU caixa (cada usuário tem o seu). Embaixo, os últimos caixas.
+    - Caixa ABERTO: números do caixa (troco inicial, recebido, dinheiro esperado na gaveta), total por forma de
+      pagamento, suprimentos/sangrias e os recebimentos deste caixa.
+      · Suprimento (entra dinheiro) e Sangria (sai dinheiro): valor + motivo, na mesma linha.
+      · Fechar: digite o dinheiro contado → a tela mostra a diferença na hora; com diferença, a observação é obrigatória.
+    - Luninha (IA e VOZ) com as ferramentas do caixa (IACaixa.js).
+  DADOS: ApiCurso.caixaAtual, abrirCaixa, movimentoCaixa, fecharCaixa, caixas. Regras na API (Caixa.cs): um caixa aberto
+    por usuário, sangria não passa do dinheiro da gaveta, caixa fechado não muda mais.
+  PADRÃO: cores --fa-*, cabeçalho 35px, 3px entre blocos, campos 22px, sem alert/confirm/prompt.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/BotaoVoz.js"></script>
+<script src="assets/js/IACaixa.js"></script>
+<style>
+  .cx-corpo { flex: 1; min-height: 0; display: flex; gap: 3px; margin: 3px 12px; }
+  .cx-col { flex: 1; min-width: 0; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; padding: 6px 10px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 3px; }
+  .cx-col h3 { margin: 0; font-size: 10.5px; text-transform: uppercase; color: var(--fa-muted, #64748b); }
+  .cx-kpis { display: flex; gap: 3px; }
+  .cx-kpi { flex: 1; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; padding: 4px 8px; background: var(--fa-field-bg, #fff); }
+  .cx-kpi span { display: block; font-size: 10.5px; text-transform: uppercase; font-weight: 700; color: var(--fa-muted, #64748b); }
+  .cx-kpi b { font-size: 16px; }
+  .cx-kpi.destaque b { color: var(--fa-primary, #4b5a32); }
+  .cx-tab { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .cx-tab th { text-align: left; font-size: 10.5px; text-transform: uppercase; color: var(--fa-muted, #64748b); border-bottom: 1px solid var(--fa-border, #d8ddcf); padding: 2px 4px; }
+  .cx-tab td { padding: 2px 4px; border-bottom: 1px solid color-mix(in srgb, var(--fa-border, #d8ddcf) 60%, transparent); }
+  .cx-tab .v { text-align: right; white-space: nowrap; }
+  .cx-tab .est td { text-decoration: line-through; color: var(--fa-muted, #64748b); }
+  .cx-tab .neg { color: #b42318; } .cx-tab .pos { color: #166534; }
+  .cx-form { display: flex; gap: 6px; align-items: flex-end; flex-wrap: wrap; border-top: 1px solid var(--fa-border, #d8ddcf); padding-top: 3px; }
+  .cx-form label { display: grid; gap: 1px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--fa-muted, #64748b); }
+  .cx-form .numero { text-align: right; width: 96px; }
+  .cx-form .largo { min-width: 200px; flex: 1; }
+  .cx-dif { font-size: 12px; font-weight: 800; padding-bottom: 3px; }
+  .cx-dif.ok { color: #166534; } .cx-dif.falta { color: #b42318; } .cx-dif.sobra { color: #b45309; }
+  .cx-fechado { margin: auto; text-align: center; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .cx-fechado > .material-icons { font-size: 40px; color: var(--fa-muted, #64748b); }
+  .cx-fechado b { font-size: 15px; }
+  .vazio { color: var(--fa-muted, #64748b); font-size: 11.5px; }
+</style>
+</head>
+<body>
+<div class="cp-janela">
+  <header class="cp-cab">
+    <div class="cp-tit"><div class="cp-ico"><span class="material-icons">point_of_sale</span></div>
+      <div><b>Caixa</b><small>O seu caixa: abra com o troco, receba, faça sangria e feche conferindo o dinheiro</small></div></div>
+    <button type="button" class="btn-fechar" id="btnFechar" title="Fechar">×</button>
+  </header>
+  <div class="cp-barra">
+    <div class="cp-esq"><span id="situacao"></span></div>
+    <div class="cp-dir">
+      <button type="button" class="btn alt" id="btnRecebimentos"><span class="material-icons">paid</span>Recebimentos</button>
+      <button type="button" class="btn alt" id="btnRecarregar" title="Recarregar"><span class="material-icons">refresh</span></button>
+    </div>
+  </div>
+  <div class="cx-corpo" id="corpo"></div>
+  <div class="cp-rodape"><span id="lblRodape"></span><span>Caixa fechado não muda mais: nem estorno</span></div>
+</div>
+
+<script>
+  const el = id => document.getElementById(id);
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const moeda = v => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const quando = s => String(s || '').length >= 16 ? s.slice(8, 10) + '/' + s.slice(5, 7) + ' ' + s.slice(11, 16) : '';
+  const numero = t => { let s = String(t || '').trim(); if (s.indexOf(',') >= 0) s = s.replace(/\./g, '').replace(',', '.'); return s === '' ? null : Number(s); };
+  let atual = null;     // resposta de ApiCurso.caixaAtual()
+
+  // =================================================================================================
+  // CARREGAR E DESENHAR
+  // =================================================================================================
+  /** carregar() — lê o caixa do usuário; aberto → painel do caixa; fechado → abrir + últimos caixas. */
+  async function carregar() {
+    try {
+      atual = await ApiCurso.caixaAtual();
+      if (atual.aberto) desenharAberto(atual.dados); else await desenharFechado();
+    } catch (erro) { el('corpo').innerHTML = '<div class="cx-col"><div class="cx-fechado">' + esc(erro.message) + '</div></div>'; }
+  }
+  window.recarregarTela = carregar;
+
+  /** desenharFechado() — campo do troco inicial, botão Abrir e o histórico dos últimos caixas. */
+  async function desenharFechado() {
+    el('situacao').innerHTML = '<span class="badge inativo">Caixa fechado</span>';
+    el('lblRodape').textContent = 'Usuário ' + atual.usuario;
+    let hist = [];
+    try { hist = await ApiCurso.caixas(); } catch (e) { /* sem histórico */ }
+    el('corpo').innerHTML =
+      '<div class="cx-col" style="flex:0 0 340px"><div class="cx-fechado"><span class="material-icons">lock</span><b>Seu caixa está fechado</b>' +
+      '<span class="vazio">Para receber dos hóspedes, abra o caixa com o troco da gaveta.</span>' +
+      '<div class="cx-form" style="border:0;justify-content:center"><label>Troco inicial<input class="campo numero" id="trocoInicial" value="100,00"></label>' +
+      '<button type="button" class="btn" id="btnAbrir"><span class="material-icons">lock_open</span>Abrir caixa</button></div></div></div>' +
+      '<div class="cx-col"><h3>Últimos caixas</h3>' + (hist.length ?
+        '<table class="cx-tab"><thead><tr><th>Nº</th><th>Usuário</th><th>Aberto</th><th>Fechado</th><th class="v">Inicial</th><th class="v">Esperado</th><th class="v">Contado</th><th class="v">Diferença</th></tr></thead><tbody>' +
+        hist.slice(0, 20).map(c => '<tr><td>' + c.id_caixa + '</td><td>' + esc(c.usuario) + '</td><td>' + quando(c.aberto_em) + '</td><td>' + (c.situacao === 'ABERTO' ? '<span class="badge ativo">aberto</span>' : quando(c.fechado_em)) + '</td>' +
+          '<td class="v">' + moeda(c.saldo_inicial) + '</td><td class="v">' + (c.situacao === 'FECHADO' ? moeda(c.esperado_dinheiro) : '') + '</td>' +
+          '<td class="v">' + (c.situacao === 'FECHADO' ? moeda(c.informado) : '') + '</td>' +
+          '<td class="v ' + (c.diferenca < 0 ? 'neg' : c.diferenca > 0 ? 'pos' : '') + '">' + (c.situacao === 'FECHADO' ? moeda(c.diferenca) : '') + '</td></tr>').join('') +
+        '</tbody></table>' : '<span class="vazio">Nenhum caixa ainda.</span>') + '</div>';
+    el('btnAbrir').onclick = () => abrir(numero(el('trocoInicial').value) || 0);
+    el('trocoInicial').focus(); el('trocoInicial').select();
+  }
+
+  /** desenharAberto(d) — números, por forma, movimentos, formulários de suprimento/sangria e fechamento, recebimentos. */
+  function desenharAberto(d) {
+    const c = d.caixa;
+    el('situacao').innerHTML = '<span class="badge ativo">Caixa nº ' + c.id_caixa + ' aberto</span> <span class="dica">por ' + esc(c.usuario) + ' desde ' + quando(c.aberto_em) + '</span>';
+    el('lblRodape').textContent = d.recebimentos.length + ' recebimento(s) neste caixa';
+    el('corpo').innerHTML =
+      '<div class="cx-col">' +
+      '  <div class="cx-kpis">' +
+      '    <div class="cx-kpi"><span>Troco inicial</span><b>' + moeda(c.saldo_inicial) + '</b></div>' +
+      '    <div class="cx-kpi"><span>Recebido (todas as formas)</span><b>' + moeda(d.total_recebido) + '</b></div>' +
+      '    <div class="cx-kpi destaque"><span>Dinheiro na gaveta</span><b id="esperado">' + moeda(d.esperado_dinheiro) + '</b></div>' +
+      '  </div>' +
+      '  <h3>Por forma de pagamento</h3>' +
+      (d.por_forma.length ? '<table class="cx-tab"><tbody>' + d.por_forma.map(f => '<tr><td>' + esc(f.forma) + '</td><td class="v">' + f.qtd + 'x</td><td class="v">' + moeda(f.total) + '</td></tr>').join('') + '</tbody></table>'
+        : '<span class="vazio">Nenhum recebimento ainda.</span>') +
+      '  <h3>Dinheiro: suprimentos e sangrias</h3>' +
+      '<table class="cx-tab"><tbody><tr><td>Troco inicial</td><td></td><td class="v">' + moeda(c.saldo_inicial) + '</td></tr>' +
+      '<tr><td>Recebido em dinheiro</td><td></td><td class="v pos">+ ' + moeda(d.recebido_dinheiro) + '</td></tr>' +
+      d.movimentos.map(m => '<tr><td>' + (m.tipo === 'SANGRIA' ? 'Sangria' : 'Suprimento') + ' · ' + esc(m.motivo) + '</td><td>' + quando(m.feito_em) + '</td>' +
+        '<td class="v ' + (m.tipo === 'SANGRIA' ? 'neg">− ' : 'pos">+ ') + moeda(m.valor) + '</td></tr>').join('') +
+      '<tr><td><b>Esperado na gaveta</b></td><td></td><td class="v"><b>' + moeda(d.esperado_dinheiro) + '</b></td></tr></tbody></table>' +
+      '  <div class="cx-form"><label>Movimento<select class="campo" id="tipoMov"><option value="SANGRIA">Sangria (sai)</option><option value="SUPRIMENTO">Suprimento (entra)</option></select></label>' +
+      '    <label>Valor<input class="campo numero" id="valorMov"></label>' +
+      '    <label class="largo">Motivo<input class="campo" id="motivoMov" maxlength="120" placeholder="Ex.: depósito no banco, troco"></label>' +
+      '    <button type="button" class="btn alt" id="btnMov"><span class="material-icons">swap_vert</span>Registrar</button></div>' +
+      '  <div class="cx-form"><label>Dinheiro contado<input class="campo numero" id="contado"></label>' +
+      '    <span class="cx-dif" id="dif"></span>' +
+      '    <label class="largo">Observação do fechamento<input class="campo" id="obsFechar" maxlength="200" placeholder="Obrigatória se houver diferença"></label>' +
+      '    <button type="button" class="btn" id="btnFecharCaixa"><span class="material-icons">lock</span>Fechar caixa</button></div>' +
+      '</div>' +
+      '<div class="cx-col"><h3>Recebimentos deste caixa</h3>' + (d.recebimentos.length ?
+        '<table class="cx-tab"><thead><tr><th>Quando</th><th>Hóspede</th><th>Quarto</th><th>Forma</th><th class="v">Valor</th></tr></thead><tbody>' +
+        d.recebimentos.slice().reverse().map(r => '<tr class="' + (r.estornado ? 'est' : '') + '" title="' + esc(r.estornado ? 'Estornado: ' + r.estorno_motivo : r.observacao) + '">' +
+          '<td>' + quando(r.recebido_em) + '</td><td>' + esc(r.hospede) + '</td><td>' + esc(r.quarto) + '</td><td>' + esc(r.forma) + '</td><td class="v">' + moeda(r.valor) + '</td></tr>').join('') +
+        '</tbody></table>' : '<span class="vazio">Os recebimentos feitos na Estadia e no Check-out aparecem aqui.</span>') + '</div>';
+
+    el('btnMov').onclick = () => movimentar(el('tipoMov').value, numero(el('valorMov').value), el('motivoMov').value);
+    el('contado').oninput = () => mostrarDiferenca(d.esperado_dinheiro);
+    el('btnFecharCaixa').onclick = () => fechar(numero(el('contado').value), el('obsFechar').value);
+  }
+
+  /** mostrarDiferenca(esperado) — ao digitar o dinheiro contado: "Bateu", "Falta R$ x" ou "Sobra R$ x". */
+  function mostrarDiferenca(esperado) {
+    const v = numero(el('contado').value), s = el('dif');
+    if (v === null) { s.textContent = ''; return; }
+    const dif = Math.round((v - esperado) * 100) / 100;
+    s.className = 'cx-dif ' + (dif === 0 ? 'ok' : dif < 0 ? 'falta' : 'sobra');
+    s.textContent = dif === 0 ? 'Bateu' : (dif < 0 ? 'Falta ' : 'Sobra ') + moeda(Math.abs(dif));
+  }
+
+  // =================================================================================================
+  // AÇÕES (as mesmas que a Luninha usa — IACaixa.js)
+  // =================================================================================================
+  /** abrir(troco) — abre o caixa do usuário. */
+  async function abrir(troco) {
+    try { const r = await ApiCurso.abrirCaixa(troco); aviso(r.mensagem); await carregar(); return r.mensagem; }
+    catch (erro) { aviso(erro.message); throw erro; }
+  }
+  /** movimentar(tipo, valor, motivo) — suprimento ou sangria (a API confere o motivo e o dinheiro da gaveta). */
+  async function movimentar(tipo, valor, motivo) {
+    if (!valor || valor <= 0) { aviso('Informe o valor.'); return; }
+    try { const r = await ApiCurso.movimentoCaixa(tipo, valor, motivo); aviso(r.mensagem); await carregar(); return r.mensagem; }
+    catch (erro) { aviso(erro.message); throw erro; }
+  }
+  /** fechar(contado, obs) — confirma e fecha; mostra esperado × contado × diferença. */
+  async function fechar(contado, obs, semPerguntar) {
+    if (contado === null || contado < 0) { aviso('Digite o dinheiro contado na gaveta.'); el('contado') && el('contado').focus(); return; }
+    if (!semPerguntar && !(await FacilAppConfirmar('Fechar o caixa nº ' + atual.dados.caixa.id_caixa + ' com ' + moeda(contado) + ' contados na gaveta?', { confirmar: 'Fechar caixa' }))) return;
+    try {
+      const r = await ApiCurso.fecharCaixa(contado, obs);
+      aviso(r.mensagem + ' Esperado ' + moeda(r.esperado) + ', contado ' + moeda(r.informado) + '.');
+      await carregar();
+      return r.mensagem;
+    } catch (erro) { aviso(erro.message); throw erro; }
+  }
+  window.Caixa = { abrir, movimentar, fechar: (contado, obs) => fechar(contado, obs, true), atual: () => atual };
+
+  // =================================================================================================
+  // INÍCIO
+  // =================================================================================================
+  el('btnRecebimentos').onclick = () => { location.href = 'BrowseRecebimentos.html'; };
+  el('btnRecarregar').onclick = carregar;
+  el('btnFechar').onclick = () => {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_MODELO' }, '*'); } catch (e) { /* sem pai */ }
+    if (window.parent === window) history.back();
+  };
+  window.addEventListener('DOMContentLoaded', carregar);
+  window.addEventListener('load', async () => {
+    if (!window.BotaoIA || !window.IACaixa) return;
+    await BotaoIA.ligarNaTela({ manifesto: IACaixa, ancora: '#btnFechar' });
+    if (window.BotaoVoz) await BotaoVoz.ligarNaTela({ manifesto: IACaixa });
+  });
+</script>
+</body>
+</html>

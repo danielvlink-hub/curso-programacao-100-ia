@@ -3,7 +3,7 @@
 Todo dinheiro que entra (check-out, adiantamento de reserva) passa por um caixa aberto.
 
 ```
-Crie Caixa e Recebimentos do FastPousada (HTML/caixa.html e HTML/recebimentos.html), no padrão do curso.
+Crie Caixa e Recebimentos do FastPousada (HTML/caixa.html e HTML/BrowseRecebimentos.html), no padrão do curso.
 
 BACKEND
 - Tabela caixas: id_caixa (PK), aberto_em, aberto_por, saldo_inicial, fechado_em, fechado_por, saldo_informado,
@@ -20,7 +20,7 @@ BACKEND
 FRONT-END
 - caixa.html: situação do caixa (aberto por/desde), totais por forma de pagamento, botões Abrir, Suprimento,
   Sangria e Fechar (cada um na janela central). No fechamento mostra Esperado × Informado × Diferença.
-- recebimentos.html: browse por período e forma (Data/hora, Reserva, Hóspede, Forma, Valor, Troco, Por, Situação),
+- BrowseRecebimentos.html: browse por período e forma (Data/hora, Reserva, Hóspede, Forma, Valor, Troco, Por, Situação),
   totais no rodapé, CSV/XLSX, ação Estornar.
 - Menu: módulo Financeiro → "Caixa" (ícone point_of_sale) e "Recebimentos" (ícone request_quote).
 ```

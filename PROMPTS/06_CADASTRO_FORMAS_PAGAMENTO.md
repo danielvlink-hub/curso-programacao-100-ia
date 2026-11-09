@@ -13,7 +13,7 @@ BACKEND
 - Regras na API: aceita_troco só quando tipo = 'dinheiro'; não excluir forma já usada em recebimento (inativar).
 
 FRONT-END
-- HTML/formas_pagamento.html + formas_pagamento_update.html.
+- HTML/BrowseFormasPagamento.html + UpdateFormasPagamento.html.
 - Colunas: Descrição, Tipo, Aceita troco, Dias para receber, Situação, Ações.
 - Update: Descrição*, Tipo*, Aceita troco (habilitado só para dinheiro), Dias para receber, Ativo.
 - Menu: módulo Cadastros → "Formas de Pagamento", ícone payments.

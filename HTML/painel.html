@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hoje</title>
+<!--
+  PAINEL DE HOJE — FastPousada, Bloco 5 (aula gravada de 08/11/2026). Daniel: "Sim, Bloco 5".
+  O QUE FAZ: a primeira coisa que a recepção vê: o dia em números.
+    - Cartões: Chegadas, Saídas, Na casa, Ocupação hoje, Recebido hoje — o clique abre a tela certa
+      (Check-in, Check-out, Estadia, Mapa, Recebimentos).
+    - Quadro dos quartos: um quadradinho por quarto, cor pela situação (livre, ocupado, sujo, manutenção, bloqueado),
+      com o hóspede e a saída; quarto SUJO tem o botão "Liberar" (limpeza feita → livre).
+    - Próximos 7 dias: ocupação em barras. Aviso em destaque quando o caixa do usuário está fechado.
+    - Atualiza sozinho a cada 60 s (sem piscar) e tem o botão de recarregar. Luninha (IA e VOZ): IAGestao.js.
+  DADOS: ApiCurso.painel (uma chamada) e liberarQuarto. Regras na API (Gestao.cs).
+  PADRÃO: cores --fa-*, cabeçalho 35px, 3px entre blocos, sem alert/confirm/prompt.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/BotaoVoz.js"></script>
+<script src="assets/js/IAGestao.js"></script>
+<style>
+  :root { --q-livre: #16a34a; --q-ocup: #ea580c; --q-sujo: #d97706; --q-manut: #4338ca; --q-bloq: #6b7280; }
+  .pn-corpo { flex: 1; min-height: 0; overflow-y: auto; margin: 3px 12px; display: flex; flex-direction: column; gap: 3px; }
+  .pn-caixa { display: none; padding: 5px 10px; border-radius: 6px; background: #fef3c7; color: #92400e; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+  .pn-cartoes { display: flex; gap: 3px; }
+  .pn-cartao { flex: 1; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 8px; padding: 6px 12px; background: var(--fa-field-bg, #fff); cursor: pointer;
+    display: flex; align-items: center; gap: 10px; }
+  .pn-cartao:hover { border-color: var(--fa-primary, #4b5a32); }
+  .pn-cartao .material-icons { font-size: 26px; color: var(--fa-primary, #4b5a32); }
+  .pn-cartao div > span { display: block; font-size: 10.5px; text-transform: uppercase; font-weight: 700; color: var(--fa-muted, #64748b); }
+  .pn-cartao b { font-size: 20px; }
+  .pn-cartao small { display: block; font-size: 10.5px; color: var(--fa-muted, #64748b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+  .pn-linha { display: flex; gap: 3px; }
+  .pn-bloco { border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; padding: 4px 8px; background: var(--fa-panel, #fff); }
+  .pn-bloco h3 { margin: 0 0 3px; font-size: 10.5px; text-transform: uppercase; color: var(--fa-muted, #64748b); display: flex; gap: 10px; align-items: center; }
+  .pn-bloco h3 i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 3px; }
+  .pn-bloco h3 em { font-style: normal; font-weight: 400; text-transform: none; }
+  .pn-quartos { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 3px; }
+  .pn-q { border-radius: 6px; padding: 3px 6px; color: #fff; min-height: 46px; display: flex; flex-direction: column; justify-content: space-between; }
+  .pn-q[data-quarto] { cursor: pointer; } .pn-q[data-quarto]:hover { filter: brightness(1.08); }
+  .pn-q b { font-size: 14px; } .pn-q small { font-size: 10px; opacity: .92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pn-q.LIVRE { background: var(--q-livre); } .pn-q.OCUPADO { background: var(--q-ocup); } .pn-q.SUJO { background: var(--q-sujo); }
+  .pn-q.MANUTENCAO { background: var(--q-manut); } .pn-q.BLOQUEADO { background: var(--q-bloq); }
+  .pn-q .lib { align-self: flex-start; margin-top: 2px; font-size: 10px; font-weight: 800; padding: 0 6px; border-radius: 4px; background: rgba(255,255,255,.9); color: #92400e; cursor: pointer; }
+  .pn-lista { font-size: 12px; } .pn-lista div { display: flex; justify-content: space-between; gap: 6px; border-bottom: 1px solid color-mix(in srgb, var(--fa-border, #d8ddcf) 60%, transparent); padding: 1px 0; }
+  .pn-lista .vazio { color: var(--fa-muted, #64748b); border: 0; }
+</style>
+</head>
+<body>
+<div class="cp-janela">
+  <header class="cp-cab">
+    <div class="cp-tit"><div class="cp-ico"><span class="material-icons">today</span></div>
+      <div><b id="titulo">Hoje</b><small id="subtitulo">O dia da pousada em números</small></div></div>
+    <button type="button" class="btn-fechar" id="btnFechar" title="Fechar">×</button>
+  </header>
+  <!-- agendar daqui (Daniel, 08/11/2026: "deixar possibilidade de agendar também nessa tela") -->
+  <div class="cp-barra">
+    <div class="cp-esq">
+      <button type="button" class="btn" id="btnNovaReserva"><span class="material-icons">add</span>Nova reserva</button>
+      <button type="button" class="btn alt" id="btnMapa"><span class="material-icons">calendar_view_month</span>Mapa</button>
+      <span class="dica">ou toque num quarto livre</span>
+    </div>
+    <div class="cp-dir"><button type="button" class="btn alt" id="btnRecarregar" title="Recarregar"><span class="material-icons">refresh</span></button></div>
+  </div>
+  <div class="pn-corpo" id="corpo">
+    <div class="pn-caixa" id="avisoCaixa" title="Abrir a tela do caixa">Seu caixa está FECHADO: abra o caixa antes de receber dos hóspedes.</div>
+    <div class="pn-cartoes" id="cartoes"></div>
+    <div class="pn-linha">
+      <div class="pn-bloco" style="flex:2;min-width:0"><h3>Quartos
+        <em><i style="background:var(--q-livre)"></i>Livre</em><em><i style="background:var(--q-ocup)"></i>Ocupado</em>
+        <em><i style="background:var(--q-sujo)"></i>Sujo</em><em><i style="background:var(--q-manut)"></i>Manutenção</em>
+        <em><i style="background:var(--q-bloq)"></i>Bloqueado</em></h3>
+        <div class="pn-quartos" id="quartos"></div></div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+        <div class="pn-bloco"><h3>Próximos 7 dias</h3><div id="semana"></div></div>
+        <div class="pn-bloco"><h3>Chegadas de hoje</h3><div class="pn-lista" id="listaChegadas"></div></div>
+        <div class="pn-bloco"><h3>Recebido hoje</h3><div class="pn-lista" id="listaRecebido"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="cp-rodape"><span id="lblRodape"></span><span>Atualiza sozinho a cada 60 segundos · clique nos cartões para abrir a tela</span></div>
+</div>
+
+<!-- janela central da reserva: o MESMO formulário da lista e do mapa (UpdateReservas.html) -->
+<div id="janelaUpdate"><div class="caixa" id="caixaUpdate">
+  <div class="barra"><div class="titulo"><span class="material-icons">event</span><span id="tituloUpdate">Nova reserva</span></div>
+    <button type="button" class="btn-fechar" id="btnFecharUpdate" title="Fechar">×</button></div>
+  <iframe title="Reserva"></iframe>
+</div></div>
+
+<script>
+  const el = id => document.getElementById(id);
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const moeda = v => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const br = s => String(s || '').slice(8, 10) + '/' + String(s || '').slice(5, 7);
+  const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+  let dados = null;
+
+  /** carregar() — uma chamada à API e redesenha só o conteúdo (sem piscar a tela). */
+  async function carregar() {
+    try { dados = await ApiCurso.painel(); desenhar(); }
+    catch (erro) { el('lblRodape').textContent = erro.message; }
+    return dados;
+  }
+  window.recarregarTela = carregar;
+
+  function desenhar() {
+    const d = dados, hoje = d.proximos_dias[0] || { taxa: 0, ocupados: 0, disponiveis: 0 };
+    el('titulo').textContent = d.pousada;
+    el('subtitulo').textContent = 'Hoje, ' + br(d.hoje) + ' · check-in a partir das ' + d.horario_checkin + ' · check-out até as ' + d.horario_checkout;
+    el('avisoCaixa').style.display = d.caixa_aberto ? 'none' : 'block';
+    const atras = d.atrasadas.length ? ' + ' + d.atrasadas.length + ' atrasada(s)' : '';
+    const cartoes = [
+      ['login', 'Chegadas', d.chegadas.length, (d.chegadas.map(r => r.hospede_nome.split(' ')[0]).join(', ') || 'nenhuma') + atras, 'checkin.html'],
+      ['logout', 'Saídas', d.saidas.length, d.saidas.map(r => r.hospede_nome.split(' ')[0]).join(', ') || 'nenhuma', 'checkout.html'],
+      ['hotel', 'Na casa', d.hospedados, 'hóspedes hospedados', 'estadia.html'],
+      ['grid_view', 'Ocupação hoje', Math.round(hoje.taxa) + '%', hoje.ocupados + ' de ' + hoje.disponiveis + ' quartos', 'mapa_ocupacao.html'],
+      ['paid', 'Recebido hoje', moeda(d.recebido_hoje), d.recebido_por_forma.length + ' forma(s)', 'BrowseRecebimentos.html']
+    ];
+    el('cartoes').innerHTML = cartoes.map(c => '<div class="pn-cartao" data-tela="' + c[4] + '"><span class="material-icons">' + c[0] + '</span>' +
+      '<div><span>' + c[1] + '</span><b>' + c[2] + '</b><small>' + esc(c[3]) + '</small></div></div>').join('');
+
+    el('quartos').innerHTML = d.quartos.map(q => {
+      const cls = q.ocupado ? 'OCUPADO' : q.situacao;
+      const det = q.ocupado ? esc(q.hospede.split(' ')[0]) + ' · sai ' + br(q.saida) : { LIVRE: 'livre', SUJO: 'sujo', MANUTENCAO: 'manutenção', BLOQUEADO: 'bloqueado' }[q.situacao] || q.situacao;
+      // quarto livre (ou sujo, que ainda vai ser limpo) e sem hóspede: o toque abre uma reserva nele
+      const reservavel = !q.ocupado && ['LIVRE', 'SUJO'].indexOf(q.situacao) >= 0;
+      return '<div class="pn-q ' + cls + '"' + (reservavel ? ' data-quarto="' + q.id_quarto + '" title="Reservar o quarto ' + esc(q.numero) + '"' : '') + '><b>' + esc(q.numero) + '</b><small>' + det + '</small>' +
+        (q.situacao === 'SUJO' && !q.ocupado ? '<span class="lib" role="button" tabindex="0" data-liberar="' + q.id_quarto + '" title="Limpeza feita: deixar livre">Liberar</span>' : '') + '</div>';
+    }).join('');
+
+    const max = Math.max(50, ...d.proximos_dias.map(x => x.taxa)), L = 300, A = 74;   // escala: o maior dia (mínimo 50%)
+    el('semana').innerHTML = '<svg viewBox="0 0 ' + L + ' ' + A + '" style="width:100%;height:' + A + 'px" role="img" aria-label="Ocupação dos próximos 7 dias">' +
+      d.proximos_dias.map((x, i) => {
+        const w = L / 7, h = x.taxa / max * 46, X = i * w + w * 0.2, bw = w * 0.6;
+        return '<rect x="' + X + '" y="' + (58 - h) + '" width="' + bw + '" height="' + h + '" rx="2" fill="var(--fa-primary,#4b5a32)"/>' +
+          '<text x="' + (X + bw / 2) + '" y="' + (54 - h) + '" font-size="9" text-anchor="middle" fill="var(--fa-text,#1e293b)">' + Math.round(x.taxa) + '%</text>' +
+          '<text x="' + (X + bw / 2) + '" y="70" font-size="9" text-anchor="middle" fill="var(--fa-muted,#64748b)">' + DIAS[new Date(x.data + 'T12:00:00').getDay()] + ' ' + x.data.slice(8, 10) + '</text>';
+      }).join('') + '</svg>';
+
+    el('listaChegadas').innerHTML = d.chegadas.concat(d.atrasadas).map(r => '<div><span>' + esc(r.hospede_nome) + (r.entrada < d.hoje ? ' <b style="color:#b45309">atrasada</b>' : '') +
+      '</span><b>' + esc(r.quarto_numero) + '</b></div>').join('') || '<div class="vazio">Nenhuma chegada hoje.</div>';
+    el('listaRecebido').innerHTML = d.recebido_por_forma.map(f => '<div><span>' + esc(f.forma) + '</span><b>' + moeda(f.total) + '</b></div>').join('') ||
+      '<div class="vazio">Nada recebido ainda hoje.</div>';
+    el('lblRodape').textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  /** liberar(id) — governança: o quarto sujo foi limpo e fica livre (também usado pela Luninha). */
+  async function liberar(id) {
+    try { const r = await ApiCurso.liberarQuarto(id); aviso(r.mensagem); await carregar(); return r.mensagem; }
+    catch (erro) { aviso(erro.message); throw erro; }
+  }
+  window.Painel = { liberar, dados: () => dados };
+
+  // ---------------------------------------------------------------- agendar pelo painel
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  /**
+   * novaReserva(idQuarto) — abre o formulário de reserva na janela central. Com quarto (toque num quarto livre),
+   * já vem com o quarto e de hoje para amanhã; o resto (hóspede, datas, preço) se ajusta no próprio formulário.
+   */
+  function novaReserva(idQuarto) {
+    const hoje = new Date(), amanha = new Date(Date.now() + 86400000);
+    el('tituloUpdate').textContent = 'Nova reserva';
+    el('janelaUpdate').querySelector('iframe').src = 'UpdateReservas.html?novo=1' +
+      (idQuarto ? '&id_quarto=' + idQuarto + '&entrada=' + iso(hoje) + '&saida=' + iso(amanha) : '') + '&_v=' + Date.now();
+    el('janelaUpdate').classList.add('aberta');
+  }
+  window.novaReserva = novaReserva;
+  function fecharJanela() { el('janelaUpdate').classList.remove('aberta'); el('janelaUpdate').querySelector('iframe').src = 'about:blank'; }
+  // recados do formulário: gravou (fecha e atualiza o painel), cancelou, altura do conteúdo
+  window.addEventListener('message', e => {
+    const f = el('janelaUpdate').querySelector('iframe');
+    if (!f || e.source !== f.contentWindow) return;
+    const m = e.data || {};
+    if (m.origem === 'FACILAPP_MODELO_GRAVADO') { fecharJanela(); carregar(); aviso('Reserva gravada.'); }
+    if (m.origem === 'FACILAPP_MODELO_CANCELADO') fecharJanela();
+    if (m.origem === 'FACILAPP_MODELO_ALTURA' && m.altura > 0) el('caixaUpdate').style.height = Math.min(innerHeight - 24, 35 + Number(m.altura) + 1) + 'px';
+  });
+  el('btnNovaReserva').onclick = () => novaReserva();
+  el('btnMapa').onclick = () => { location.href = 'mapa_ocupacao.html'; };
+  el('btnRecarregar').onclick = carregar;
+  el('btnFecharUpdate').onclick = fecharJanela;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && el('janelaUpdate').classList.contains('aberta')) fecharJanela(); });
+
+  document.addEventListener('click', e => {
+    const lib = e.target.closest('[data-liberar]');
+    if (lib) { liberar(lib.dataset.liberar); return; }
+    const quarto = e.target.closest('[data-quarto]');
+    if (quarto) { novaReserva(quarto.dataset.quarto); return; }
+    const c = e.target.closest('[data-tela]');
+    if (c) location.href = c.dataset.tela;
+    if (e.target.closest('#avisoCaixa')) location.href = 'caixa.html';
+  });
+  el('btnFechar').onclick = () => {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_MODELO' }, '*'); } catch (e) { /* sem pai */ }
+    if (window.parent === window) history.back();
+  };
+  window.addEventListener('DOMContentLoaded', carregar);
+  setInterval(() => { if (!document.hidden) carregar(); }, 60000);
+  window.addEventListener('load', async () => {
+    if (!window.BotaoIA || !window.IAGestao) return;
+    await BotaoIA.ligarNaTela({ manifesto: IAGestao, ancora: '#btnFechar' });
+    if (window.BotaoVoz) await BotaoVoz.ligarNaTela({ manifesto: IAGestao });
+  });
+</script>
+</body>
+</html>

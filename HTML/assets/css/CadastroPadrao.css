@@ -1,0 +1,254 @@
+/* ==========================================================================
+   CadastroPadrao.css — visual comum das telas de cadastro do FastPousada (Browse, Update e Rpt).
+   Daniel, 08/11/2026 (Bloco 1): mesmo padrão do cadastro de Hóspedes — cores só --fa-* (TemaFacilApp.css),
+   cabeçalho 35px, campos e linhas 22px, ✕ à direita, no máximo 3px de espaço entre blocos, sem barra quando cabe.
+   ========================================================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+
+/* ---------- janela e cabeçalho (Browse e Rpt) */
+.cp-janela { position: fixed; inset: 6px; background: var(--fa-panel, #fff); border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.18); display: flex; flex-direction: column; overflow: hidden; }
+.cp-cab { height: 35px; flex: 0 0 35px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 12px;
+  background: var(--fa-panel-alt, #f1f5f9); border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+.cp-tit { display: flex; align-items: center; gap: 8px; }
+.cp-ico { width: 24px; height: 24px; border-radius: 6px; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff);
+  display: flex; align-items: center; justify-content: center; }
+.cp-ico .material-icons { font-size: 16px; }
+.cp-tit b { font-size: 14px; }
+.cp-tit small { font-size: 11px; color: var(--fa-muted, #64748b); margin-left: 6px; }
+.btn-fechar { width: 26px; height: 26px; border: 1px solid var(--fa-primary-dark, #35470e); border-radius: 6px; background: var(--fa-primary, #4b5a32);
+  color: var(--fa-button-text, #fff); font: 700 16px/1 Arial, sans-serif; cursor: pointer; }
+
+/* ---------- barra de ferramentas */
+.cp-barra { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 3px 12px; border-bottom: 1px solid var(--fa-border, #d8ddcf); flex-wrap: wrap; }
+.cp-esq, .cp-dir { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.btn { height: 22px; padding: 0 9px; border: 0; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+  background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); white-space: nowrap; }
+.btn:hover { filter: brightness(1.1); }
+.btn:disabled { opacity: .55; cursor: wait; }
+.btn .material-icons { font-size: 15px; }
+.btn.alt { background: var(--fa-field-bg, #f8fafc); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+.cp-busca { position: relative; }
+.cp-busca .material-icons { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--fa-muted, #64748b); }
+.campo { display: block; height: 22px; padding: 0 8px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 4px;
+  background: var(--fa-field-bg, #fff); color: var(--fa-text, #1e293b); outline: none; font-family: inherit; }
+.cp-busca .campo { width: 240px; padding-left: 26px; }
+.campo:focus { border-color: var(--fa-primary, #4b5a32); }
+
+/* ---------- grade (Tabulator) */
+.cp-grade { flex: 1; min-height: 0; margin: 3px 12px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; overflow: hidden; display: flex; }
+.cp-grade > div { flex: 1; border: 0 !important; }
+.tabulator { background: transparent !important; color: var(--fa-text, #1e293b) !important; font-size: 12px; }
+.tabulator .tabulator-header { background: var(--fa-panel-alt, #eef3e6) !important; border-bottom: 1px solid var(--fa-border, #d8ddcf) !important;
+  font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase; color: var(--fa-text, #1e293b) !important; }
+.tabulator .tabulator-header .tabulator-col { background: transparent !important; border-right: 1px solid var(--fa-border, #d8ddcf) !important; }
+.tabulator .tabulator-row { min-height: 22px; background: var(--fa-panel, #fff) !important; border-bottom: 1px solid var(--fa-border, #e5e7eb) !important; }
+.tabulator .tabulator-row.tabulator-row-even { background: color-mix(in srgb, var(--fa-panel-alt, #f1f5f9) 45%, var(--fa-panel, #fff)) !important; }
+.tabulator .tabulator-row.tabulator-selected, .tabulator .tabulator-row:hover { background: var(--fa-field-bg, #f8fafc) !important; }
+.tabulator .tabulator-cell { padding: 2px 8px !important; border-right: 1px solid var(--fa-border, #e5e7eb) !important; }
+.tabulator .tabulator-footer { background: transparent !important; border-top: 1px solid var(--fa-border, #d8ddcf) !important; font-size: 11px !important; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 9px; font-size: 10.5px; font-weight: 700; }
+.badge.ativo, .badge.livre { background: #dcfce7; color: #166534; }
+.badge.inativo { background: #fee2e2; color: #991b1b; }
+.badge.sujo { background: #fef3c7; color: #92400e; }
+.badge.manutencao { background: #e0e7ff; color: #3730a3; }
+.badge.bloqueado { background: #e5e7eb; color: #374151; }
+.badge.neutro { background: var(--fa-panel-alt, #eef3e6); color: var(--fa-text, #1e293b); }
+/* situações da reserva (Bloco 2) — as mesmas cores das barras do mapa */
+.badge.pre_reserva { background: #ede9fe; color: #5b21b6; }
+.badge.confirmada { background: #dcfce7; color: #166534; }
+.badge.hospedado { background: #ffedd5; color: #9a3412; }
+.badge.encerrada { background: #e5e7eb; color: #374151; }
+.badge.cancelada, .badge.no_show { background: #fee2e2; color: #991b1b; }
+.cp-acoes { display: flex; gap: 3px; justify-content: center; }
+.row-btn { width: 22px; height: 22px; padding: 0; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 5px; cursor: pointer; display: inline-flex;
+  align-items: center; justify-content: center; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); }
+.row-btn .material-icons { font-size: 15px; }
+.row-btn.delete:hover { background: #b3261e; border-color: #b3261e; }
+.cp-rodape { display: flex; justify-content: space-between; padding: 0 12px 3px; font-size: 11px; color: var(--fa-muted, #64748b); }
+
+/* ---------- janela do update (flutuante, centralizada, arrastável) */
+#janelaUpdate { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.42); }
+#janelaUpdate.aberta { display: flex; }
+#janelaUpdate .caixa { position: relative; width: min(680px, calc(100vw - 24px)); height: min(420px, calc(100vh - 24px)); background: var(--fa-panel, #fff);
+  border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px; overflow: hidden; display: grid; grid-template-rows: 35px 1fr; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+#janelaUpdate .barra { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 14px; background: var(--fa-panel-alt, #f1f5f9);
+  border-bottom: 1px solid var(--fa-border, #d8ddcf); font-weight: 700; font-size: 13px; cursor: move; user-select: none; }
+#janelaUpdate .barra .titulo { display: flex; align-items: center; gap: 7px; }
+#janelaUpdate .barra .material-icons { font-size: 18px; color: var(--fa-primary, #4b5a32); }
+#janelaUpdate iframe { width: 100%; height: 100%; border: 0; background: transparent; }
+
+/* ---------- formulário (Update) */
+.cp-form { display: flex; flex-direction: column; gap: 3px; padding: 8px 14px 3px; }
+#erro { display: none; padding: 5px 8px; border-radius: 5px; background: #fde8e7; color: #9b1c1c; font-size: 12px; }
+.cp-campos { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px 12px; align-content: start; }
+.c1 { grid-column: span 1; } .c2 { grid-column: span 2; } .c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c6 { grid-column: 1 / -1; }
+label.rot { display: block; font-size: 11px; font-weight: 700; color: var(--fa-muted, #64748b); margin-bottom: 3px; text-transform: uppercase; }
+.req { color: #b42318; }
+.cp-campos input[type=text], .cp-campos input[type=date], .cp-campos select, .cp-campos textarea { display: block; width: 100%; height: 22px; padding: 0 7px; font-size: 12px;
+  border: 1px solid var(--fa-border, #d8ddcf); border-radius: 4px; background: var(--fa-field-bg, #fff); color: var(--fa-text, #1e293b); outline: none; font-family: inherit; }
+.cp-campos textarea { height: 44px; padding: 4px 7px; resize: none; }
+.cp-campos input:focus, .cp-campos select:focus, .cp-campos textarea:focus { border-color: var(--fa-primary, #4b5a32); }
+.cp-campos .invalido { border-color: #b42318 !important; background: #fff7f7 !important; }
+.cp-campos .numero { text-align: right; }
+.check { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; cursor: pointer; padding-top: 18px; }
+/* linha 1 do formulário: Ativo e outros Sim/Não, na frente dos campos */
+.cp-linha1 { display: flex; align-items: center; gap: 14px; min-height: 22px; }
+.cp-linha1 label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.cp-linha1 input[type=checkbox] { width: 15px; height: 15px; margin: 0; accent-color: var(--fa-primary, #4b5a32); }
+.dica { font-size: 10.5px; color: var(--fa-muted, #64748b); margin-top: 2px; }
+/* chips: dias da semana e comodidades */
+.chips { display: flex; flex-wrap: wrap; gap: 3px; min-height: 22px; }
+.chip { height: 22px; padding: 0 9px; border-radius: 11px; border: 1px solid var(--fa-border, #d8ddcf); background: var(--fa-field-bg, #fff);
+  font-size: 11.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; user-select: none; }
+.chip.on { background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); border-color: var(--fa-primary, #4b5a32); }
+.chip .x { font-weight: 800; opacity: .8; }
+.chips input { height: 22px; border: 1px dashed var(--fa-border, #d8ddcf); border-radius: 11px; padding: 0 9px; font-size: 11.5px; width: 150px;
+  background: transparent; color: var(--fa-text, #1e293b); outline: none; }
+footer.cp-rod { display: flex; justify-content: space-between; align-items: center; gap: 6px; border-top: 1px solid var(--fa-border, #d8ddcf); padding-top: 3px; }
+footer.cp-rod .dica { margin: 0; }
+footer.cp-rod .acoes { display: flex; gap: 6px; }
+
+/* ---------- relatório (Rpt) */
+.cp-filtros { display: flex; align-items: flex-end; gap: 8px; padding: 3px 12px; border-bottom: 1px solid var(--fa-border, #d8ddcf); flex-wrap: wrap; }
+.cp-filtros label { display: grid; gap: 2px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--fa-muted, #64748b); }
+.cp-espaco { flex: 1; }
+.cp-previa { flex: 1; min-height: 0; overflow: auto; background: color-mix(in srgb, var(--fa-panel-alt, #e2e8f0) 70%, #888 8%); padding: 12px; }
+.folha { width: 210mm; margin: 0 auto 12px; background: #fff; color: #111; box-shadow: 0 4px 18px rgba(0,0,0,.25); padding: 12mm; font: 9pt Arial, sans-serif; }
+.folha .topo { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1.5px solid #222; padding-bottom: 4px; margin-bottom: 4px; }
+.folha .marca { font-size: 13pt; font-weight: 700; } .folha .titulo { font-size: 11pt; font-weight: 700; }
+.folha .info { font-size: 8pt; color: #444; margin-bottom: 6px; display: flex; justify-content: space-between; }
+.folha table { width: 100%; border-collapse: collapse; }
+.folha th { background: #e5e7eb; font-size: 8pt; text-align: left; padding: 3px 4px; border-bottom: 1px solid #555; }
+.folha td { font-size: 8.5pt; padding: 2.5px 4px; border-bottom: 1px solid #eee; }
+.folha tr:nth-child(even) td { background: #f6f7f8; }
+.folha .direita { text-align: right; }
+.folha .total { margin-top: 6px; font-weight: 700; text-align: right; }
+.folha .vazio { padding: 20px; text-align: center; color: #666; }
+.badge.estornado { background: #fee2e2; color: #991b1b; }   /* recebimento estornado (Bloco 4) */
+
+/* =================================================================================================
+   CELULAR (até 760 px) — Daniel, 08/11/2026: "preciso configurar as telas para o celular, vou abrir o app em F12".
+   Regras ÚNICAS para todas as telas (este CSS já está em todas). As telas com layout próprio (operação, caixa,
+   painel, relatórios, mapa) também estão aqui, pelas classes delas, com "html body" na frente para valer sobre o
+   <style> da própria tela. NADA muda no computador: tudo fica dentro do @media.
+   ================================================================================================= */
+@media (max-width: 760px) {
+  /* janela ocupa a tela toda */
+  html body .cp-janela { inset: 0; border-radius: 0; border: 0; }
+
+  /* cabeçalho: título encolhe (subtítulo some), IA · VOZ · × sempre visíveis */
+  html body .cp-cab { padding: 0 6px 0 8px; gap: 6px; }
+  html body .cp-tit { min-width: 0; flex: 1; }
+  html body .cp-tit > div:last-child { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  html body .cp-tit small { display: none; }
+  html body .ajuda-tela-grupo, html body .cp-cab .btn-fechar { flex-shrink: 0; }
+
+  /* barra de ferramentas: quebra em linhas; a busca ocupa a linha inteira */
+  html body .cp-barra { flex-wrap: wrap; padding: 3px 8px; }
+  html body .cp-esq, html body .cp-dir { width: 100%; }
+  html body .cp-busca { flex: 1 1 100%; }
+  html body .cp-busca .campo { width: 100%; }
+  html body .cp-barra select.campo { flex: 1 1 140px; }
+  html body .btn { height: 30px; }                       /* alvo de toque maior */
+  html body .cp-grade { margin: 3px 6px; }
+  html body .cp-rodape { padding: 0 8px 3px; gap: 8px; }
+  html body .cp-rodape > span:last-child { display: none; }
+  html body .tabulator .tabulator-footer .tabulator-paginator { font-size: 11px; }
+  html body .tabulator .tabulator-footer .tabulator-page-counter { display: none; }
+
+  /* formulários: 2 colunas; campo de 1 coluna fica com metade, os outros com a linha inteira */
+  html body .cp-form { padding: 6px 10px 3px; }
+  html body .cp-campos { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 8px; }
+  html body .cp-campos > .c1 { grid-column: span 1; }
+  html body .cp-campos > .c2, html body .cp-campos > .c3, html body .cp-campos > .c4,
+  html body .cp-campos > .c5, html body .cp-campos > .c6 { grid-column: 1 / -1; }
+  html body .cp-campos input[type=text], html body .cp-campos input[type=date], html body .cp-campos select { height: 30px; font-size: 14px; }
+  html body footer.cp-rod { flex-wrap: wrap; }
+
+  /* janela central (formulário do cadastro/reserva): tela cheia */
+  html body #janelaUpdate .caixa { width: 100vw !important; height: 100vh !important; max-height: none; border-radius: 0; left: 0 !important; top: 0 !important; position: fixed !important; }
+
+  /* relatório A4 do motor de telas: a folha rola de lado */
+  html body .cp-previa { padding: 6px; overflow-x: auto; }
+  html body .cp-filtros { padding: 3px 8px; }
+
+  /* ---------- Operação (Check-in, Estadia, Check-out — ContaHospede.js): lista em cima, conta embaixo ---------- */
+  html body .op-corpo { flex-direction: column; overflow-y: auto; margin: 3px 6px; }
+  html body .op-lista { width: auto; flex: 0 0 auto; overflow: visible; }
+  html body .op-painel { flex: 0 0 auto; overflow: visible; }
+  html body .op-dados { grid-template-columns: repeat(2, auto); }
+  html body .op-form > label, html body .op-form .largo { flex: 1 1 100%; min-width: 0; }
+  html body .op-form .campo { width: 100%; }
+  html body .op-form .btn { flex: 1 1 100%; justify-content: center; }
+  html body .op-totais { flex-wrap: wrap; gap: 6px 12px; }
+  html body .op-fim .btn { flex: 1; justify-content: center; }
+  html body .op-tab td:first-child, html body .op-tab th:first-child { display: none; }   /* "quando" some no celular */
+
+  /* ---------- Caixa ---------- */
+  html body .cx-corpo { flex-direction: column; overflow-y: auto; margin: 3px 6px; }
+  html body .cx-col { flex: 0 0 auto !important; overflow: visible; }
+  html body .cx-kpis { flex-wrap: wrap; }
+  html body .cx-kpi { flex: 1 1 45%; }
+  html body .cx-form > label, html body .cx-form .largo { flex: 1 1 100%; min-width: 0; }
+  html body .cx-form .numero { width: 100%; }
+  html body .cx-form .btn { flex: 1 1 100%; justify-content: center; }
+  html body .cx-tab { font-size: 11.5px; }
+
+  /* ---------- Painel de hoje ---------- */
+  html body .pn-corpo { margin: 3px 6px; }
+  html body .pn-cartoes { flex-wrap: wrap; }
+  html body .pn-cartao { flex: 1 1 45%; padding: 5px 8px; gap: 6px; }
+  html body .pn-cartao .material-icons { font-size: 20px; }
+  html body .pn-cartao b { font-size: 17px; }
+  html body .pn-linha { flex-direction: column; }
+  html body .pn-linha > div { flex: 0 0 auto !important; }
+  html body .pn-bloco h3 { flex-wrap: wrap; }
+  html body .pn-quartos { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); }
+
+  /* ---------- Relatórios de gestão (Ocupação, Faturamento) ---------- */
+  html body .rg-corpo { margin: 3px 6px; }
+  html body .rg-cartoes { flex-wrap: wrap; }
+  html body .rg-cartao { flex: 1 1 45%; }
+  html body .rg-cartao b { font-size: 15px; }
+  html body .rg-linha { flex-direction: column; }
+  html body .rg-bloco { overflow-x: auto; }
+  html body #de, html body #ate { flex: 1 1 40%; width: auto; }
+
+  /* ---------- Configurações ---------- */
+  html body .cf-corpo { margin: 3px 6px; }
+
+  /* ---------- Mapa de ocupação: coluna dos quartos mais estreita; a grade rola de lado ---------- */
+  html body .mp-area { margin: 3px 6px; }
+  html body .mp-legenda { display: none; }
+  html body .mp-periodo { min-width: 0; flex: 1 1 100%; order: -1; }
+}
+@media (max-width: 760px) {
+  /* Estadia/Check-out: Qtd, Valor un. e Valor dividem a linha; Consumo, Receber em e Observação ocupam a linha toda */
+  html body .op-form > label { flex: 1 1 40%; }
+  html body .op-form > label:has(.largo) { flex-basis: 100%; }
+  html body .op-form .campo { width: 100% !important; }
+  html body .cx-form > label { flex: 1 1 40%; }
+  html body .cx-form > label.largo, html body .cx-form > label:has(.largo) { flex-basis: 100%; }
+}
+/* gráficos dos relatórios de gestão: tamanho real (o quadro rola de lado no celular) — nunca encolher o SVG */
+html body .rg-bloco svg { max-width: none !important; }
+@media (max-width: 760px) {
+  /* nas telas que rolam inteiras no celular, os quadros não encolhem (senão o gráfico/tabela some dentro do quadro) */
+  html body .rg-corpo > *, html body .op-corpo > *, html body .cx-corpo > *, html body .pn-corpo > *, html body .cf-corpo > * { flex-shrink: 0; }
+  html body .pn-barra-dica, html body .cp-barra .dica { display: none; }
+}
+@media (max-width: 760px) {
+  /* formulário na janela central (Daniel, 08/11/2026: "barra de rolagem para não comer o botão embaixo"):
+     a janela é barra + formulário (o formulário ocupa o resto, sem passar da tela) e a página do formulário ROLA */
+  html body #janelaUpdate .caixa { display: flex !important; flex-direction: column; }
+  html body #janelaUpdate .caixa > .barra { flex: 0 0 auto; }
+  html body #janelaUpdate iframe { flex: 1 1 auto; height: auto !important; min-height: 0; }
+  html body .cp-form { padding-bottom: 10px; }
+}
+@media (max-width: 760px) {
+  /* quem rola é a PÁGINA (html), não o body — assim o toque rola em qualquer celular e o botão Gravar sempre aparece */
+  html { height: auto !important; min-height: 100%; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+  body { height: auto !important; min-height: 100%; overflow: visible !important; }
+}

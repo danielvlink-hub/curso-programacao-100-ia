@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faturamento</title>
+<!--
+  RELATÓRIO DE FATURAMENTO — FastPousada, Bloco 5 (aula gravada de 08/11/2026). Daniel: "Sim, Bloco 5".
+  O QUE FAZ: faturamento do período (diárias por competência + consumos), recebido, ticket médio; gráfico empilhado por dia; diárias por tipo de quarto, consumos por categoria e recebido por forma; CSV, XLSX e Imprimir.
+  COMO: a tela inteira é montada pelo motor assets/js/RelatoriosGestao.js com o modo 'faturamento'. Tudo é calculado na API
+    (Gestao.cs); a tela só desenha. A Luninha (IA e VOZ) usa assets/js/IAGestao.js.
+  REGRAS: pré-reserva ainda não é venda; estornos não entram; período de no máximo 1 ano.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/BotaoVoz.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="assets/js/RelatoriosGestao.js"></script>
+<script src="assets/js/IAGestao.js"></script>
+</head>
+<body>
+<script>
+  // monta a tela e liga a Luninha da gestão (IA e VOZ)
+  window.addEventListener('DOMContentLoaded', () => RelatoriosGestao.iniciar({ modo: 'faturamento' }));
+  window.addEventListener('load', async () => {
+    if (!window.BotaoIA || !window.IAGestao) return;
+    await BotaoIA.ligarNaTela({ manifesto: IAGestao, ancora: '#btnFechar' });
+    if (window.BotaoVoz) await BotaoVoz.ligarNaTela({ manifesto: IAGestao });
+  });
+</script>
+</body>
+</html>

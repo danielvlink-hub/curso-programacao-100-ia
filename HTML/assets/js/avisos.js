@@ -2,7 +2,8 @@
  * avisos.js do CURSO (FastPousada) — Daniel, 03/11/2026: "pegar o menu do Gourmet e adaptar para o curso".
  * O QUE FAZ: só as janelas de aviso (FacilAppAviso / alert), confirmação (FacilAppConfirmar) e pergunta (FacilAppPerguntar).
  * ORIGEM: cópia das linhas 1–335 do assets/js/avisos.js do Gourmet. Ficaram de fora, por serem do restaurante: liberação
- *   gerencial por senha/token, ajuste de celular, ajuda "?", botão IA, alerta "Corre!", tempos de entrega e log de exclusões.
+ *   gerencial por senha/token, ajuste de celular, botão IA, alerta "Corre!", tempos de entrega e log de exclusões.
+ *   08/11/2026: entrou a ajuda "?" com o modo treinamento (último bloco deste arquivo).
  * CUIDADOS: corrigir no Gourmet não atualiza aqui; se copiar de novo, manter só este trecho.
  */
 
@@ -341,5 +342,79 @@
       campo.select();
     });
   };
+})();
+
+/*
+ * AJUDA "?" (apresentação guiada com voz) — 08/11/2026, Daniel: "como faz o help igual do Gourmet".
+ * Copiado do avisos.js do Gourmet (C:\COWORK-CHATGPT\Gourmet WEB). Carrega o assets/js/AjudaTela.js, que só cria o "?"
+ * quando a tela tem apresentação pronta em HTML/TREINAMENTOS/ajudas.js. Nenhuma tela precisa ser editada.
+ *
+ * MODO TREINAMENTO: a tela está no palco de uma apresentação. Ela só MOSTRA: nada é gravado.
+ *   Como sabe: ?treinamento=1 no endereço (o palco abre assim), ou o pai/avô está em /TREINAMENTOS/ (http),
+ *   ou a tela de fora já está em treinamento (iframes da tela, ex.: o update, recebem ?treinamento=1 sozinhos).
+ *   Trava: DADOS_DEMO e ApiCurso (incluir/alterar/excluir/salvar...) viram "ok" sem gravar, e todo fetch que não
+ *   seja GET (menos o /auth/login) recebe uma resposta falsa de sucesso e não sai da máquina.
+ * Fica aqui (o avisos.js é o primeiro script de todas as telas) para valer antes de a tela iniciar.
+ */
+(function () {
+  var src = (document.currentScript && document.currentScript.src) || '';
+  var treino = /[?&]treinamento=1\b/.test(location.search);
+  if (!treino) {
+    try {
+      for (var w = window; w !== w.parent; w = w.parent) {
+        if (/\/TREINAMENTOS\//i.test(String(w.parent.location.pathname || '')) || w.parent.__FACILAPP_TREINAMENTO) { treino = true; break; }
+      }
+    } catch (e) { /* file://: não dá para ler o pai — vale o ?treinamento=1 */ }
+  }
+  window.__FACILAPP_TREINAMENTO = treino;
+
+  if (treino) {
+    var ok = function () { return Promise.resolve({ ok: true, modoTreinamento: true }); };
+    var GRAVA = /^(incluir|alterar|excluir|salvar|gravar|receber|estornar|cancelar|cadastrar)/i;
+    var travar = function () {
+      [window.DADOS_DEMO, window.ApiCurso].forEach(function (S) {
+        if (!S || S.__modoTreinamento) return;
+        S.__modoTreinamento = true;
+        Object.keys(S).forEach(function (f) { if (typeof S[f] === 'function' && GRAVA.test(f)) S[f] = ok; });
+      });
+    };
+    window.print = function () {};
+    var fetchOriginal = window.fetch ? window.fetch.bind(window) : null;
+    if (fetchOriginal) {
+      window.fetch = function (url, opcoes) {
+        var metodo = String((opcoes && opcoes.method) || (url && url.method) || 'GET').toUpperCase();
+        var endereco = String((url && url.url) || url || '');
+        if (metodo === 'GET' || metodo === 'HEAD' || /\/auth\/login\b/i.test(endereco)) return fetchOriginal(url, opcoes);
+        var falso = JSON.stringify({ ok: true, sucesso: true, modoTreinamento: true, dados: [] });
+        return Promise.resolve(new Response(falso, { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      };
+    }
+    /* iframes da tela (ex.: janela do update) também abrem em treinamento */
+    var marcar = function (f) {
+      var s = f.getAttribute('src') || '';
+      if (!s || /^(about:|javascript:|data:)/i.test(s) || /[?&]treinamento=1\b/.test(s)) return;
+      f.setAttribute('src', s + (s.indexOf('?') >= 0 ? '&' : '?') + 'treinamento=1');
+    };
+    new MutationObserver(function (lista) {
+      lista.forEach(function (m) {
+        if (m.type === 'attributes' && m.target.tagName === 'IFRAME') marcar(m.target);
+        (m.addedNodes || []).forEach(function (n) { if (n.tagName === 'IFRAME') marcar(n); });
+      });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['src'], childList: true, subtree: true });
+    travar();
+    document.addEventListener('DOMContentLoaded', travar, true);   // DADOS_DEMO/ApiCurso carregam depois do avisos.js
+    window.addEventListener('load', travar, true);
+  }
+
+  if (!src) return;
+  var carregar = function () {
+    if (window.AjudaTela || document.getElementById('scriptAjudaTela')) return;
+    var s = document.createElement('script');
+    s.id = 'scriptAjudaTela';
+    s.src = src.replace(/avisos\.js(\?[^#]*)?$/i, 'AjudaTela.js?v=20261108a');
+    (document.head || document.documentElement).appendChild(s);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', carregar);
+  else carregar();
 })();
 

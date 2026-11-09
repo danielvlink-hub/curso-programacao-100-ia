@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    APK do FastPousada (curso Programação 100% IA) — Daniel, 08/11/2026: "gere aqui o apk para android 5 ou superior".
+    O QUE É: um aplicativo Android em C#/.NET com WebView que leva as telas do curso (C:\CURSO\HTML, copiadas para
+      Assets\html pelo compilar.ps1) e conversa com a API 7777 do PC pelo Wi-Fi (o endereço é pedido no 1º uso).
+    ANDROID: 5.0 (API 21) ou superior; processadores ARM 32/64 e x86_64 (emulador).
+    ÍCONE: o icon_facilapp_ambar.ico das telas (Daniel, 08/11/2026: "adicione o ícone no apk e no exe").
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FacilApp.FastPousada</RootNamespace>
+    <ApplicationId>br.com.facilapp.fastpousada</ApplicationId>
+    <ApplicationVersion>2</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
+    <ApplicationTitle>FastPousada</ApplicationTitle>
+    <RuntimeIdentifiers>android-arm;android-arm64;android-x64</RuntimeIdentifiers>
+    <UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
+    <AndroidPackageFormats>apk</AndroidPackageFormats>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DefaultItemExcludes>$(DefaultItemExcludes);signing\**;artifacts\**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

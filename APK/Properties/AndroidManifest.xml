@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FastPousada (APK do curso) — permissões:
+    INTERNET + usesCleartextTraffic: falar com a API 7777 do PC pelo Wi-Fi (http na rede local);
+    RECORD_AUDIO + MODIFY_AUDIO_SETTINGS: o Botão VOZ (a Luninha fala) usa o microfone.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+  <application android:allowBackup="false" android:usesCleartextTraffic="true"
+    android:label="FastPousada" android:icon="@drawable/fastpousada_logo"
+    android:theme="@android:style/Theme.Material.Light.NoActionBar"
+    android:supportsRtl="true" />
+</manifest>

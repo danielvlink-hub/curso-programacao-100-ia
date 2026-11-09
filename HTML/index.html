@@ -94,9 +94,11 @@
     /* ===== MEGA MENU (cópia do Gourmet, já com o "padrão operacional") ===== */
     .mega-menu-backdrop { position: fixed; inset: 44px 0 0 0; background: rgba(0,0,0,.4); z-index: 1500; display: none; }
     .mega-menu-backdrop.open { display: block; }
-    .mega-menu-overlay { position: fixed; top: 44px; left: 0; width: min(1200px, calc(100vw - 32px)); max-height: calc(100vh - 44px);
+    /* Daniel, 08/11/2026: "se estiver usando 2 colunas somente, a tela do menu deve terminar no fim da segunda coluna" —
+       a largura acompanha as colunas usadas (max-content), sem passar da tela; mínimo para a busca não ficar apertada. */
+    .mega-menu-overlay { position: fixed; top: 44px; left: 0; width: max-content; min-width: 560px; max-width: calc(100vw - 32px); max-height: calc(100vh - 44px);
       background: var(--fa-panel, #fff); z-index: 1600; box-shadow: 0 10px 30px rgba(0,0,0,.25); border: 1px solid var(--fa-border, #cbd5e1);
-      border-top: 0; border-radius: 0 0 6px 6px; display: none; grid-template-columns: 210px minmax(0,1fr); overflow: hidden;
+      border-top: 0; border-radius: 0 0 6px 6px; display: none; grid-template-columns: 210px auto; overflow: hidden;
       animation: megaMenuSlideDown .2s ease-out; }
     @keyframes megaMenuSlideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     .mega-menu-overlay.open { display: grid; }
@@ -112,7 +114,7 @@
     .mega-search-input { width: 100%; height: 34px; border: 1px solid var(--fa-border, #cbd5e1); border-radius: 3px; padding: 0 10px; font-size: 13px;
       outline: none; background: var(--fa-field-bg, #fff); color: var(--fa-text, #333); }
     .mega-search-input:focus { border-color: var(--fa-primary, #2b5993); }
-    .mega-links-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px 36px; align-content: start; }
+    .mega-links-grid { display: grid; grid-template-columns: repeat(4, minmax(170px, max-content)); gap: 12px 36px; align-content: start; padding-right: 24px; }
     .mega-group-box { display: flex; flex-direction: column; gap: 3px; }
     .mega-group-title { font-size: 16px; font-weight: 700; color: var(--fa-primary, #2b5993); margin: 0 0 5px; }
     .mega-item-link { font-size: 13px; line-height: 1.25; padding: 0 10px; color: var(--fa-text, #334155); text-decoration: none; cursor: pointer; display: block; }
@@ -154,6 +156,25 @@
     .stage-container.stage-changing::after { visibility: visible; opacity: 1; }
     .stage-iframe { width: 100%; height: 100%; border: none; display: block; background: transparent; }
     .stage-iframe.stage-loading { visibility: hidden; }
+
+    /* CELULAR (até 760 px) — Daniel, 08/11/2026: "preciso configurar as telas para o celular".
+       Topo: só o ☰, o logo e os atalhos (que rolam de lado); tema, selo e nome do usuário somem.
+       Menu geral: uma coluna, tela cheia, sem a barra lateral. Nada muda no computador. */
+    @media (max-width: 760px) {
+      .GOURMET-topbar { gap: 4px; padding-left: 4px; padding-right: 4px; }
+      .top-left-cluster { gap: 4px; padding-right: 6px; flex-shrink: 0; }
+      .selo-gourmet-gold, .unit-selector, .nome-usuario-topo { display: none !important; }
+      .facilapp-logo-text { font-size: 14px; }
+      .channel-shortcuts { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+      .channel-shortcuts::-webkit-scrollbar { display: none; }
+      .channel-btn { flex: 0 0 38px; width: 38px; }
+      .top-right-cluster { gap: 4px; flex-shrink: 0; }
+      .mega-menu-overlay { min-width: 0; width: 100vw; max-width: 100vw; grid-template-columns: 1fr; border-radius: 0; }
+      .mega-sidebar-left { display: none; }
+      .mega-links-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; padding-right: 0; }
+      .mega-item-link { padding: 4px 6px; font-size: 14px; }
+      .sheet-tab { min-width: 96px; }
+    }
   </style>
   <script>
     (function prepararMenuSuperior() {
@@ -593,6 +614,10 @@
         colunas[atual].appendChild(c);
         usado[atual] += alturas.get(c);
       });
+      // Só as colunas usadas ficam na grade: com 2 colunas, o menu termina no fim da segunda (Daniel, 08/11/2026).
+      let usadas = colunas.reduce((n, c, i) => (c.childElementCount ? i + 1 : n), 0) || 1;
+      colunas.slice(usadas).forEach(c => c.remove());
+      grade.style.gridTemplateColumns = 'repeat(' + usadas + ', minmax(170px, max-content))';
       atualizarEstrelasFavoritosMenu();
       renderizarFavoritosMenu();
       renderizarHistoricoMenu();

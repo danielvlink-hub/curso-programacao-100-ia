@@ -5,14 +5,19 @@ exemplo, do treinamento para clientes, botões, e indica um HTML exemplo; o mesm
 Serve para o Claude Code (ou qualquer pessoa) criar o treinamento guiado ou a IA de uma tela do FastPousada.
 Use depois que a tela já funciona (prompts 02 a 15).
 
-**No FastPousada as peças ainda não existem: o primeiro uso de cada parte cria a peça (motor) e a primeira tela
-(exemplo). Depois, cada tela nova só ganha o roteiro ou o manifesto.**
+**Treinamento "?": as peças JÁ VÊM no curso (08/11/2026) e o passo a passo do aluno está em
+`91_HELP_COM_VOZ_PASSO_A_PASSO.md` — use aquele.** Exemplo pronto: `HTML/modelo_browse.html` → `HTML/TREINAMENTOS/Hospedes/`.
+**Botão IA: as peças JÁ EXISTEM desde a aula de 08/11/2026** — `API FACILAPP SQLite\IA.cs` (chave da OpenAI só no
+servidor + `/api/ia/chat`), `HTML\ConfigIA.html` (Administração → Inteligência Artificial), `HTML\assets\js\BotaoIA.js`
+(peça genérica) e o exemplo `HTML\assets\js\IAHospedes.js` ligado no `BrowseHospedes.html`.
+**Cada tela nova só ganha o manifesto `IA<Tela>.js` + 3 linhas no HTML** (ver "Parte 2 — como ficou no curso").
 
 - Treinamento: `HTML/assets/js/Treinamento.js`, `HTML/assets/css/Treinamento.css`, `HTML/assets/js/AjudaTela.js` e a pasta
   `HTML/TREINAMENTOS/` (`_modelo/`, `novo_treinamento.py`, `mapear_tela.py`, `ajudas.js`, `Hospedes/` como exemplo).
 - IA: `HTML/assets/js/BotaoIA.js`, `HTML/assets/js/IACadastro.js`, `HTML/assets/js/IATelas.js` e `HTML/assets/js/IATarifas.js`
   como exemplo.
-- O "?" e a IA aparecem sozinhos porque o `avisos.js` (carregado por todas as telas) carrega `AjudaTela.js` e `IATelas.js`.
+- O "?" aparece sozinho porque o `avisos.js` (carregado por todas as telas) carrega o `AjudaTela.js`; a IA fará o mesmo
+  com o `IATelas.js` quando for criada.
 - Camada de dados: sempre as funções do `ApiCurso.js` (nunca fetch solto na tela).
 - A IA chama `POST http://127.0.0.1:7777/api/ia/chat` com o Bearer da sessão. A chave do provedor de IA fica SÓ na
   FacilApp API SQL (variável de ambiente ou arquivo em ProgramData). Nunca coloque a chave no JS.
@@ -113,6 +118,35 @@ HTML_MAPA_OCUPACAO: { titulo: 'Mapa de Ocupação', url: 'TREINAMENTOS/Mapa/Apre
 ---
 
 ## PARTE 2 — Botão IA (a pessoa escreve ou fala e a IA executa na tela)
+
+### Parte 2 — como ficou no curso (aula de 08/11/2026) — use ESTE prompt
+
+```
+Ligue o Botão IA na tela HTML/<Browse>.html do FastPousada, igual ao exemplo pronto da tela de Hóspedes:
+HTML/assets/js/BotaoIA.js (peça genérica, não mexer) + HTML/assets/js/IAHospedes.js (manifesto de exemplo) +
+as 3 linhas no fim do BrowseHospedes.html. Leia os três antes.
+1. Crie HTML/assets/js/IA<Tela>.js copiando o IAHospedes.js: titulo, descricao, regras, saudacao, exemplo e as
+   ferramentas da tela (listar_x aplicando o filtro NA TELA, obter_x, incluir_x, alterar_x, excluir_x, exportar_lista,
+   abrir_relatorio). Cada ferramenta chama AS MESMAS funções do ApiCurso que a tela usa; nunca fetch solto.
+2. Ferramenta que grava: grava:true + validar(p) (devolve a pergunta quando falta dado) + resumo(p) (o BotaoIA mostra
+   Confirmar/Cancelar). Excluir: exclui:true (confirmação em vermelho). Depois de gravar, conferir na API
+   (obter_x) e recarregar a grade antes de dizer "feito".
+3. No HTML: <script src="assets/js/BotaoIA.js"> e <script src="assets/js/IA<Tela>.js"> depois do ApiCurso.js, e
+   window.addEventListener('load', () => BotaoIA.ligarNaTela({ manifesto: IA<Tela> })).
+4. Teste na tela: pesquisar ("mostra só os ativos"), cadastrar (Confirmar), pedido com dado faltando (a IA pergunta),
+   alterar, excluir com usuário sem permissão (a API recusa) e Cancelar (nada grava).
+Regras: a chave da OpenAI fica SÓ na API (Administração → Inteligência Artificial, criptografada); sem chave o botão
+fica desabilitado com a dica; botão no grupo IA ? ✕; nunca diálogo nativo do navegador.
+```
+
+| Peça | O que é |
+|---|---|
+| `API FACILAPP SQLite\IA.cs` | `IProvedorIA` (hoje `OpenAiProvedor`), chave em `ia.config.dpapi` (DPAPI, ProgramData), rotas `/api/ia/status`, `/api/ia/config` (GET/PUT/DELETE, só admin), `/api/ia/testar` (lista os modelos da conta), `/api/ia/chat` |
+| `HTML\ConfigIA.html` | o administrador digita a chave, testa, escolhe o modelo e grava; a chave nunca volta para a tela |
+| `HTML\assets\js\BotaoIA.js` | botão IA, janela de conversa (texto, microfone pt-BR, nova conversa), laço de ferramentas (até 6 rodadas), confirmação |
+| `HTML\assets\js\IAHospedes.js` | manifesto de exemplo (listar/filtrar, obter, incluir, alterar, excluir, empresa por CNPJ, exportar, relatório) |
+
+O texto abaixo é o prompt ORIGINAL (do Gourmet adaptado), mantido como referência.
 
 ### Prompt para usar
 

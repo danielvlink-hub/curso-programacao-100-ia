@@ -31,6 +31,10 @@ Copy-Item "$dados\usuarios.db" "$backup\usuarios.db.bkp_$marca"
 Write-Host '2/5 Parando o serviço...'
 Stop-Service $servico
 (Get-Service $servico).WaitForStatus('Stopped', '00:00:30')
+# 08/11/2026: o serviço para, mas o .exe pode ficar preso alguns segundos — espera o processo sair antes de copiar
+# (senão o Copy-Item falha no meio e o serviço fica parado).
+for ($i = 0; $i -lt 20 -and (Get-Process FacilApp.Sqlite.Api -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$destino*" }); $i++) { Start-Sleep -Milliseconds 500 }
+Start-Sleep -Seconds 1
 
 Write-Host '3/5 Copiando a versão nova...'
 foreach ($f in 'FacilApp.Sqlite.Api.exe', 'e_sqlite3.dll', 'aspnetcorev2_inprocess.dll', 'FacilApp.Sqlite.Api.staticwebassets.endpoints.json', 'web.config') {

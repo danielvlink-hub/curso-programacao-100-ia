@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FacilApp SQLite — Teste da API</title>
+  <style>
+    :root { font-family: Segoe UI, Arial, sans-serif; color: #20311f; background: #edf3e7; }
+    body { margin: 0; }
+    header { background: #42632e; color: white; padding: 22px max(18px, calc((100vw - 900px)/2)); }
+    header h1 { margin: 0; font-size: 1.45rem; }
+    header p { margin: 5px 0 0; opacity: .88; }
+    main { max-width: 900px; margin: 28px auto; padding: 0 16px 36px; display: grid; gap: 16px; }
+    section { background: white; border: 1px solid #cddbc6; border-radius: 12px; padding: 22px; box-shadow: 0 4px 15px #243b1b10; }
+    h2 { margin: 0 0 16px; font-size: 1.13rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    label { display: grid; gap: 5px; font-size: .9rem; font-weight: 600; }
+    input { padding: 10px 11px; border: 1px solid #a6b99c; border-radius: 7px; font: inherit; }
+    button { background: #42632e; color: white; border: 0; border-radius: 7px; padding: 11px 16px; cursor: pointer; font-weight: 600; }
+    button:hover { background: #314d23; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 15px; }
+    .hint { color: #5f6a59; font-size: .9rem; }
+    #result { white-space: pre-wrap; word-break: break-word; margin: 0; min-height: 48px; background: #f4f7f0; border-radius: 7px; padding: 12px; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<header><h1>FacilApp SQLite · Console de teste</h1><p>API local na porta 7777 · cadastro, login e Bearer</p></header>
+<main>
+  <section><h2>Estado da API</h2><div id="apiState">Consultando...</div><div class="actions"><button id="refresh" type="button">Atualizar estado</button></div></section>
+  <section id="setupSection" hidden>
+    <h2>Primeiro usuário administrador</h2>
+    <p class="hint">Disponível apenas quando o banco está vazio e o acesso é local. Escolha sua senha.</p>
+    <form id="setupForm"><div class="grid"><label>Nome<input name="nome" autocomplete="name" minlength="2" maxlength="120" required></label><label>Login<input name="login" autocomplete="username" minlength="3" maxlength="80" required></label><label>Senha<input name="senha" type="password" autocomplete="new-password" required></label></div><div class="actions"><button type="submit">Criar primeiro usuário</button></div></form>
+  </section>
+  <section>
+    <h2>Login</h2>
+    <form id="loginForm"><div class="grid"><label>Usuário<input name="usuario" autocomplete="username" required></label><label>Senha<input name="senha" type="password" autocomplete="current-password" required></label></div><div class="actions"><button type="submit">Entrar e obter Bearer</button><button id="me" type="button">Testar /auth/me</button><button id="logout" type="button">Limpar Bearer</button></div></form>
+    <p class="hint">O token permanece somente na memória desta aba; não será exibido nem gravado pelo navegador.</p>
+  </section>
+  <section id="addSection" hidden>
+    <h2>Usuários do curso</h2>
+    <p class="hint">Exige login de administrador. Novo usuário não recebe permissão de administrador.</p>
+    <form id="addForm"><div class="grid"><label>Nome<input name="nome" autocomplete="name" minlength="2" maxlength="120" required></label><label>Login<input name="login" autocomplete="username" minlength="3" maxlength="80" required></label><label>Senha<input name="senha" type="password" autocomplete="new-password" required></label></div><div class="actions"><button type="submit">Cadastrar usuário</button><button id="listUsers" type="button">Listar usuários</button></div></form>
+  </section>
+  <!-- Daniel, 08/11/2026: "crie um local na área da API para cadastrar a chave da OpenAI" / "iremos usar a Luna 6.0".
+       A chave vai direto para a API (criptografada pelo Windows em ProgramData) e nunca volta para esta página. -->
+  <section id="iaSection">
+    <h2>Inteligência Artificial (OpenAI)</h2>
+    <p class="hint" id="iaEstado">Faça o login de administrador acima para cadastrar a chave da OpenAI.</p>
+    <form id="iaForm"><div class="grid">
+      <label>Chave da OpenAI<input name="chave" type="password" autocomplete="off" spellcheck="false" placeholder="sk-... (vazio = manter a gravada)"></label>
+      <label>Nome da assistente<input name="nome" maxlength="40" value="Luninha" autocomplete="off"></label>
+      <label>Modelo<input name="modelo" list="iaModelos" autocomplete="off" spellcheck="false" placeholder="digite ou clique em Testar chave"></label>
+      <datalist id="iaModelos"></datalist>
+      <label>Modelo de voz (Botão VOZ)<input name="modelo_voz" list="iaModelosVoz" autocomplete="off" spellcheck="false" placeholder="clique em Testar chave (ex.: modelo realtime / live)"></label>
+      <datalist id="iaModelosVoz"></datalist>
+      <label>Voz<input name="voz" list="iaVozes" autocomplete="off" spellcheck="false" placeholder="marin"></label>
+      <datalist id="iaVozes"><option value="marin"><option value="cedar"><option value="coral"><option value="sage"><option value="shimmer"><option value="alloy"><option value="ash"><option value="ballad"><option value="echo"><option value="verse"></datalist>
+    </div>
+    <div class="actions"><button type="button" id="iaTestar">Testar chave</button><button type="submit">Gravar</button><button type="button" id="iaRemover">Remover chave</button></div></form>
+    <p class="hint" id="iaLista"></p>
+    <select id="iaEscolha" hidden style="width:100%;padding:6px;border:1px solid #a6b99c;border-radius:7px;font:inherit"></select>
+    <p class="hint">Só administrador. A chave fica criptografada no servidor; aqui aparecem só os 4 últimos dígitos.</p>
+  </section>
+  <!-- Daniel, 08/11/2026: "crie logs de monitoramento dos erros e falhas para gravar em .log" -->
+  <section>
+    <h2>Logs de erros e falhas</h2>
+    <p class="hint">Exige login de administrador. Arquivo do dia em ProgramData\FacilApp\CursoApiSqlite\logs (guarda 30 dias). Nunca contém senha, token ou chave.</p>
+    <form id="logForm"><div class="grid"><label>Dia<input name="dia" type="date"></label></div>
+    <div class="actions"><button type="submit">Ver log do dia</button></div></form>
+  </section>
+  <section>
+    <h2>Consultar CNPJ</h2>    <p class="hint">Mesmo contrato da API Services: resposta normalizada ou JSON completo da fonte pública.</p>
+    <form id="cnpjForm"><div class="grid"><label>CNPJ<input name="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" required></label></div><div class="actions"><button type="submit">Consultar CNPJ</button><button id="cnpjFull" type="button">Consultar completo</button></div></form>
+  </section>
+  <section>
+    <h2>Consultar CEP</h2>
+    <form id="cepForm"><div class="grid"><label>CEP<input name="cep" inputmode="numeric" placeholder="00000-000" required></label></div><div class="actions"><button type="submit">Consultar CEP</button></div></form>
+  </section>
+  <section><h2>Resultado</h2><pre id="result" aria-live="polite">Aguardando teste.</pre></section>
+</main>
+<script>
+(() => {
+  let bearer = '';
+  const $ = id => document.getElementById(id);
+  const show = value => { $('result').textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2); };
+  async function api(path, options = {}) {
+    const headers = {'Content-Type': 'application/json', ...options.headers};
+    if (bearer) headers.Authorization = `Bearer ${bearer}`;
+    const response = await fetch(path, {...options, headers, cache: 'no-store'});
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw Error(body.erro || `HTTP ${response.status}`);
+    return body;
+  }
+  async function state() {
+    try {
+      const [status, setup] = await Promise.all([api('/status'), api('/auth/setup-status')]);
+      $('apiState').textContent = `${status.servico} online · ${status.banco} · ${setup.precisaUsuarioInicial ? 'aguardando primeiro usuário' : 'usuário inicial já cadastrado'}`;
+      $('setupSection').hidden = !setup.precisaUsuarioInicial;
+    } catch (error) { $('apiState').textContent = error.message; }
+  }
+  function credentials(form) {
+    const data = new FormData(form);
+    return {usuario: String(data.get('usuario') || '').trim(), senha: String(data.get('senha') || '')};
+  }
+  function newUser(form) {
+    const data = new FormData(form);
+    return {nome: String(data.get('nome') || '').trim(), login: String(data.get('login') || '').trim(), senha: String(data.get('senha') || '')};
+  }
+  function submit(formId, handler) {
+    $(formId).addEventListener('submit', async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type=submit]');
+      button.disabled = true;
+      try { await handler(form); } catch (error) { show(error.message); } finally { button.disabled = false; }
+    });
+  }
+  submit('setupForm', async form => { const result = await api('/auth/setup', {method:'POST', body:JSON.stringify(newUser(form))}); form.reset(); show(result); await state(); });
+  submit('loginForm', async form => {
+    const result = await api('/auth/login', {method:'POST', body:JSON.stringify(credentials(form))});
+    bearer = result.accessToken;
+    form.querySelector('[name=senha]').value = '';
+    const me = await api('/auth/me');
+    $('addSection').hidden = !me.administrador;
+    iaTravar(!me.administrador);
+    if (me.administrador) await iaCarregar(); else $('iaEstado').textContent = 'Seu usuário não é administrador: só administrador cadastra a chave da IA.';
+    show({ok:true, nome:me.nome, login:me.login, administrador:me.administrador, tipoToken:result.tokenType, expiraEmSegundos:result.expiresIn});
+  });
+  submit('addForm', async form => { const result = await api('/users', {method:'POST', body:JSON.stringify(newUser(form))}); form.reset(); show(result); });
+  $('listUsers').onclick = async () => { try { show(await api('/users')); } catch (error) { show(error.message); } };
+  submit('cnpjForm', async form => { const value = String(new FormData(form).get('cnpj') || '').replace(/\D/g, ''); show(await api(`/api/cnpj/${encodeURIComponent(value)}`)); });
+  $('cnpjFull').onclick = async () => { try { const value = String(new FormData($('cnpjForm')).get('cnpj') || '').replace(/\D/g, ''); show(await api(`/api/cnpj/${encodeURIComponent(value)}/completo`)); } catch (error) { show(error.message); } };
+  submit('cepForm', async form => { const value = String(new FormData(form).get('cep') || '').replace(/\D/g, ''); show(await api(`/api/cep/${encodeURIComponent(value)}`)); });
+  $('me').onclick = async () => { try { show(await api('/auth/me')); } catch (error) { show(error.message); } };
+  /* Limpar Bearer: esquece o token desta aba e trava de novo as seções de administrador. */
+  $('logout').onclick = () => {
+    bearer = '';
+    $('addSection').hidden = true;
+    iaTravar(true);
+    $('iaEstado').textContent = 'Faça o login de administrador acima para cadastrar a chave da OpenAI.';
+    show('Bearer removido da memória desta aba.');
+  };
+
+  /* ==========================================================================================
+   * INTELIGÊNCIA ARTIFICIAL — chave da OpenAI, nome da assistente, modelos de texto e de voz.
+   * Daniel, 08/11/2026: "crie um local na área da API para cadastrar a chave da OpenAI" /
+   *   "dê o nome de Luninha" / "crie o Botão VOZ, usando Live".
+   * Rotas /api/ia/* (IA.cs). A chave vai direto para a API e nunca volta (só os 4 últimos dígitos).
+   * ========================================================================================== */
+
+  /** iaTravar(sim) — trava/destrava campos e botões da seção (destrava só com login de administrador). */
+  function iaTravar(sim) {
+    $('iaForm').querySelectorAll('input,button').forEach(e => { e.disabled = sim; });
+  }
+  iaTravar(true);
+
+  /** iaMostrar(r) — mostra a situação gravada (r = resposta de /api/ia/config) e preenche os campos. */
+  function iaMostrar(r) {
+    if (r.configurada && r.modelo) {
+      $('iaEstado').textContent =
+        `IA ligada · ${r.nome || 'Luninha'} · modelo ${r.modelo}` +
+        (r.modelo_voz ? ` · voz ${r.modelo_voz} (${r.voz})` : ' · voz desligada') +
+        ` · chave terminada em ${r.final}`;
+    } else {
+      $('iaEstado').textContent = r.configurada ? 'Chave gravada, falta o modelo.' : 'IA desligada: nenhuma chave cadastrada.';
+    }
+    const form = $('iaForm');
+    if (r.modelo)     form.modelo.value = r.modelo;
+    if (r.nome)       form.nome.value = r.nome;
+    if (r.modelo_voz) form.modelo_voz.value = r.modelo_voz;
+    if (r.voz)        form.voz.value = r.voz;
+  }
+
+  /** iaCarregar() — lê a configuração atual (só administrador). */
+  async function iaCarregar() {
+    try {
+      iaMostrar(await api('/api/ia/config'));
+    } catch (error) {
+      $('iaEstado').textContent = error.message;
+    }
+  }
+
+  /**
+   * Testar chave — a API consulta a OpenAI e devolve os modelos de TEXTO e de VOZ da conta.
+   * Mostra a lista para clicar e já escolhe o Luna (texto) e um modelo "live" (voz), quando houver.
+   * Erro aparece em vermelho logo abaixo dos botões (Daniel: "não veio o modelo").
+   */
+  $('iaTestar').onclick = async () => {
+    const botao = $('iaTestar');
+    const form = $('iaForm');
+    botao.disabled = true;
+    $('iaLista').style.color = '';
+    $('iaLista').textContent = 'Consultando a OpenAI...';
+    $('iaEscolha').hidden = true;
+    try {
+      const r = await api('/api/ia/testar', { method: 'POST', body: JSON.stringify({ chave: form.chave.value.trim() }) });
+      const voz = r.modelos_voz || [];
+
+      // sugestões dos campos
+      $('iaModelos').innerHTML = '';
+      r.modelos.forEach(m => $('iaModelos').appendChild(new Option(m, m)));
+      $('iaModelosVoz').innerHTML = '';
+      voz.forEach(m => $('iaModelosVoz').appendChild(new Option(m, m)));
+
+      // lista para CLICAR (modelos de texto)
+      const lista = $('iaEscolha');
+      lista.innerHTML = '';
+      lista.size = Math.min(8, Math.max(2, r.modelos.length));
+      r.modelos.forEach(m => lista.appendChild(new Option(m, m)));
+      lista.hidden = !r.modelos.length;
+
+      // escolha automática do Luna SÓ quando o campo está vazio ou com um modelo que a conta não tem — nunca troca a
+      // escolha do usuário. Entre os Luna, o mais NOVO (gpt-6-luna antes de gpt-5.6-luna). Daniel, 08/11/2026:
+      // "seleciono 6.0 e volta sozinho 5.6" (antes pegava o primeiro da lista em ordem alfabética).
+      const versao = m => parseFloat((m.match(/(\d+(?:\.\d+)?)/) || [0, 0])[1]);
+      const luna = r.modelos.filter(m => /luna/i.test(m)).sort((a, b) => versao(b) - versao(a))[0];
+      const atual = form.modelo.value.trim();
+      if (luna && (!atual || !r.modelos.includes(atual))) form.modelo.value = luna;
+      if (r.modelos.includes(form.modelo.value.trim())) lista.value = form.modelo.value.trim();
+      // voz: prefere um modelo "realtime" (o gpt-live-1 não funciona no modo realtime — teste do Daniel, 08/11/2026)
+      const realtime = voz.filter(m => /realtime/i.test(m));
+      if (realtime.length && !/realtime/i.test(form.modelo_voz.value)) form.modelo_voz.value = realtime[realtime.length - 1];
+
+      $('iaLista').textContent =
+        (r.modelos.length
+          ? `Chave aceita: ${r.modelos.length} modelo(s) de texto. Clique no modelo para escolher (escolhido: ${form.modelo.value || 'nenhum'}).`
+          : 'Chave aceita, mas a conta não tem modelo de texto liberado.') +
+        (voz.length ? ` Modelos de VOZ: ${voz.join(', ')}.` : ' Nenhum modelo de voz ao vivo nesta conta.');
+      show({ ok: true, chaveAceita: true, modelos: r.modelos, modelos_voz: voz });
+    } catch (error) {
+      $('iaLista').style.color = '#b42318';
+      $('iaLista').textContent = 'Erro: ' + error.message;
+      show(error.message);
+    } finally {
+      botao.disabled = false;
+    }
+  };
+
+  /** Clique na lista de modelos → preenche o campo Modelo. */
+  $('iaEscolha').onchange = () => { $('iaForm').modelo.value = $('iaEscolha').value; };
+
+  /** Gravar — manda tudo para a API (chave vazia mantém a gravada) e limpa o campo da chave. */
+  submit('iaForm', async form => {
+    const dados = {
+      chave: form.chave.value.trim(),
+      modelo: form.modelo.value.trim(),
+      nome: form.nome.value.trim(),
+      modelo_voz: form.modelo_voz.value.trim(),
+      voz: form.voz.value.trim()
+    };
+    const r = await api('/api/ia/config', { method: 'PUT', body: JSON.stringify(dados) });
+    form.chave.value = '';
+    iaMostrar(r);
+    show({ ok: true, configurada: r.configurada, nome: r.nome, modelo: r.modelo, modelo_voz: r.modelo_voz, voz: r.voz, final: r.final });
+  });
+
+  /** Remover chave — apaga a configuração da IA no servidor. */
+  $('iaRemover').onclick = async () => {
+    try {
+      iaMostrar(await api('/api/ia/config', { method: 'DELETE' }));
+      show('Chave removida.');
+    } catch (error) {
+      show(error.message);
+    }
+  };
+
+  /* ==========================================================================================
+   * LOGS — últimas 500 linhas do .log de erros e falhas do dia (só administrador).
+   * Daniel, 08/11/2026: "crie logs de monitoramento dos erros e falhas para gravar em .log".
+   * ========================================================================================== */
+  submit('logForm', async form => {
+    const dia = form.dia.value || new Date().toISOString().slice(0, 10);
+    const r = await api('/api/logs?dia=' + encodeURIComponent(dia));
+    show(r.linhas.length
+      ? `Log de ${r.dia} (${r.linhas.length} linha(s), mais novas no fim):\n\n` + r.linhas.join('\n')
+      : `Nenhum erro registrado em ${r.dia}.`);
+  });
+
+  $('refresh').onclick = state;
+  state();
+})();
+</script>
+</body>
+</html>

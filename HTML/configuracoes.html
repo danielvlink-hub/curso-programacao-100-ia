@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurações</title>
+<!--
+  CONFIGURAÇÕES DA POUSADA — FastPousada, Bloco 5 (aula gravada de 08/11/2026). Daniel: "Sim, Bloco 5".
+  O QUE FAZ: um formulário curto em 3 seções:
+    1. Dados da pousada: nome, CNPJ/CPF, telefone, e-mail, CEP (busca o endereço sozinho), endereço, cidade, UF.
+    2. Regras da hospedagem: horário de check-in e de check-out, % do sinal, prazo da pré-reserva (horas).
+    3. Textos: política de cancelamento (vai para o motor on-line) e rodapé do extrato.
+    Usuário comum vê só para leitura; quem grava é o administrador (a API confere: 403).
+  DADOS: ApiCurso.configuracoes / salvarConfiguracoes / consultarCepHospede. Regras na API (Gestao.cs): chave
+    desconhecida recusada, horário HH:MM, % de 0 a 100, prazo de 1 a 168 h. O prazo vale nas Reservas.
+  PADRÃO: campos 22px, 3px entre blocos, sem barra quando cabe, Ctrl+Enter grava, sem alert/confirm/prompt.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/BotaoVoz.js"></script>
+<script src="assets/js/IAGestao.js"></script>
+<style>
+  .cf-corpo { flex: 1; min-height: 0; overflow-y: auto; margin: 3px 12px; }
+  .cf-corpo .cp-form { padding: 6px 4px 3px; max-width: 980px; }
+  .secao { grid-column: 1 / -1; font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: var(--fa-primary, #4b5a32);
+    border-bottom: 1px solid var(--fa-border, #d8ddcf); padding-top: 3px; }
+  .secao:first-child { padding-top: 0; }
+  #erro { display: none; padding: 4px 8px; border-radius: 5px; background: #fee2e2; color: #991b1b; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="cp-janela">
+  <header class="cp-cab">
+    <div class="cp-tit"><div class="cp-ico"><span class="material-icons">settings</span></div>
+      <div><b>Configurações</b><small>Dados da pousada e as regras que as outras telas usam</small></div></div>
+    <button type="button" class="btn-fechar" id="btnFechar" title="Fechar">×</button>
+  </header>
+  <div class="cf-corpo">
+    <section class="cp-form">
+      <div id="erro"></div>
+      <div class="cp-campos">
+        <div class="secao">Dados da pousada</div>
+        <div class="c4"><label class="rot" for="nome_pousada">Nome da pousada <span class="req">*</span></label><input type="text" id="nome_pousada" maxlength="80"></div>
+        <div class="c2"><label class="rot" for="documento">CNPJ ou CPF</label><input type="text" id="documento" maxlength="20"></div>
+        <div class="c2"><label class="rot" for="telefone">Telefone / WhatsApp</label><input type="text" id="telefone" maxlength="20"></div>
+        <div class="c2"><label class="rot" for="email">E-mail</label><input type="text" id="email" maxlength="80"></div>
+        <div class="c1"><label class="rot" for="cep">CEP</label><input type="text" id="cep" maxlength="9" placeholder="00000-000"></div>
+        <div class="c1"><label class="rot" for="uf">UF</label><input type="text" id="uf" maxlength="2"></div>
+        <div class="c4"><label class="rot" for="endereco">Endereço</label><input type="text" id="endereco" maxlength="150"></div>
+        <div class="c2"><label class="rot" for="cidade">Cidade</label><input type="text" id="cidade" maxlength="60"></div>
+
+        <div class="secao">Regras da hospedagem</div>
+        <div class="c1"><label class="rot" for="horario_checkin">Check-in a partir</label><input type="text" id="horario_checkin" maxlength="5" placeholder="14:00"></div>
+        <div class="c1"><label class="rot" for="horario_checkout">Check-out até</label><input type="text" id="horario_checkout" maxlength="5" placeholder="12:00"></div>
+        <div class="c1"><label class="rot" for="sinal_percentual">Sinal (%)</label><input type="text" class="numero" id="sinal_percentual" maxlength="3"></div>
+        <div class="c1"><label class="rot" for="prazo_pre_reserva_horas">Pré-reserva vence (h)</label><input type="text" class="numero" id="prazo_pre_reserva_horas" maxlength="3"></div>
+        <div class="c2"><span class="dica">O prazo vale para pré-reservas sem sinal pago. Horários e política aparecem no motor de reservas on-line.</span></div>
+
+        <div class="secao">Textos</div>
+        <div class="c6"><label class="rot" for="politica_cancelamento">Política de cancelamento</label><textarea id="politica_cancelamento" maxlength="500"></textarea></div>
+        <div class="c6"><label class="rot" for="texto_rodape_extrato">Rodapé do extrato do hóspede</label><input type="text" id="texto_rodape_extrato" maxlength="150"></div>
+      </div>
+      <footer class="cp-rod"><span class="dica" id="rodape">Ctrl+Enter grava.</span>
+        <div class="acoes"><button class="btn" type="button" id="btnGravar"><span class="material-icons">save</span>Gravar</button></div></footer>
+    </section>
+  </div>
+</div>
+
+<script>
+  const el = id => document.getElementById(id);
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+  const CAMPOS = ['nome_pousada', 'documento', 'telefone', 'email', 'cep', 'uf', 'endereco', 'cidade', 'horario_checkin', 'horario_checkout',
+    'sinal_percentual', 'prazo_pre_reserva_horas', 'politica_cancelamento', 'texto_rodape_extrato'];
+  const admin = ApiCurso.ehAdministrador();
+
+  function mostrarErro(m) { el('erro').textContent = m || ''; el('erro').style.display = m ? 'block' : 'none'; }
+
+  /** preencher(c) — põe as configurações nos campos. */
+  function preencher(c) { CAMPOS.forEach(k => { el(k).value = c[k] == null ? '' : c[k]; }); }
+
+  /** carregar() — lê da API; usuário comum fica só com a leitura. */
+  async function carregar() {
+    try { preencher(await ApiCurso.configuracoes()); } catch (erro) { mostrarErro(erro.message); }
+    if (!admin) {
+      CAMPOS.forEach(k => el(k).disabled = true);
+      el('btnGravar').disabled = true;
+      el('rodape').textContent = 'Só o administrador altera as configurações.';
+    }
+  }
+  window.recarregarTela = carregar;
+
+  /** gravar() — manda todas as chaves; a API confere formatos e devolve o que ficou gravado. */
+  async function gravar() {
+    if (!admin) return;
+    mostrarErro('');
+    const v = {}; CAMPOS.forEach(k => { v[k] = el(k).value.trim(); });
+    const b = el('btnGravar'); b.disabled = true;
+    try { preencher(await ApiCurso.salvarConfiguracoes(v)); aviso('Configurações gravadas.'); }
+    catch (erro) { mostrarErro(erro.message); }
+    b.disabled = false;
+  }
+
+  /** buscarCep() — CEP com 8 números preenche endereço, cidade e UF (rota da API que já existe). */
+  async function buscarCep() {
+    const cep = el('cep').value.replace(/\D/g, '');
+    if (cep.length !== 8 || !admin) return;
+    try {
+      const r = await ApiCurso.consultarCepHospede(cep);
+      el('cep').value = cep.slice(0, 5) + '-' + cep.slice(5);
+      if (r.endereco) el('endereco').value = r.endereco + (r.bairro ? ' - ' + r.bairro : '');
+      if (r.cidade) el('cidade').value = r.cidade;
+      if (r.uf) el('uf').value = r.uf;
+    } catch (erro) { mostrarErro('CEP: ' + erro.message); }
+  }
+
+  el('cep').addEventListener('change', buscarCep);
+  el('btnGravar').onclick = gravar;
+  document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.ctrlKey) gravar(); });
+  el('btnFechar').onclick = () => {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_MODELO' }, '*'); } catch (e) { /* sem pai */ }
+    if (window.parent === window) history.back();
+  };
+  window.addEventListener('DOMContentLoaded', carregar);
+  window.addEventListener('load', async () => {
+    if (!window.BotaoIA || !window.IAGestao) return;
+    await BotaoIA.ligarNaTela({ manifesto: IAGestao, ancora: '#btnFechar' });
+    if (window.BotaoVoz) await BotaoVoz.ligarNaTela({ manifesto: IAGestao });
+  });
+</script>
+</body>
+</html>

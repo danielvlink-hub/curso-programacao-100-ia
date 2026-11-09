@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hóspedes</title>
+<!--
+  BROWSE DE HÓSPEDES — FastPousada (aula gravada de 08/11/2026)
+  Daniel: "Crie o BrowseHospedes e UpdateHospedes, gere CRUD, exportação XLS, CSV e Rpt dos hóspedes" +
+          "Incluir Adicionar Empresa por CNPJ, onde somente pede o CNPJ e o sistema cadastra sozinho".
+  O QUE FAZ
+    - Lista os hóspedes (pessoas e empresas) da FacilApp API SQL com Tabulator: busca, filtros de tipo e situação,
+      paginação, CSV, XLSX, recarregar, total no rodapé, alterar/excluir na linha e duplo clique para alterar.
+    - Novo / Alterar abrem o UpdateHospedes.html num iframe dentro de uma janela flutuante CENTRALIZADA (arrastável).
+    - "Empresa por CNPJ": pede só o CNPJ; a API busca os dados públicos e cadastra a empresa sozinha.
+    - "Relatório" abre o RptHospedes.html.
+  DADOS: ApiCurso.listarHospedes / excluirHospede / cadastrarEmpresaPorCnpj (rotas /api/hospedes na API).
+  CONVERSA COM O UPDATE (postMessage): FACILAPP_MODELO_GRAVADO (gravou: fecha e recarrega) e FACILAPP_MODELO_CANCELADO.
+  REGRAS: a regra de verdade fica na API (documento único, telefone, permissão de excluir); a tela mostra a mensagem dela.
+  PADRÃO VISUAL: cores --fa-* (TemaFacilApp.css), cabeçalho 35px, campos e linhas 22px, ✕ à direita. Base: modelo_browse.html.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) {
+        document.documentElement.setAttribute('data-theme', t);
+        var f = document.querySelector('#janelaUpdate iframe'); if (f && f.contentWindow) f.contentWindow.postMessage(m, '*');
+      }
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="dependencias/tabulator-6.5.0/css/tabulator.min.css">
+<script src="dependencias/tabulator-6.5.0/js/tabulator.min.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="assets/js/ApiCurso.js"></script>
+<!-- Botão IA (aula de 08/11/2026): conversa que executa listagens, filtros e o CRUD desta tela -->
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/IAHospedes.js"></script>
+<!-- Botão VOZ (aula de 08/11/2026): conversa falada ao vivo com os mesmos poderes do Botão IA -->
+<script src="assets/js/BotaoVoz.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  .browse-window { position: fixed; inset: 6px; background: var(--fa-panel, #fff); border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.18); display: flex; flex-direction: column; overflow: hidden; }
+  .browse-header { height: 35px; flex: 0 0 35px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 12px;
+    background: var(--fa-panel-alt, #f1f5f9); border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .browse-title-group { display: flex; align-items: center; gap: 8px; }
+  .browse-icon-badge { width: 24px; height: 24px; border-radius: 6px; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff);
+    display: flex; align-items: center; justify-content: center; }
+  .browse-icon-badge .material-icons { font-size: 16px; }
+  .browse-title { font-size: 14px; font-weight: 700; }
+  .browse-subtitle { font-size: 11px; color: var(--fa-muted, #64748b); margin-left: 6px; }
+  .btn-fechar { width: 26px; height: 26px; border: 1px solid var(--fa-primary-dark, #35470e); border-radius: 6px; background: var(--fa-primary, #4b5a32);
+    color: var(--fa-button-text, #fff); font: 700 16px/1 Arial, sans-serif; cursor: pointer; }
+  .browse-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 7px; padding: 6px 12px; border-bottom: 1px solid var(--fa-border, #d8ddcf); flex-wrap: wrap; }
+  .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .btn { height: 22px; padding: 0 9px; border: 0; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); white-space: nowrap; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:disabled { opacity: .55; cursor: wait; }
+  .btn .material-icons { font-size: 15px; }
+  .btn.alt { background: var(--fa-field-bg, #f8fafc); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+  .busca { position: relative; }
+  .busca .material-icons { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--fa-muted, #64748b); }
+  .campo { height: 22px; padding: 0 8px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 4px; background: var(--fa-field-bg, #fff);
+    color: var(--fa-text, #1e293b); outline: none; }
+  .busca .campo { width: 270px; padding-left: 26px; }
+  .campo:focus { border-color: var(--fa-primary, #4b5a32); }
+  .grid-container { flex: 1; min-height: 0; margin: 6px 12px 10px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; overflow: hidden; display: flex; }
+  #grade { flex: 1; border: 0 !important; }
+  .tabulator { background: transparent !important; color: var(--fa-text, #1e293b) !important; font-size: 12px; }
+  .tabulator .tabulator-header { background: var(--fa-panel-alt, #eef3e6) !important; border-bottom: 1px solid var(--fa-border, #d8ddcf) !important;
+    font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase; color: var(--fa-text, #1e293b) !important; }
+  .tabulator .tabulator-header .tabulator-col { background: transparent !important; border-right: 1px solid var(--fa-border, #d8ddcf) !important; }
+  .tabulator .tabulator-row { min-height: 22px; background: var(--fa-panel, #fff) !important; border-bottom: 1px solid var(--fa-border, #e5e7eb) !important; }
+  .tabulator .tabulator-row.tabulator-row-even { background: color-mix(in srgb, var(--fa-panel-alt, #f1f5f9) 45%, var(--fa-panel, #fff)) !important; }
+  .tabulator .tabulator-row.tabulator-selected, .tabulator .tabulator-row:hover { background: var(--fa-field-bg, #f8fafc) !important; }
+  .tabulator .tabulator-cell { padding: 2px 8px !important; border-right: 1px solid var(--fa-border, #e5e7eb) !important; }
+  .tabulator .tabulator-footer { background: transparent !important; border-top: 1px solid var(--fa-border, #d8ddcf) !important; font-size: 11px !important; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 9px; font-size: 10.5px; font-weight: 700; }
+  .badge.ativo { background: #dcfce7; color: #166534; } .badge.inativo { background: #fee2e2; color: #991b1b; }
+  .badge.pf { background: #e0f2fe; color: #075985; } .badge.pj { background: #fef3c7; color: #92400e; }
+  .acoes-linha { display: flex; gap: 3px; justify-content: center; }
+  .row-btn { width: 22px; height: 22px; padding: 0; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 5px; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); }
+  .row-btn .material-icons { font-size: 15px; }
+  .row-btn.delete:hover { background: #b3261e; border-color: #b3261e; }
+  .rodape { display: flex; justify-content: space-between; padding: 0 12px 6px; font-size: 11px; color: var(--fa-muted, #64748b); }
+  /* JANELA DO UPDATE: flutuante, CENTRALIZADA, fundo escuro, arrastável pela barra */
+  #janelaUpdate { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.42); }
+  #janelaUpdate.aberta { display: flex; }
+  #janelaUpdate .caixa { position: relative; width: min(700px, calc(100vw - 24px)); height: min(470px, calc(100vh - 24px)); background: var(--fa-panel, #fff);
+    border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px; overflow: hidden; display: grid; grid-template-rows: 35px 1fr; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  #janelaUpdate .barra { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 14px; background: var(--fa-panel-alt, #f1f5f9);
+    border-bottom: 1px solid var(--fa-border, #d8ddcf); font-weight: 700; font-size: 13px; cursor: move; user-select: none; }
+  #janelaUpdate .barra .titulo { display: flex; align-items: center; gap: 7px; }
+  #janelaUpdate .barra .material-icons { font-size: 18px; color: var(--fa-primary, #4b5a32); }
+  #janelaUpdate iframe { width: 100%; height: 100%; border: 0; background: transparent; }
+</style>
+</head>
+<body>
+<div class="browse-window">
+  <header class="browse-header">
+    <div class="browse-title-group">
+      <div class="browse-icon-badge"><span class="material-icons">person</span></div>
+      <div><span class="browse-title">Hóspedes</span><span class="browse-subtitle">Pessoas e empresas</span></div>
+    </div>
+    <button type="button" class="btn-fechar" title="Fechar" onclick="fecharBrowse()">×</button>
+  </header>
+  <div class="browse-toolbar">
+    <div class="toolbar-left">
+      <button type="button" class="btn" id="btnNovo" onclick="abrirUpdate()"><span class="material-icons">person_add</span>Novo Hóspede</button>
+      <button type="button" class="btn" id="btnEmpresaCnpj" onclick="empresaPorCnpj()" title="Informe só o CNPJ: o sistema busca os dados e cadastra a empresa"><span class="material-icons">domain_add</span>Empresa por CNPJ</button>
+      <div class="busca"><span class="material-icons">search</span><input id="inputFiltro" class="campo" placeholder="Buscar por nome, documento, telefone ou cidade..." oninput="filtrar()" autocomplete="off"></div>
+      <select id="selTipo" class="campo" onchange="filtrar()"><option value="">Pessoas e empresas</option><option value="PF">Só pessoas</option><option value="PJ">Só empresas</option></select>
+      <select id="selSituacao" class="campo" onchange="filtrar()"><option value="">Todas as situações</option><option value="1">Ativos</option><option value="0">Inativos</option></select>
+    </div>
+    <div class="toolbar-right">
+      <button type="button" class="btn alt" id="btnRelatorio" onclick="abrirRelatorio()" title="Relação de Hóspedes (PDF)"><span class="material-icons">print</span>Relatório</button>
+      <button type="button" class="btn alt" id="btnCsv" onclick="exportarCSV()"><span class="material-icons">description</span>CSV</button>
+      <button type="button" class="btn alt" id="btnXlsx" onclick="exportarExcel()"><span class="material-icons">table_view</span>XLSX</button>
+      <button type="button" class="btn alt" id="btnRecarregar" title="Recarregar" onclick="carregar()"><span class="material-icons">refresh</span></button>
+    </div>
+  </div>
+  <div class="grid-container"><div id="grade"></div></div>
+  <div class="rodape"><span id="lblTotal"></span><span>Duplo clique na linha para alterar</span></div>
+</div>
+
+<!-- JANELA DO UPDATE (o formulário fica em UpdateHospedes.html) -->
+<div id="janelaUpdate">
+  <div class="caixa" id="caixaUpdate">
+    <div class="barra" id="barraUpdate"><div class="titulo"><span class="material-icons">badge</span><span id="tituloUpdate">Novo Hóspede</span></div>
+      <button type="button" class="btn-fechar" title="Fechar" onclick="fecharUpdate()">×</button></div>
+    <iframe title="Cadastro de Hóspede"></iframe>
+  </div>
+</div>
+
+<script>
+  let grade = null;
+  const el = id => document.getElementById(id);
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const LANG = { default: { pagination: { page_size: 'Registros por página', first: 'Primeira', last: 'Última', prev: 'Anterior', next: 'Próxima',
+    counter: { showing: 'Exibindo', of: 'de', rows: 'registros', pages: 'páginas' } } } };
+
+  /**
+   * iniciarGrade() — cria o Tabulator.
+   * O QUE FAZ: 1 linha selecionada, paginação local de 50, ações na última coluna (lápis altera, lixeira exclui).
+   * CUIDADOS: os dados só entram depois do evento tableBuilt (antes disso dá erro "verticalFillMode").
+   */
+  function iniciarGrade() {
+    // celular (até 760 px): as colunas menos importantes somem; nome e ações ficam sempre (Daniel, 08/11/2026)
+    const celular = window.matchMedia && matchMedia('(max-width: 760px)').matches;
+    grade = new Tabulator('#grade', {
+      responsiveLayout: celular ? 'hide' : false,
+      data: [], layout: 'fitColumns', height: '100%', pagination: 'local', paginationSize: 50, paginationCounter: 'rows',
+      locale: true, langs: LANG, selectableRows: 1, placeholder: 'Nenhum hóspede cadastrado.', index: 'id_hospede',
+      columns: [
+        { title: 'Tipo', field: 'tipo', width: 82, responsive: 2, hozAlign: 'center', headerHozAlign: 'center',
+          formatter: c => c.getValue() === 'PJ' ? '<span class="badge pj">Empresa</span>' : '<span class="badge pf">Pessoa</span>',
+          accessorDownload: v => v === 'PJ' ? 'Empresa' : 'Pessoa' },
+        // só o nome / razão social, uma linha (Daniel, 08/11/2026: "não ficou bom os 2, usa só 1, usa razão social")
+        { title: 'Nome / Razão social', field: 'nome', minWidth: celular ? 150 : 220, responsive: 0, formatter: c => '<strong>' + esc(c.getValue()) + '</strong>' },
+        { title: 'Fantasia', field: 'nome_fantasia', visible: false, download: true },
+        { title: 'CPF / CNPJ', field: 'documento', width: 150, responsive: 3 },
+        { title: 'Telefone', field: 'telefone', width: 130, responsive: 4 },
+        { title: 'E-mail', field: 'email', visible: false, download: true },
+        { title: 'Cidade', field: 'cidade', width: 160, responsive: 6, formatter: c => esc(c.getValue()) + (c.getRow().getData().uf ? ' / ' + esc(c.getRow().getData().uf) : ''),
+          accessorDownload: (v, d) => (v || '') + (d.uf ? ' / ' + d.uf : '') },
+        { title: 'Situação', field: 'ativo', width: 96, responsive: 5, hozAlign: 'center', headerHozAlign: 'center',
+          formatter: c => c.getValue() ? '<span class="badge ativo">● Ativo</span>' : '<span class="badge inativo">✕ Inativo</span>',
+          accessorDownload: v => v ? 'Ativo' : 'Inativo' },
+        { title: 'Ações', width: 70, hozAlign: 'center', headerHozAlign: 'center', headerSort: false, download: false, responsive: 0,
+          formatter: () => '<div class="acoes-linha"><button type="button" class="row-btn edit" title="Alterar"><span class="material-icons">edit</span></button>' +
+            '<button type="button" class="row-btn delete" title="Excluir"><span class="material-icons">delete</span></button></div>',
+          cellClick: (e, cell) => {
+            const h = cell.getRow().getData();
+            if (e.target.closest('.edit')) abrirUpdate(h.id_hospede);
+            else if (e.target.closest('.delete')) excluir(h);
+          } }
+      ]
+    });
+    grade.on('rowDblClick', (e, row) => abrirUpdate(row.getData().id_hospede));
+    grade.on('dataFiltered', (f, linhas) => { el('lblTotal').textContent = linhas.length + ' hóspede(s)'; });
+  }
+
+  /**
+   * carregar(selecionarId) — lê todos os hóspedes da API e reaplica os filtros da tela.
+   * ENTRADAS: selecionarId (opcional) = id para selecionar e mostrar depois de carregar (ex.: empresa recém-criada).
+   */
+  async function carregar(selecionarId) {
+    try {
+      await grade.replaceData(await ApiCurso.listarHospedes());
+      filtrar();
+      if (selecionarId) { const linha = grade.getRow(selecionarId); if (linha) { grade.deselectRow(); linha.select(); grade.scrollToRow(linha, 'center', false); } }
+    } catch (erro) { grade.setData([]); aviso('Não foi possível carregar os hóspedes: ' + erro.message); }
+  }
+
+  /** filtrar() — busca (nome, fantasia, documento, telefone, cidade) + tipo + situação, tudo na grade já carregada. */
+  function filtrar() {
+    const t = el('inputFiltro').value.trim().toLowerCase(), so = t.replace(/\D/g, '');
+    const tipo = el('selTipo').value, sit = el('selSituacao').value;
+    grade.setFilter(d => (!t || [d.nome, d.nome_fantasia, d.documento, d.telefone, d.cidade].some(v => String(v || '').toLowerCase().includes(t)) ||
+        (so.length >= 3 && [d.documento, d.telefone].some(v => String(v || '').replace(/\D/g, '').includes(so)))) &&
+      (!tipo || d.tipo === tipo) && (sit === '' || String(Number(d.ativo)) === sit));
+  }
+  function exportarCSV() { grade.download('csv', 'hospedes.csv', { delimiter: ';', bom: true }); }
+  function exportarExcel() { grade.download('xlsx', 'hospedes.xlsx', { sheetName: 'Hóspedes' }); }
+  // ?de=browse: o ✕ do relatório volta para esta lista (Daniel, 08/11/2026: "ao sair no X do report, sai do cadastro todo")
+  function abrirRelatorio() { location.href = 'RptHospedes.html?de=browse'; }
+
+  /** excluir(h) — confirma com FacilAppConfirmar e exclui pela API (que recusa hóspede com reserva ou usuário sem permissão). */
+  async function excluir(h) {
+    const ok = await FacilAppConfirmar('Excluir o hóspede "' + h.nome + '"?', { confirmar: 'Excluir', perigo: true });
+    if (!ok) return;
+    try { await ApiCurso.excluirHospede(h.id_hospede); await carregar(); aviso('Hóspede excluído.'); }
+    catch (erro) { aviso('Não foi possível excluir: ' + erro.message); }
+  }
+
+  /**
+   * empresaPorCnpj() — pede só o CNPJ e a API cadastra a empresa com os dados públicos (Receita).
+   * Daniel, 08/11/2026: "somente pede o CNPJ e o sistema cadastra sozinho".
+   * REGRAS: a API confere os dígitos, avisa se a empresa já existe e grava; aqui só mostramos o resultado.
+   */
+  async function empresaPorCnpj() {
+    const cnpj = await FacilAppPerguntar('CNPJ da empresa (só os números ou com pontuação):', { confirmar: 'Cadastrar' });
+    if (cnpj === null) return;
+    if (String(cnpj).replace(/\D/g, '').length !== 14) { aviso('Erro: o CNPJ precisa ter 14 números.'); return; }
+    const btn = el('btnEmpresaCnpj'); btn.disabled = true; aviso('Consultando o CNPJ...');
+    try {
+      const h = await ApiCurso.cadastrarEmpresaPorCnpj(cnpj);
+      await carregar(h && h.id_hospede);
+      aviso('Empresa cadastrada: ' + (h ? h.nome : '') + (h && h.cidade ? ' — ' + h.cidade + '/' + h.uf : ''));
+    } catch (erro) { aviso('Não foi possível cadastrar: ' + erro.message); }
+    finally { btn.disabled = false; }
+  }
+
+  /** abrirUpdate(id) — abre o UpdateHospedes.html na janela central; sem id = inclusão. */
+  function abrirUpdate(id) {
+    const janela = el('janelaUpdate'), caixa = el('caixaUpdate');
+    caixa.style.left = ''; caixa.style.top = ''; caixa.style.position = '';
+    el('tituloUpdate').textContent = id ? 'Alterar Hóspede' : 'Novo Hóspede';
+    janela.querySelector('iframe').src = 'UpdateHospedes.html?' + (id ? 'id=' + encodeURIComponent(id) : 'novo=1') + '&_v=' + Date.now();
+    janela.classList.add('aberta');
+  }
+  function fecharUpdate() { el('janelaUpdate').classList.remove('aberta'); el('janelaUpdate').querySelector('iframe').src = 'about:blank'; }
+
+  /** Recados do update (postMessage). Só aceita da própria janela do iframe. */
+  window.addEventListener('message', e => {
+    const f = el('janelaUpdate').querySelector('iframe');
+    if (!f || e.source !== f.contentWindow) return;
+    const d = e.data || {};
+    if (d.origem === 'FACILAPP_MODELO_GRAVADO') { fecharUpdate(); carregar(d.id); aviso('Hóspede gravado.'); }
+    if (d.origem === 'FACILAPP_MODELO_CANCELADO') fecharUpdate();
+    // a janela fica do tamanho do formulário: barra 35px + conteúdo (Daniel, 08/11/2026: "no máximo 3px de espaço")
+    if (d.origem === 'FACILAPP_MODELO_ALTURA' && d.altura > 0)
+      el('caixaUpdate').style.height = Math.min(innerHeight - 24, 35 + Number(d.altura) + 1) + 'px';
+  });
+
+  /** Arrastar a janela pela barra. Ao soltar, fica onde o usuário deixou até fechar. */
+  (function () {
+    const barra = el('barraUpdate'), caixa = el('caixaUpdate'); let ini = null;
+    barra.addEventListener('mousedown', e => {
+      if (e.target.closest('button')) return;
+      const r = caixa.getBoundingClientRect(); ini = { x: e.clientX - r.left, y: e.clientY - r.top };
+      caixa.style.position = 'fixed'; caixa.style.left = r.left + 'px'; caixa.style.top = r.top + 'px';
+      el('janelaUpdate').querySelector('iframe').style.pointerEvents = 'none'; e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!ini) return;
+      caixa.style.left = Math.max(0, Math.min(innerWidth - 80, e.clientX - ini.x)) + 'px';
+      caixa.style.top = Math.max(0, Math.min(innerHeight - 35, e.clientY - ini.y)) + 'px';
+    });
+    document.addEventListener('mouseup', () => { if (ini) { ini = null; el('janelaUpdate').querySelector('iframe').style.pointerEvents = ''; } });
+  })();
+
+  function fecharBrowse() {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_MODELO' }, '*'); } catch (e) {}
+    if (window.parent === window) history.back();
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && el('janelaUpdate').classList.contains('aberta')) fecharUpdate(); });
+
+  window.addEventListener('DOMContentLoaded', () => { iniciarGrade(); grade.on('tableBuilt', () => carregar()); });
+  /*
+   * Botões IA e VOZ no cabeçalho (grupo IA VOZ ? ✕). Os dois usam o MESMO manifesto (IAHospedes.js), então têm os
+   * mesmos poderes. Depois de gravar, a lista é recarregada pelo próprio manifesto.
+   * Daniel, 08/11/2026: "crie o Botão VOZ ... ligue ele com os mesmos poderes da Luninha".
+   */
+  window.addEventListener('load', async () => {
+    if (!window.BotaoIA || !window.IAHospedes) return;
+    await BotaoIA.ligarNaTela({ manifesto: IAHospedes });
+    if (window.BotaoVoz) await BotaoVoz.ligarNaTela({ manifesto: IAHospedes });
+  });
+</script>
+</body>
+</html>

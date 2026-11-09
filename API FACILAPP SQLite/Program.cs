@@ -10,9 +10,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient("public-lookup", client => client.Timeout = TimeSpan.FromSeconds(15));
 builder.Services.AddSingleton<PublicLookupService>();
+// Botão IA (aula de 08/11/2026) — ver IA.cs. Provedor atrás de interface (hoje OpenAI).
+builder.Services.AddHttpClient("ia", client => client.Timeout = TimeSpan.FromSeconds(60));
+builder.Services.AddSingleton<IProvedorIA, OpenAiProvedor>();
+// pasta de dados: Windows → ProgramData\FacilApp\CursoApiSqlite; Linux → ~/.local/share/FacilApp/CursoApiSqlite
+// (no Linux o "ProgramData" seria /usr/share, que não aceita gravação). FACILAPP_DATA_DIR manda em tudo.
 var dataDir = Environment.GetEnvironmentVariable("FACILAPP_DATA_DIR")
-    ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "FacilApp", "CursoApiSqlite");
+    ?? Path.Combine(Environment.GetFolderPath(OperatingSystem.IsWindows()
+        ? Environment.SpecialFolder.CommonApplicationData : Environment.SpecialFolder.LocalApplicationData), "FacilApp", "CursoApiSqlite");
 Directory.CreateDirectory(dataDir);
+// Log de erros e falhas em arquivo (aula de 08/11/2026) — ver LogArquivo.cs. Pasta: <dataDir>\logs\api-AAAA-MM-DD.log
+LogArquivo.Iniciar(dataDir);
+builder.Logging.AddProvider(new LogArquivoProvider());
 if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
 {
     var portText = Environment.GetEnvironmentVariable("FACILAPP_PORT");
@@ -21,13 +30,25 @@ if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URL
     if (string.IsNullOrWhiteSpace(portText)) portText = "7777";
     if (!int.TryParse(portText, out var port) || port is < 1 or > 65535)
         throw new InvalidOperationException("Porta inválida em FACILAPP_PORT ou porta.txt.");
-    builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
+    /*
+     * REDE LOCAL (APK no celular) — Daniel, 08/11/2026: "gere o apk para android 5 ou superior" / escolheu "mesmo Wi-Fi".
+     * Padrão: só o próprio PC (127.0.0.1). A API só aceita o Wi-Fi da casa/pousada se existir <dataDir>\rede.txt com "1".
+     * CUIDADO: na rede, qualquer aparelho do mesmo Wi-Fi chega na API — troque a senha do usuário facilapp antes de ligar
+     * e libere a porta no Firewall do Windows só no perfil "Particular". Para desligar, apague o rede.txt e reinicie.
+     */
+    var redeFile = Path.Combine(dataDir, "rede.txt");
+    var rede = File.Exists(redeFile) && File.ReadAllText(redeFile).Trim() == "1";
+    builder.WebHost.UseUrls(rede ? $"http://0.0.0.0:{port}" : $"http://127.0.0.1:{port}");
 }
 var database = Path.Combine(dataDir, "usuarios.db");
 var repository = new SqliteUserRepository(database);
 repository.Initialize();
 var menuCatalog = new MenuCatalog(database);
 menuCatalog.Initialize();
+// Hóspedes (aula de 08/11/2026) — ver Hospedes.cs. As rotas só conhecem a interface; hoje o banco é o SQLite.
+// Multibanco (futuro): trocar aqui por HospedesSqlServer / HospedesPostgres conforme a configuração do banco.
+IHospedesRepository hospedes = new HospedesSqlite(database);
+hospedes.Initialize();
 // USUÁRIO DOS ALUNOS (Daniel, 03/11/2026: "sempre deve ir o usuário facilapp e senha 1 no banco para os alunos").
 // Decisão explícita do dono do projeto para o CURSO: a API escuta só em 127.0.0.1 e o banco é de estudo.
 // É criado como administrador se não existir; se o aluno trocar a senha, a troca é respeitada (não reseta).
@@ -41,15 +62,30 @@ if (!string.IsNullOrWhiteSpace(adminUser) && !string.IsNullOrWhiteSpace(adminPas
 var tokens = new TokenService(LoadAuthKey(dataDir));
 
 var app = builder.Build();
+// 1º filtro: grava no .log toda resposta 400+ (com a mensagem de erro) e toda exceção — nunca senha, token ou chave.
+app.UseLogDeErros(request => Authenticate(request)?.Id);
+app.Lifetime.ApplicationStarted.Register(() => LogArquivo.Escrever("INFO", "API iniciada: " + string.Join(", ", app.Urls)));
+app.Lifetime.ApplicationStopping.Register(() => LogArquivo.Escrever("INFO", "API parando."));
 // As telas do curso são abertas como arquivo local em C:\CURSO\HTML (Origin: null).
-// Libera CORS só para as rotas que essas telas usam (login, menu, usuários); a API continua no loopback.
+// Libera CORS só para as rotas que essas telas usam (login, menu, usuários e os cadastros das aulas); a API continua no loopback.
+// Cada módulo novo usado por uma tela entra nesta lista (senão a tela mostra "Failed to fetch").
+// Origens aceitas: "null" (tela aberta como arquivo, e o APK) e as LOCAIS http://127.0.0.1:<porta> / localhost:<porta>
+// (o FastPousada.exe serve as telas embutidas num servidor local — Daniel, 08/11/2026: "exe em C# embutindo os html").
+// Nenhuma origem de fora do PC é aceita.
+static bool OrigemDasTelas(string? origem) =>
+    origem == "null" || (origem != null && System.Text.RegularExpressions.Regex.IsMatch(origem, @"^http://(127\.0\.0\.1|localhost):\d{2,5}$"));
 app.Use(async (context, next) =>
 {
-    if (context.Request.Headers.Origin == "null" &&
+    var origemPedido = context.Request.Headers.Origin.ToString();
+    if (OrigemDasTelas(origemPedido) &&
         (context.Request.Path.StartsWithSegments("/auth") || context.Request.Path.StartsWithSegments("/api/menu") ||
-         context.Request.Path.StartsWithSegments("/users")))
+         context.Request.Path.StartsWithSegments("/users") || context.Request.Path.StartsWithSegments("/api/hospedes") ||
+         context.Request.Path.StartsWithSegments("/api/ia") ||
+         // Bloco 1 (08/11/2026): cadastros da hospedagem
+         RotasDasTelas.Any(r => context.Request.Path.StartsWithSegments(r))))
     {
-        context.Response.Headers.AccessControlAllowOrigin = "null";
+        context.Response.Headers.AccessControlAllowOrigin = origemPedido;   // devolve a própria origem (null ou a local)
+        context.Response.Headers.Vary = "Origin";
         context.Response.Headers.AccessControlAllowMethods = "GET, POST, PUT, DELETE, OPTIONS";
         context.Response.Headers.AccessControlAllowHeaders = "Content-Type, Authorization";
         if (HttpMethods.IsOptions(context.Request.Method))
@@ -216,6 +252,55 @@ app.MapGet("/api/menu/minhas-permissoes", (HttpRequest request) =>
     if (user is null) return Results.Json(new { ok = false, erro = "Bearer inválido ou expirado." }, statusCode: 401);
     return Results.Ok(new { ok = true, administrador = user.IsAdmin, dados = menuCatalog.ListPermissions(user.Id) });
 });
+
+/* HÓSPEDES (aula de 08/11/2026): CRUD + empresa por CNPJ. Regras e rotas em Hospedes.cs. */
+app.MapHospedes(hospedes,
+    request => Authenticate(request) is { } u ? (u.Id, u.IsAdmin) : null,
+    idUsuario => menuCatalog.PermissaoPorCodigo(idUsuario, "cad_hospedes"));
+
+/* LOGS (aula de 08/11/2026): últimas linhas do .log de um dia. Só administrador. ?dia=AAAA-MM-DD (padrão hoje). */
+app.MapGet("/api/logs", (HttpRequest request, string? dia) =>
+{
+    if (Admin(request) is { } negado) return negado;
+    var d = DateOnly.TryParseExact(dia ?? "", "yyyy-MM-dd", out var x) ? x : DateOnly.FromDateTime(DateTime.Now);
+    return Results.Ok(new { ok = true, dia = d.ToString("yyyy-MM-dd"), pasta = LogArquivo.Pasta, linhas = LogArquivo.Ler(d) });
+});
+
+/* BLOCO 1 (aula de 08/11/2026): Tipos de quarto, Quartos, Tarifas, Serviços e produtos, Formas de pagamento.
+ * Motor de cadastro por ficha + quartos em lote + diárias noite a noite. Ver Cadastros.cs. */
+app.MapCadastros(new CadastroSqlite(database),
+    request => Authenticate(request) is { } u ? (u.Id, u.IsAdmin) : null,
+    (idUsuario, codigo) => menuCatalog.PermissaoPorCodigo(idUsuario, codigo));
+
+/* BLOCO 2 (aula de 08/11/2026): motor de reservas, disponibilidade, mapa de ocupação, mover, cancelar, no-show e a
+ * disponibilidade pública (motor on-line). Ver Reservas.cs. */
+var cadastros = new CadastroSqlite(database);
+app.MapReservas(new ReservasSqlite(database), cadastros, hospedes,
+    request => Authenticate(request) is { } u ? (u.Id, u.IsAdmin) : null,
+    (idUsuario, codigo) => menuCatalog.PermissaoPorCodigo(idUsuario, codigo));
+
+/* BLOCO 3 (aula de 08/11/2026): operação do dia — hoje, check-in, conta, consumos, recebimentos e check-out.
+ * Ver Operacao.cs. O login vai junto para registrar quem lançou o consumo/recebimento. */
+var operacao = new OperacaoSqlite(database);
+var caixas = new CaixaSqlite(database);
+app.MapOperacao(operacao, new ReservasSqlite(database), cadastros, caixas,
+    request => Authenticate(request) is { } u ? (u.Id, u.IsAdmin, u.Username) : null,
+    (idUsuario, codigo) => menuCatalog.PermissaoPorCodigo(idUsuario, codigo));
+
+/* BLOCO 4 (aula de 08/11/2026): caixa por usuário (abrir, suprimento, sangria, fechar) e a lista de recebimentos.
+ * Ver Caixa.cs. Os recebimentos do Bloco 3 entram no caixa aberto de quem recebe. */
+app.MapCaixa(caixas, operacao,
+    request => Authenticate(request) is { } u ? (u.Id, u.IsAdmin, u.Username) : null,
+    (idUsuario, codigo) => menuCatalog.PermissaoPorCodigo(idUsuario, codigo));
+
+/* BLOCO 5 (aula de 08/11/2026): configurações da pousada, relatórios de ocupação (RevPAR) e faturamento, painel de hoje.
+ * Ver Gestao.cs. O prazo da pré-reserva das Configurações passa a valer nas Reservas. */
+app.MapGestao(new GestaoSqlite(database), new ReservasSqlite(database), cadastros, operacao, caixas,
+    request => Authenticate(request) is { } u ? (u.Id, u.IsAdmin, u.Username) : null,
+    (idUsuario, codigo) => menuCatalog.PermissaoPorCodigo(idUsuario, codigo));
+
+/* BOTÃO IA (aula de 08/11/2026): chave da OpenAI só no servidor (DPAPI) + conversa. Ver IA.cs. */
+app.MapIa(new IaConfigStore(dataDir), request => Authenticate(request) is { } u ? (u.Id, u.IsAdmin) : null);
 app.Run();
 
 // Devolve o erro (401/403) quando quem chamou não é administrador; null quando pode seguir.
@@ -257,22 +342,27 @@ static byte[] LoadAuthKey(string dataDir)
         if (Encoding.UTF8.GetByteCount(configured) < 32) throw new InvalidOperationException("FACILAPP_AUTH_KEY deve conter pelo menos 32 bytes.");
         return Encoding.UTF8.GetBytes(configured);
     }
-    if (!OperatingSystem.IsWindows()) throw new InvalidOperationException("Configure FACILAPP_AUTH_KEY fora do Windows.");
-    var path = Path.Combine(dataDir, "auth.key.dpapi");
-    if (File.Exists(path))
-        return ProtectedData.Unprotect(File.ReadAllBytes(path), null, DataProtectionScope.CurrentUser);
+    // Windows: auth.key.dpapi (DPAPI, como sempre). Linux: auth.key.segredo com permissão 600 (ver Segredos.cs).
+    if (Segredos.Ler(dataDir, "auth.key") is { Length: >= 32 } existente) return existente;
     var generated = RandomNumberGenerator.GetBytes(32);
-    var protectedKey = ProtectedData.Protect(generated, null, DataProtectionScope.CurrentUser);
-    try
-    {
-        using var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-        file.Write(protectedKey);
-    }
-    catch (IOException) when (File.Exists(path))
-    {
-        return ProtectedData.Unprotect(File.ReadAllBytes(path), null, DataProtectionScope.CurrentUser);
-    }
+    if (!Segredos.Gravar(dataDir, "auth.key", generated, soSeNaoExiste: true))
+        return Segredos.Ler(dataDir, "auth.key") ?? throw new InvalidOperationException("Não foi possível ler a chave dos logins.");
     return generated;
+}
+
+/// <summary>Rotas usadas pelas telas abertas como arquivo (CORS Origin "null"). Cada bloco novo acrescenta as suas aqui.</summary>
+static partial class Program
+{
+    public static readonly string[] RotasDasTelas =
+        ["/api/tipos-quarto", "/api/quartos", "/api/tarifas", "/api/servicos-produtos", "/api/formas-pagamento",
+         // Bloco 2 (08/11/2026)
+         "/api/reservas", "/api/mapa", "/api/publico",
+         // Bloco 3 (08/11/2026)
+         "/api/operacao", "/api/consumos", "/api/recebimentos",
+         // Bloco 4 (08/11/2026)
+         "/api/caixa", "/api/caixas",
+         // Bloco 5 (08/11/2026)
+         "/api/configuracoes", "/api/relatorios", "/api/painel"];
 }
 
 record LoginRequest(string usuario, string senha);

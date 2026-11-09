@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check-in</title>
+<!--
+  CHECK-IN — FastPousada, Bloco 3 (aula gravada de 08/11/2026). Daniel: "gere o bloco 3".
+  O QUE FAZ: lista as chegadas de hoje e as atrasadas; mostra a reserva, o que falta receber e a situação do quarto; dá a entrada (avisa e pede confirmação se o quarto estiver sujo ou em manutenção).
+  COMO: a tela inteira é montada pelo motor assets/js/ContaHospede.js com o modo 'checkin' (o mesmo motor das telas
+    Check-in, Estadia e Check-out). A Luninha (Botão IA e Botão VOZ) usa as ferramentas de assets/js/IAOperacao.js.
+  ENTRADA: ?id=<id da reserva> já abre essa reserva.
+  REGRAS: a verdade é da API (Operacao.cs): saldo, quarto sujo, check-out só com saldo zero; nada é apagado (estorno).
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/BotaoVoz.js"></script>
+<script src="assets/js/ContaHospede.js"></script>
+<script src="assets/js/IAOperacao.js"></script>
+</head>
+<body>
+<script>
+  // monta a tela e liga a Luninha da operação (IA e VOZ)
+  window.addEventListener('DOMContentLoaded', () => ContaHospede.iniciar({ modo: 'checkin' }));
+  window.addEventListener('load', async () => {
+    if (!window.BotaoIA || !window.IAOperacao) return;
+    await BotaoIA.ligarNaTela({ manifesto: IAOperacao, ancora: '#btnFechar' });
+    if (window.BotaoVoz) await BotaoVoz.ligarNaTela({ manifesto: IAOperacao });
+  });
+</script>
+</body>
+</html>

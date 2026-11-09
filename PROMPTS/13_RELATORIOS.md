@@ -3,7 +3,7 @@
 Consultas de leitura, com filtros, totais, gráfico simples e exportação.
 
 ```
-Crie os relatórios de Ocupação e de Faturamento do FastPousada (HTML/rel_ocupacao.html e HTML/rel_faturamento.html),
+Crie os relatórios de Ocupação e de Faturamento do FastPousada (HTML/RptOcupacao.html e HTML/RptFaturamento.html),
 no padrão visual do curso. Somente leitura.
 
 BACKEND

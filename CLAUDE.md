@@ -17,6 +17,51 @@ onde está cada coisa e quais regras seguir. Mantenha este arquivo atualizado co
   browse/update e o padrão de treinamento "?" e botão IA.
 - **Modelos de tela** — `HTML\modelo_browse.html` (lista) + `HTML\modelo_browse_update.html` (update separado em janela
   flutuante centralizada). Toda tela de cadastro nova começa copiando os dois.
+- **Help "?" com voz** — peças em `HTML\assets\js\` (`AjudaTela.js`, `Treinamento.js`) e `HTML\TREINAMENTOS\`;
+  passo a passo em `PROMPTS\91_HELP_COM_VOZ_PASSO_A_PASSO.md`. Exemplo pronto: `HTML\modelo_browse.html`.
+
+## O que precisa estar instalado (confira no começo de cada sessão)
+
+O instalador do curso já traz a pasta do curso e a FacilApp API SQL rodando como serviço, com o runtime do .NET.
+Para **construir** as telas e a API nas aulas, o computador do aluno também precisa do que está abaixo. Antes da
+primeira tarefa da sessão, confira com os comandos da coluna "Conferir". Se faltar algo, **pare, diga ao aluno o que
+falta e mostre o comando de instalação** — não siga adiante sem ele confirmar que instalou.
+
+| O quê | Para quê | Conferir | Instalar (PowerShell) |
+|---|---|---|---|
+| **.NET 10 SDK** | compilar e publicar a FacilApp API SQL (rotas e tabelas novas) | `dotnet --list-sdks` mostra uma linha `10.` | `winget install Microsoft.DotNet.SDK.10` (ou baixar em dotnet.microsoft.com) e abrir um terminal novo |
+| **Python 3** | scripts do Help "?" (`HTML\TREINAMENTOS\*.py`) | `python --version` | `winget install Python.Python.3.12` e abrir um terminal novo |
+| **edge-tts** | gerar a voz da Francisca do Help "?" | `python -m pip show edge-tts` | `python -m pip install edge-tts` |
+| **Google Chrome** | abrir e testar as telas (`file:///C:/CURSO/HTML/index.html`) | — | chrome.com |
+| **Git** (opcional) | guardar versões do projeto | `git --version` | `winget install Git.Git` |
+
+Não precisa de assinatura de API de IA para nada disso. O `winget` já vem no Windows 10/11 atualizado.
+
+## Como atualizar a API depois de mudar o código
+
+1. Compile e publique o executável único (dentro de `API FACILAPP SQLite\`):
+   `dotnet publish FacilApp.Sqlite.Api.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o saida\publish-0.2.0`
+2. A IA **não** para nem inicia o serviço do Windows (precisa de administrador): ela pede ao aluno para rodar
+   `API FACILAPP SQLite\PS1\atualizar_servico_7777.ps1` com o botão direito → **Executar com o PowerShell como
+   administrador**. O script faz backup do executável e do banco em `C:\CURSO\Backup_Chat`, troca a versão e testa.
+3. Depois que o aluno disser "rodei", testar as rotas no Swagger.
+
+## Telas abertas como arquivo (CORS)
+
+As telas abrem por `file://` (Origin `null`). No `Program.cs`, o bloco que libera o Origin `null` lista os caminhos
+permitidos (`/auth`, `/api/menu`, `/users`). **Toda rota nova usada por uma tela precisa entrar nessa lista**
+(ex.: `/api/hospedes`); senão o Swagger funciona e a tela mostra "Failed to fetch".
+
+## Menu: alterar, não criar
+
+As telas previstas do FastPousada já estão no menu, cinza (desabilitadas, sem arquivo). Ao terminar uma tela,
+o aluno ALTERA o item existente em **Acessos** (arquivo da tela + desmarcar "desabilitado"). Só se cria item novo para
+o que não existe no organograma (ex.: os relatórios de cadastro).
+
+## Nome dos arquivos das telas
+
+`Browse<Nome>.html` (lista), `Update<Nome>.html` (formulário em janela central) e `Rpt<Nome>.html` (relatório).
+Detalhes e prompt completo em `PROMPTS\01_PADRAO_BROWSE_UPDATE.md`.
 
 ## Banco
 

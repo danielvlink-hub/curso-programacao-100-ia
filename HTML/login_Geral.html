@@ -418,10 +418,13 @@
     async function autenticarCurso(login, senha){
       try {
         const params = new URLSearchParams(window.location.search);
-        const configurada = params.get('api') || sessionStorage.getItem('fastpousada_api_url') || 'http://127.0.0.1:7777';
+        // ordem: ?api= (APK) → sessão → config.js do EXE (FASTPOUSADA_CONFIG.api) → o próprio PC
+        const configurada = params.get('api') || sessionStorage.getItem('fastpousada_api_url') ||
+          (window.FASTPOUSADA_CONFIG && window.FASTPOUSADA_CONFIG.api) || 'http://127.0.0.1:7777';
         const api = configurada.replace(/\/+$/, '');
-        if (!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(api))
-          throw new Error('A URL da API deve apontar para localhost e incluir a porta.');
+        // localhost (PC) ou o IP do PC na rede local (APK no celular — Daniel, 08/11/2026: "mesmo Wi-Fi"); nunca internet
+        if (!/^http:\/\/(127\.0\.0\.1|localhost|10(\.\d{1,3}){3}|192\.168(\.\d{1,3}){2}|172\.(1[6-9]|2\d|3[01])(\.\d{1,3}){2}):\d+$/.test(api))
+          throw new Error('A URL da API deve ser o localhost ou o IP do PC na rede local, com a porta (ex.: http://192.168.0.10:7777).');
         const resposta = await fetch(api + '/auth/login', {
           method:'POST', headers:{'Content-Type':'application/json'},
           body:JSON.stringify({usuario:login, senha:senha})

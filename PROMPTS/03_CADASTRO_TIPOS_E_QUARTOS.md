@@ -15,7 +15,7 @@ BACKEND
   situacao só aceita os 4 valores; numero não repete.
 
 FRONT-END
-- HTML/quartos_tipos.html + quartos_tipos_update.html; HTML/quartos.html + quartos_update.html.
+- HTML/BrowseTiposQuarto.html + UpdateTiposQuarto.html; HTML/BrowseQuartos.html + UpdateQuartos.html.
 - Quartos: colunas Número, Tipo, Capacidade, Andar, Situação (etiqueta colorida: livre verde, ocupado vermelho,
   limpeza amarelo, manutenção cinza), Ações. Filtro por situação e por tipo.
 - No update do quarto, o Tipo é um combo com busca (ComboBusca.js) carregado de /api/quartos-tipos.

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserva</title>
+<!--
+  UPDATE — Reserva (FastPousada, Bloco 2, aula gravada de 08/11/2026)
+  Daniel: "as reservas devem ser sofisticadas ... coloque os campos que você julgar necessários à fiel execução do sistema".
+  ABRE: na janela central da lista de reservas ou do mapa. ?id=<id> altera; ?novo=1 inclui; o mapa pode mandar
+    &id_quarto=&entrada=&saida= (clique ou arrasto nos dias livres) e o formulário já vem com quarto e datas.
+  O QUE FAZ
+    1. Hóspede (busca digitando; "+ Novo hóspede" cadastra na hora só com nome e telefone).
+    2. Entrada, saída, adultos, crianças → QUARTOS LIVRES com o preço total do período (um clique escolhe).
+    3. Total calculado noite a noite (pode ajustar), situação (pré-reserva/confirmada), origem, sinal, observação.
+    Avisos da API (ex.: mínimo de noites) aparecem sem impedir; erros (conflito, capacidade) mantêm a janela aberta.
+  DADOS: ApiCurso.reservaDisponibilidade / reservaGravar / cadastroObter('reservas') / listarHospedes / incluirHospede.
+  REGRAS: a verdade é da API (Reservas.cs): meio-dia, conflito, capacidade, preço. Hospedado/encerrada/cancelada só leitura.
+  PADRÃO: campos 22px, 3px entre blocos, janela do tamanho do conteúdo (FACILAPP_MODELO_ALTURA), sem alert/confirm.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="assets/js/ApiCurso.js"></script>
+<style>
+  /* lista de quartos livres: cartões clicáveis */
+  .livres { display: flex; flex-wrap: wrap; gap: 3px; max-height: 132px; overflow-y: auto; padding: 1px; }
+  .livre { border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; padding: 3px 8px; cursor: pointer; background: var(--fa-field-bg, #fff);
+    display: flex; flex-direction: column; min-width: 128px; line-height: 1.25; }
+  .livre:hover { border-color: var(--fa-primary, #4b5a32); }
+  .livre.sel { background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); border-color: var(--fa-primary, #4b5a32); }
+  .livre b { font-size: 12.5px; } .livre small { font-size: 10.5px; opacity: .85; } .livre .preco { font-weight: 800; }
+  .livre .alerta { color: #b45309; } .livre.sel .alerta { color: #fde68a; }
+  .resumo { display: flex; gap: 12px; align-items: center; font-size: 12px; min-height: 22px; }
+  .resumo b { font-size: 13px; }
+  #avisos { display: none; padding: 4px 8px; border-radius: 5px; background: #fef3c7; color: #92400e; font-size: 12px; }
+  .novo-hosp { display: none; grid-column: 1 / -1; gap: 6px; align-items: flex-end; padding: 4px 6px; border: 1px dashed var(--fa-border, #d8ddcf); border-radius: 6px; }
+  .novo-hosp.aberto { display: flex; }
+  .novo-hosp > div { flex: 1; }
+  .linha-hosp { display: flex; gap: 3px; }
+  .linha-hosp input { flex: 1; }
+  .codigo { font-weight: 800; color: var(--fa-primary, #4b5a32); }
+  /* celular (até 760 px — Daniel, 08/11/2026: "ajustar para 2 colunas"): os quartos livres em 2 colunas iguais, ocupando
+     a largura toda; a lista fica um pouco mais alta para caber mais quartos antes de rolar */
+  @media (max-width: 760px) {
+    .livres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 190px; }
+    .livre { min-width: 0; }
+    /* linhas do celular numa grade de 6 partes (Daniel, 08/11/2026: "deixar os 2 na mesma linha" / "coloca os 3 em 1 linha"):
+         Entrada | Saída  ·  Adultos | Crianças  ·  Valor total | Origem | Sinal + Pago  ·  o resto na linha inteira */
+    /* grade de 12 partes; Valor total 3 · Origem 4 · Sinal 3 · Pago 2 (Daniel: "diminui um pouco o valor total e aumenta o sinal") */
+    html body .cp-campos { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    html body .cp-campos > * { grid-column: 1 / -1; }
+    html body .cp-campos > .c2:has(#entrada), html body .cp-campos > .c2:has(#saida),
+    html body .cp-campos > .c1:has(#adultos), html body .cp-campos > .c1:has(#criancas) { grid-column: span 6; }
+    html body .cp-campos > .c2:has(#total) { grid-column: span 3; }
+    html body .cp-campos > .c2:has(#origem) { grid-column: span 4; }
+    html body .cp-campos > .c1:has(#sinal) { grid-column: span 3; }
+    html body .cp-campos > .c1:has(#sinalPago) { grid-column: span 2; }
+    html body .cp-campos > .c1:has(#sinalPago) .check { padding-top: 20px !important; font-size: 11.5px; gap: 3px; }
+    html body .cp-campos select#origem { padding: 0 4px; }
+    .livre b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  }
+</style>
+</head>
+<body>
+<section class="cp-form">
+  <div id="erro"></div>
+  <div id="avisos"></div>
+  <div class="cp-campos">
+    <div class="c4"><label class="rot" for="hospede">Hóspede <span class="req">*</span></label>
+      <div class="linha-hosp">
+        <input type="text" id="hospede" list="listaHospedes" autocomplete="off" placeholder="Digite o nome, documento ou telefone">
+        <button type="button" class="btn alt" id="btnNovoHosp" title="Cadastrar um hóspede novo agora"><span class="material-icons">person_add</span></button>
+      </div>
+      <datalist id="listaHospedes"></datalist>
+    </div>
+    <div class="c2"><label class="rot" for="situacao">Situação</label>
+      <select id="situacao"><option value="CONFIRMADA">Confirmada</option><option value="PRE_RESERVA">Pré-reserva (vence em 24 h)</option></select></div>
+
+    <div class="novo-hosp" id="novoHosp">
+      <div><label class="rot">Nome do novo hóspede</label><input type="text" id="nhNome" maxlength="150" placeholder="Nome completo"></div>
+      <div><label class="rot">Telefone com DDD</label><input type="text" id="nhFone" maxlength="20" placeholder="(15) 99700-1234"></div>
+      <button type="button" class="btn" id="btnSalvarHosp"><span class="material-icons">check</span>Cadastrar</button>
+    </div>
+
+    <div class="c2"><label class="rot" for="entrada">Entrada <span class="req">*</span></label><input type="date" id="entrada"></div>
+    <div class="c2"><label class="rot" for="saida">Saída <span class="req">*</span></label><input type="date" id="saida"></div>
+    <div class="c1"><label class="rot" for="adultos">Adultos</label><input type="text" class="numero" id="adultos" value="2" inputmode="numeric"></div>
+    <div class="c1"><label class="rot" for="criancas">Crianças</label><input type="text" class="numero" id="criancas" value="0" inputmode="numeric"></div>
+
+    <div class="c6"><label class="rot">Quartos livres no período <span class="req">*</span></label>
+      <div class="livres" id="livres"><span class="dica">Informe as datas para ver os quartos livres e o preço.</span></div></div>
+
+    <div class="c2"><label class="rot" for="total">Valor total</label><input type="text" class="numero" id="total" placeholder="calculado"></div>
+    <div class="c2"><label class="rot" for="origem">Origem</label>
+      <select id="origem"><option value="BALCAO">Balcão</option><option value="TELEFONE">Telefone</option><option value="WHATSAPP">WhatsApp</option>
+        <option value="SITE">Site</option><option value="BOOKING">Booking</option><option value="OUTRO">Outro</option></select></div>
+    <div class="c1"><label class="rot" for="sinal">Sinal</label><input type="text" class="numero" id="sinal" placeholder="0,00"></div>
+    <div class="c1"><label class="check" style="padding-top:18px"><input type="checkbox" id="sinalPago"> Pago</label></div>
+    <div class="c6"><label class="rot" for="observacao">Observação</label><input type="text" id="observacao" maxlength="300" placeholder="Ex.: chega tarde, pediu berço"></div>
+  </div>
+  <div class="resumo" id="resumo"></div>
+  <footer class="cp-rod"><span class="dica" id="rodape">Campos com <span class="req">*</span> são obrigatórios. Ctrl+Enter grava, Esc cancela.</span>
+    <div class="acoes"><button class="btn alt" type="button" id="btnCancelar">Cancelar</button>
+      <button class="btn" type="button" id="btnGravar"><span class="material-icons">save</span>Gravar</button></div></footer>
+</section>
+
+<script>
+  const q = new URLSearchParams(location.search);
+  const idEdicao = q.get('id');
+  const el = id => document.getElementById(id);
+  const moeda = v => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const numero = t => { let s = String(t || '').trim(); if (s.indexOf(',') >= 0) s = s.replace(/\./g, '').replace(',', '.'); return s === '' ? null : Number(s); };
+  let hospedes = [];          // [{ id_hospede, nome, documento, telefone }]
+  let quartoEscolhido = null; // id_quarto
+  let totalCalculado = null;  // total do quarto escolhido (para saber se o usuário mexeu)
+  let somenteLeitura = false;
+
+  function mostrarErro(m) { el('erro').textContent = m || ''; el('erro').style.display = m ? 'block' : 'none'; }
+  function mostrarAvisos(lista) { el('avisos').textContent = (lista || []).join(' '); el('avisos').style.display = lista && lista.length ? 'block' : 'none'; }
+
+  /** avisarAltura() — a janela de quem abriu fica do tamanho do conteúdo (sem sobra e sem barra). */
+  function avisarAltura() {
+    window.parent.postMessage({ origem: 'FACILAPP_MODELO_ALTURA', altura: Math.ceil(document.querySelector('.cp-form').getBoundingClientRect().height) }, '*');
+  }
+  if (window.ResizeObserver) new ResizeObserver(avisarAltura).observe(document.querySelector('.cp-form'));
+
+  // ---------------------------------------------------------------- hóspede
+  const textoHospede = h => h.nome + (h.documento ? ' — ' + h.documento : (h.telefone ? ' — ' + h.telefone : ''));
+  /** carregarHospedes() — lista os ativos no campo de busca (datalist). */
+  async function carregarHospedes() {
+    hospedes = await ApiCurso.listarHospedes({ ativo: 1 });
+    el('listaHospedes').innerHTML = hospedes.map(h => '<option value="' + textoHospede(h).replace(/"/g, '&quot;') + '">').join('');
+  }
+  /** idHospede() — o id do hóspede escolhido pelo texto digitado (null se não bateu com ninguém). */
+  function idHospede() {
+    const t = el('hospede').value.trim().toLowerCase();
+    const h = hospedes.find(x => textoHospede(x).toLowerCase() === t) || hospedes.find(x => x.nome.toLowerCase() === t);
+    return h ? h.id_hospede : null;
+  }
+  /** salvarNovoHospede() — cadastra o hóspede na hora (nome + telefone) e já o escolhe. */
+  async function salvarNovoHospede() {
+    try {
+      const id = await ApiCurso.incluirHospede({ tipo: 'PF', nome: el('nhNome').value.trim(), telefone: el('nhFone').value.trim(), ativo: true });
+      await carregarHospedes();
+      const h = hospedes.find(x => x.id_hospede === id);
+      if (h) el('hospede').value = textoHospede(h);
+      el('novoHosp').classList.remove('aberto');
+      el('nhNome').value = ''; el('nhFone').value = '';
+      mostrarErro('');
+    } catch (erro) { mostrarErro(erro.message); }
+  }
+
+  // ---------------------------------------------------------------- quartos livres
+  let pedido = 0;
+  /**
+   * buscarLivres() — quartos livres no período (a API já aplica conflito, bloqueio e capacidade) com o preço total.
+   * Na alteração, a própria reserva é ignorada (o quarto atual dela aparece como livre).
+   */
+  async function buscarLivres() {
+    const ent = el('entrada').value, sai = el('saida').value;
+    if (!ent || !sai) return;
+    if (sai <= ent) { el('livres').innerHTML = '<span class="dica">A saída deve ser depois da entrada.</span>'; return; }
+    const meu = ++pedido;
+    try {
+      const d = await ApiCurso.reservaDisponibilidade(ent, sai, numero(el('adultos').value) || 1, numero(el('criancas').value) || 0, idEdicao);
+      if (meu !== pedido) return;                       // chegou resposta velha
+      if (!d.quartos.length) { el('livres').innerHTML = '<span class="dica">Nenhum quarto livre para essas datas e pessoas.</span>'; quartoEscolhido = null; resumo(); return; }
+      el('livres').innerHTML = d.quartos.map(x =>
+        '<div class="livre' + (x.id_quarto === quartoEscolhido ? ' sel' : '') + '" data-id="' + x.id_quarto + '" data-total="' + x.total + '">' +
+        '<b>' + x.numero + ' · ' + x.tipo + '</b><small>' + (x.andar || '') + '</small>' +
+        '<span class="preco">' + moeda(x.total) + '</span>' +
+        (x.atende_minimo ? '' : '<small class="alerta">mínimo ' + x.minimo_noites + ' noites</small>') + '</div>').join('');
+      if (quartoEscolhido && !d.quartos.some(x => x.id_quarto === quartoEscolhido)) quartoEscolhido = null;
+      const sel = el('livres').querySelector('.livre.sel');
+      if (sel) usarPreco(sel);
+      resumo();
+    } catch (erro) { el('livres').innerHTML = '<span class="dica">' + erro.message + '</span>'; }
+  }
+  /** usarPreco(card) — põe o total do quarto escolhido no campo, a menos que o usuário já tenha mudado o valor. */
+  function usarPreco(card) {
+    const novo = Number(card.dataset.total);
+    const atual = numero(el('total').value);
+    if (atual === null || atual === totalCalculado) el('total').value = novo.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    totalCalculado = novo;
+  }
+  el('livres').addEventListener('click', e => {
+    const c = e.target.closest('.livre');
+    if (!c || somenteLeitura) return;
+    el('livres').querySelectorAll('.livre').forEach(x => x.classList.remove('sel'));
+    c.classList.add('sel');
+    quartoEscolhido = Number(c.dataset.id);
+    usarPreco(c);
+    resumo();
+  });
+
+  /** resumo() — linha com noites, quarto e diária média. */
+  function resumo() {
+    const ent = el('entrada').value, sai = el('saida').value;
+    const noites = ent && sai && sai > ent ? Math.round((new Date(sai) - new Date(ent)) / 86400000) : 0;
+    const total = numero(el('total').value);
+    const card = el('livres').querySelector('.livre.sel');
+    el('resumo').innerHTML = noites ? '<span><b>' + noites + '</b> noite(s)</span>' +
+      (card ? '<span>Quarto <b>' + card.querySelector('b').textContent + '</b></span>' : '<span class="dica">escolha um quarto</span>') +
+      (total ? '<span>Diária média <b>' + moeda(total / noites) + '</b></span><span>Total <b>' + moeda(total) + '</b></span>' : '') : '';
+  }
+
+  // ---------------------------------------------------------------- abrir (inclusão / alteração)
+  async function iniciar() {
+    try {
+      await carregarHospedes();
+      if (idEdicao) {
+        const r = await ApiCurso.cadastroObter('reservas', idEdicao);
+        const h = hospedes.find(x => x.id_hospede === r.id_hospede);
+        el('hospede').value = h ? textoHospede(h) : r.hospede_nome;
+        el('entrada').value = r.entrada; el('saida').value = r.saida;
+        el('adultos').value = r.adultos; el('criancas').value = r.criancas;
+        el('situacao').value = r.situacao === 'PRE_RESERVA' ? 'PRE_RESERVA' : 'CONFIRMADA';
+        el('origem').value = r.origem;
+        el('sinal').value = r.sinal_valor ? Number(r.sinal_valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '';
+        el('sinalPago').checked = !!r.sinal_pago;
+        el('observacao').value = r.observacao || '';
+        el('total').value = Number(r.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        quartoEscolhido = r.id_quarto;
+        el('rodape').innerHTML = 'Reserva <span class="codigo">' + r.codigo + '</span>' + (r.origem === 'SITE' ? ' · veio do site' : '') +
+          (r.expira_em ? ' · pré-reserva vence ' + r.expira_em.slice(8, 10) + '/' + r.expira_em.slice(5, 7) + ' ' + r.expira_em.slice(11, 16) : '');
+        if (['PRE_RESERVA', 'CONFIRMADA'].indexOf(r.situacao) < 0) {
+          somenteLeitura = true;
+          el('btnGravar').disabled = true;
+          mostrarAvisos(['Reserva ' + r.situacao.toLowerCase().replace('_', '-') + ': só consulta.']);
+          document.querySelectorAll('.cp-campos input, .cp-campos select, #btnNovoHosp').forEach(x => x.disabled = true);
+        }
+      } else {
+        // vindo do mapa: quarto e datas já escolhidos
+        const hoje = new Date().toISOString().slice(0, 10);
+        el('entrada').value = q.get('entrada') || hoje;
+        el('saida').value = q.get('saida') || new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+        if (q.get('id_quarto')) quartoEscolhido = Number(q.get('id_quarto'));
+      }
+      await buscarLivres();
+    } catch (erro) { mostrarErro(erro.message); }
+    el(idEdicao ? 'entrada' : 'hospede').focus();
+    avisarAltura();
+  }
+
+  // ---------------------------------------------------------------- gravar
+  /** gravar() — confere o básico e grava pela API (que confere tudo de novo). Avisos aparecem; erro mantém a janela. */
+  async function gravar() {
+    mostrarErro('');
+    if (somenteLeitura) return;
+    const idH = idHospede();
+    if (!idH) { mostrarErro('Escolha o hóspede na lista (ou cadastre um novo no botão ao lado).'); el('hospede').focus(); return; }
+    if (!el('entrada').value || !el('saida').value) { mostrarErro('Informe entrada e saída.'); return; }
+    if (!quartoEscolhido) { mostrarErro('Escolha um dos quartos livres.'); return; }
+    const total = numero(el('total').value);
+    const dados = {
+      id_hospede: idH, id_quarto: quartoEscolhido, entrada: el('entrada').value, saida: el('saida').value,
+      adultos: numero(el('adultos').value) || 1, criancas: numero(el('criancas').value) || 0,
+      situacao: el('situacao').value, origem: el('origem').value,
+      valor_total: total !== null && total !== totalCalculado ? total : null,   // vazio = a API calcula noite a noite
+      sinal_valor: numero(el('sinal').value) || 0, sinal_pago: el('sinalPago').checked, observacao: el('observacao').value.trim()
+    };
+    const btn = el('btnGravar'); btn.disabled = true;
+    try {
+      const r = await ApiCurso.reservaGravar(idEdicao, dados);
+      if (r.avisos && r.avisos.length) { mostrarAvisos(r.avisos); await new Promise(ok => setTimeout(ok, 1600)); }
+      window.parent.postMessage({ origem: 'FACILAPP_MODELO_GRAVADO', id: Number(r.id || idEdicao) }, '*');
+    } catch (erro) { mostrarErro(erro.message); btn.disabled = false; }
+  }
+  function cancelar() { window.parent.postMessage({ origem: 'FACILAPP_MODELO_CANCELADO' }, '*'); }
+
+  // ---------------------------------------------------------------- eventos
+  ['entrada', 'saida', 'adultos', 'criancas'].forEach(id => el(id).addEventListener('change', buscarLivres));
+  el('total').addEventListener('input', resumo);
+  el('btnNovoHosp').onclick = () => { el('novoHosp').classList.toggle('aberto'); el('nhNome').value = el('hospede').value && !idHospede() ? el('hospede').value : ''; el('nhNome').focus(); };
+  el('btnSalvarHosp').onclick = salvarNovoHospede;
+  el('btnGravar').onclick = gravar;
+  el('btnCancelar').onclick = cancelar;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cancelar(); if (e.key === 'Enter' && e.ctrlKey) gravar(); });
+  window.addEventListener('DOMContentLoaded', iniciar);
+</script>
+</body>
+</html>

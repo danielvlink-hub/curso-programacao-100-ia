@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservas</title>
+<!--
+  BROWSE — Reservas (FastPousada, Bloco 2, aula gravada de 08/11/2026)
+  Daniel: "as reservas devem ser sofisticadas, agendas de arrastar para reservas" / "teremos motor de reserva on-line".
+  O QUE É: a lista de reservas (código, hóspede, quarto, datas, noites, situação colorida, origem, total), com busca,
+    filtros de situação e origem, Nova reserva (UpdateReservas.html na janela central), botão Mapa (agenda de arrastar),
+    Relatório, CSV, XLSX e a Luninha das reservas (IA e VOZ). A lixeira vira "Cancelar reserva" (pede o motivo).
+  COMO: ficha assets/js/cadastros/Reservas.js + motor CadastroPadrao.js. Regras na API (Reservas.cs).
+-->
+<script>
+  // tema escolhido no menu (e troca ao vivo)
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) {
+        document.documentElement.setAttribute('data-theme', t);
+        var f = document.querySelector('#janelaUpdate iframe');
+        if (f && f.contentWindow) f.contentWindow.postMessage(m, '*');
+      }
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="dependencias/tabulator-6.5.0/css/tabulator.min.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="dependencias/tabulator-6.5.0/js/tabulator.min.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/BotaoVoz.js"></script>
+<script src="assets/js/CadastroPadrao.js"></script>
+<script src="assets/js/IAReservas.js"></script>
+<script src="assets/js/cadastros/Reservas.js"></script>
+</head>
+<body>
+<script>
+  // monta a lista desta ficha (o motor cria a tela inteira)
+  window.addEventListener('DOMContentLoaded', function () { CadastroPadrao.browse(window.FICHA); });
+</script>
+</body>
+</html>

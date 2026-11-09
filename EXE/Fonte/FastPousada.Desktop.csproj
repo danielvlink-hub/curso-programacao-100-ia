@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    FastPousada.exe (curso Programação 100% IA) — Daniel, 08/11/2026: "o exe que você vai gerar em C#, chamando e
+    embutindo os html, deixando só a js config fora do exe" / "pasta C:\CURSO\EXE, aqui você coloca o exe".
+    O QUE É: janela Windows (WinForms + WebView2) com TODAS as telas do curso dentro do próprio exe (EmbeddedResource,
+      um recurso por arquivo, nome lógico "Conteudo/<caminho com barra normal>"). Fora do exe fica só o config.js.
+    ÍCONE: o icon_facilapp_ambar.ico das telas. Um arquivo só (self-contained, single file), Windows 10/11 x64.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>FastPousada</AssemblyName>
+    <RootNamespace>FastPousadaDesktop</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ApplicationIcon>icon_facilapp_ambar.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Product>FastPousada</Product>
+    <Company>FacilApp</Company>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- as telas (copiadas de C:\CURSO\HTML pelo compilar.ps1) viram recursos do exe; barra normal no nome lógico -->
+    <EmbeddedResource Include="Conteudo\**\*.*">
+      <LogicalName>Conteudo/$([System.String]::Copy('%(RecursiveDir)%(Filename)%(Extension)').Replace('\','/'))</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

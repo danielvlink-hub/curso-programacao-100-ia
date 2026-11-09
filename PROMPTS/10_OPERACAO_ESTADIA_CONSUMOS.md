@@ -3,7 +3,7 @@
 Conta do hóspede durante a estadia: lança serviços e produtos.
 
 ```
-Crie a tela de Estadia e Consumos do FastPousada (HTML/estadia.html + HTML/consumo_update.html), no padrão do curso.
+Crie a tela de Estadia e Consumos do FastPousada (HTML/estadia.html + HTML/UpdateConsumos.html), no padrão do curso.
 
 BACKEND
 - Tabela consumos: id_consumo (PK), id_reserva (FK), id_item (FK servicos_produtos), descricao (copiada do item),
@@ -18,7 +18,7 @@ FRONT-END
 - Lado esquerdo: hóspedes hospedados agora (quarto + nome), busca.
 - Lado direito: a conta do escolhido — diárias, lista de consumos (Tabulator: Data/hora, Item, Qtd, Unitário, Total,
   Lançado por, ação Cancelar) e o Total geral em destaque.
-- "Lançar consumo" abre consumo_update.html na janela central: Item (ComboBusca em /api/servicos-produtos),
+- "Lançar consumo" abre UpdateConsumos.html na janela central: Item (ComboBusca em /api/servicos-produtos),
   Quantidade, Unitário (vem do cadastro), Total ao vivo.
 - Consumo cancelado aparece riscado e fora do total.
 - Menu: módulo Operação → "Estadia e Consumos", ícone receipt_long.

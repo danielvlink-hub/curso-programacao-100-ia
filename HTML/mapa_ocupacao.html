@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de ocupação</title>
+<!--
+  MAPA DE OCUPAÇÃO — a agenda de arrastar do FastPousada (Bloco 2, aula gravada de 08/11/2026)
+  Daniel: "baseado em UX design, PMS sofisticados (HITS) ... as reservas devem ser sofisticadas, agendas de arrastar para reservas".
+
+  O QUE FAZ
+    - Grade quartos × dias (7 a 60 dias): fim de semana sombreado, hoje destacado, % de ocupação por dia no topo.
+    - Cada reserva é uma BARRA do meio-dia da entrada ao meio-dia da saída (regra do meio-dia), com a cor da situação
+      (pré-reserva roxa, confirmada verde, hospedado laranja, encerrada cinza).
+    - GESTOS: clique num dia livre → reserva nova (quarto + data); ARRASTAR pelos dias livres → reserva nova no período;
+      ARRASTAR A BARRA → mover para outro quarto/data (confirma); PUXAR A PONTA DIREITA → mudar a saída (confirma);
+      clique na barra → abre a reserva. Quarto bloqueado fica hachurado; situação do quarto (sujo, manutenção) no ícone.
+    - Reserva nova/alteração abre o UpdateReservas.html na janela central (mesmo formulário da lista).
+    - Luninha (IA e VOZ) com as ferramentas das reservas (IAReservas.js).
+  DADOS: ApiCurso.mapa (uma chamada: quartos, reservas e ocupação), reservaMover. Regras na API (Reservas.cs):
+    conflito, capacidade e preço — a tela pergunta, a API decide.
+  PADRÃO: cores --fa-* + cores fixas das situações (iguais às etiquetas da lista), cabeçalho 35px, 3px entre blocos.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}, t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) {
+        document.documentElement.setAttribute('data-theme', t);
+        var f = document.querySelector('#janelaUpdate iframe'); if (f && f.contentWindow) f.contentWindow.postMessage(m, '*');
+      }
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<link rel="stylesheet" href="assets/css/CadastroPadrao.css">
+<script src="assets/js/ApiCurso.js"></script>
+<script src="assets/js/BotaoIA.js"></script>
+<script src="assets/js/BotaoVoz.js"></script>
+<script src="assets/js/IAReservas.js"></script>
+<style>
+  :root { --cel: 44px; --lin: 30px; --colq: 118px; --topo: 50px;
+    --st-pre: #8b5cf6; --st-conf: #16a34a; --st-hosp: #ea580c; --st-enc: #9ca3af; }
+  .mp-legenda { display: flex; gap: 8px; align-items: center; font-size: 11px; color: var(--fa-muted, #64748b); }
+  .mp-legenda i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 3px; vertical-align: -2px; }
+  .mp-periodo { font-weight: 700; font-size: 12.5px; min-width: 150px; text-align: center; }
+  .mp-area { flex: 1; min-height: 0; overflow: auto; margin: 3px 12px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 6px; position: relative; background: var(--fa-panel, #fff); }
+  .mp-grade { position: relative; user-select: none; }
+  .mp-linha { display: flex; height: var(--lin); border-bottom: 1px solid color-mix(in srgb, var(--fa-border, #d8ddcf) 70%, transparent); }
+  .mp-q { position: sticky; left: 0; z-index: 3; width: var(--colq); flex: 0 0 var(--colq); display: flex; align-items: center; gap: 5px; padding: 0 6px;
+    background: var(--fa-panel-alt, #f1f5f9); border-right: 1px solid var(--fa-border, #d8ddcf); font-size: 12px; }
+  .mp-q b { font-size: 12.5px; min-width: 30px; }
+  .mp-q small { color: var(--fa-muted, #64748b); font-size: 10.5px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mp-q .material-icons { font-size: 15px; }
+  .mp-q .sujo { color: #b45309; } .mp-q .manut { color: #4338ca; } .mp-q .bloq { color: #6b7280; }
+  .mp-d { width: var(--cel); flex: 0 0 var(--cel); border-right: 1px solid color-mix(in srgb, var(--fa-border, #d8ddcf) 55%, transparent); }
+  .mp-d.fds { background: color-mix(in srgb, var(--fa-panel-alt, #f1f5f9) 60%, transparent); }
+  .mp-d.hoje { background: color-mix(in srgb, var(--fa-primary, #4b5a32) 12%, transparent); }
+  .mp-d.livre { cursor: cell; }
+  .mp-d.marcado { background: color-mix(in srgb, var(--fa-primary, #4b5a32) 40%, transparent) !important; }
+  .mp-linha.bloqueado .mp-d { background: repeating-linear-gradient(45deg, transparent 0 5px, rgba(107,114,128,.18) 5px 9px); cursor: not-allowed; }
+  /* cabeçalho (dias) e ocupação, presos no topo */
+  .mp-cab { position: sticky; top: 0; z-index: 4; background: var(--fa-panel-alt, #f1f5f9); border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .mp-cab .mp-linha { height: 32px; border-bottom: 0; }
+  .mp-cab .mp-d { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--fa-muted, #64748b); line-height: 1.1; }
+  .mp-cab .mp-d b { font-size: 12.5px; color: var(--fa-text, #1e293b); }
+  .mp-cab .mp-d.hoje b { color: var(--fa-primary, #4b5a32); }
+  .mp-cab .ocup { height: 18px; }
+  .mp-cab .ocup .mp-d { font-size: 10px; font-weight: 800; color: #fff; }
+  .mp-cab .mp-q { font-weight: 800; font-size: 10.5px; text-transform: uppercase; }
+  /* barras das reservas */
+  .mp-barra { position: absolute; height: calc(var(--lin) - 8px); border-radius: 6px; color: #fff; font-size: 11px; font-weight: 700; padding: 0 8px;
+    display: flex; align-items: center; white-space: nowrap; overflow: hidden; cursor: grab; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+  .mp-barra.PRE_RESERVA { background: var(--st-pre); } .mp-barra.CONFIRMADA { background: var(--st-conf); }
+  .mp-barra.HOSPEDADO { background: var(--st-hosp); cursor: pointer; } .mp-barra.ENCERRADA { background: var(--st-enc); cursor: pointer; }
+  .mp-barra.arrastando { opacity: .55; }
+  .mp-barra .ponta { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: ew-resize; background: rgba(255,255,255,.25); }
+  .mp-fantasma { position: absolute; height: calc(var(--lin) - 8px); border-radius: 6px; border: 2px dashed var(--fa-primary, #4b5a32);
+    background: color-mix(in srgb, var(--fa-primary, #4b5a32) 18%, transparent); pointer-events: none; z-index: 5; display: none; }
+  .mp-hoje { position: absolute; top: 0; bottom: 0; width: 2px; background: #dc2626; z-index: 1; pointer-events: none; opacity: .7; }
+</style>
+</head>
+<body>
+<div class="cp-janela">
+  <header class="cp-cab">
+    <div class="cp-tit"><div class="cp-ico"><span class="material-icons">calendar_view_month</span></div>
+      <div><b>Mapa de ocupação</b><small>Clique ou arraste nos dias livres para reservar; arraste a barra para mover</small></div></div>
+    <button type="button" class="btn-fechar" id="btnFechar" title="Fechar">×</button>
+  </header>
+  <div class="cp-barra">
+    <div class="cp-esq">
+      <button type="button" class="btn" id="btnNova"><span class="material-icons">add</span>Nova reserva</button>
+      <button type="button" class="btn alt" id="btnAnt" title="Período anterior"><span class="material-icons">chevron_left</span></button>
+      <button type="button" class="btn alt" id="btnHoje">Hoje</button>
+      <button type="button" class="btn alt" id="btnProx" title="Próximo período"><span class="material-icons">chevron_right</span></button>
+      <span class="mp-periodo" id="periodo"></span>
+      <select class="campo" id="selDias"><option value="14">14 dias</option><option value="21">21 dias</option><option value="30">30 dias</option><option value="60">60 dias</option></select>
+      <select class="campo" id="selTipo"><option value="">Todos os tipos</option></select>
+    </div>
+    <div class="cp-dir">
+      <span class="mp-legenda"><span><i style="background:var(--st-pre)"></i>Pré-reserva</span><span><i style="background:var(--st-conf)"></i>Confirmada</span>
+        <span><i style="background:var(--st-hosp)"></i>Hospedado</span><span><i style="background:var(--st-enc)"></i>Encerrada</span></span>
+      <button type="button" class="btn alt" id="btnLista"><span class="material-icons">list</span>Lista</button>
+      <button type="button" class="btn alt" id="btnRecarregar" title="Recarregar"><span class="material-icons">refresh</span></button>
+    </div>
+  </div>
+  <div class="mp-area" id="area"><div class="mp-grade" id="grade"></div></div>
+  <div class="cp-rodape"><span id="lblResumo"></span><span>Arraste a ponta direita da barra para mudar a saída</span></div>
+</div>
+
+<div id="janelaUpdate"><div class="caixa" id="caixaUpdate">
+  <div class="barra" id="barraUpdate"><div class="titulo"><span class="material-icons">event</span><span id="tituloUpdate">Reserva</span></div>
+    <button type="button" class="btn-fechar" id="btnFecharUpdate" title="Fechar">×</button></div>
+  <iframe title="Reserva"></iframe>
+</div></div>
+
+<script>
+  const el = id => document.getElementById(id);
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const LIN = 30, COLQ = 118, TOPO = 51;   // TOPO = dias (32) + ocupação (18) + borda (1)
+  let CEL = 44;                             // largura do dia: no mínimo 44px; estica para ocupar a tela (desenhar)
+
+  /** iso(d) / somar(iso, n) / br(iso) — datas sem fuso (meio-dia local evita pular dia). */
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const somar = (s, n) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return iso(d); };
+  const br = s => s.slice(8, 10) + '/' + s.slice(5, 7);
+  const diff = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000);
+
+  let inicio = somar(iso(new Date()), -2);     // começa 2 dias antes de hoje (contexto)
+  let dados = null;                            // resposta de ApiCurso.mapa
+  let linhas = [];                             // quartos visíveis (após o filtro de tipo)
+
+  // =================================================================================================
+  // DESENHO
+  // =================================================================================================
+  /** carregar() — uma chamada à API (quartos, reservas, ocupação) e redesenha. */
+  async function carregar() {
+    try {
+      dados = await ApiCurso.mapa(inicio, Number(el('selDias').value));
+      preencherTipos();
+      desenhar();
+    } catch (erro) { aviso('Não foi possível carregar o mapa: ' + erro.message); }
+  }
+  window.recarregarTela = carregar;   // a Luninha recarrega o mapa depois de gravar
+
+  function preencherTipos() {
+    const atual = el('selTipo').value, vistos = {};
+    dados.quartos.forEach(q => { vistos[q.id_tipo] = q.tipo; });
+    el('selTipo').innerHTML = '<option value="">Todos os tipos</option>' + Object.keys(vistos).map(k => '<option value="' + k + '">' + esc(vistos[k]) + '</option>').join('');
+    el('selTipo').value = atual;
+  }
+
+  /**
+   * desenhar() — monta a grade inteira: cabeçalho (dias + ocupação), uma linha por quarto e as barras das reservas.
+   * As barras ficam em position:absolute: left = coluna do quarto + (dia da entrada × largura) + meia célula (meio-dia).
+   */
+  function desenhar() {
+    const n = dados.dias, hoje = iso(new Date());
+    // colunas esticam para preencher a largura disponível (UX: sem sobra à direita), mínimo 44px por dia
+    CEL = Math.max(44, Math.floor((el('area').clientWidth - COLQ - 2) / n));
+    document.documentElement.style.setProperty('--cel', CEL + 'px');
+    const tipo = el('selTipo').value;
+    linhas = dados.quartos.filter(q => !tipo || String(q.id_tipo) === tipo);
+    const dias = Array.from({ length: n }, (_, k) => somar(dados.de, k));
+    el('periodo').textContent = br(dias[0]) + ' a ' + br(dias[n - 1]) + ' de ' + dias[n - 1].slice(0, 4);
+
+    // cabeçalho: dias e ocupação (cor pela % do dia)
+    let h = '<div class="mp-cab"><div class="mp-linha"><div class="mp-q">Quarto</div>' + dias.map(d => {
+      const dt = new Date(d + 'T12:00:00'), dw = dt.getDay();
+      return '<div class="mp-d' + (dw === 0 || dw === 6 ? ' fds' : '') + (d === hoje ? ' hoje' : '') + '">' + DIAS[dw] +
+        '<b>' + dt.getDate() + '</b>' + (dt.getDate() === 1 || d === dias[0] ? MESES[dt.getMonth()] : '') + '</div>';
+    }).join('') + '</div><div class="mp-linha ocup"><div class="mp-q">Ocupação</div>' + dados.ocupacao.map(o => {
+      const cor = o.pct >= 90 ? '#15803d' : o.pct >= 60 ? '#65a30d' : o.pct >= 30 ? '#ca8a04' : o.pct > 0 ? '#d97706' : '#9ca3af';
+      return '<div class="mp-d" style="background:' + cor + '" title="' + o.ocupados + ' de ' + o.total + ' quartos">' + o.pct + '%</div>';
+    }).join('') + '</div></div>';
+
+    // linhas dos quartos (ícone da situação do quarto: sujo, manutenção, bloqueado)
+    linhas.forEach(q => {
+      const ic = q.situacao === 'SUJO' ? '<span class="material-icons sujo" title="Sujo">cleaning_services</span>'
+        : q.situacao === 'MANUTENCAO' ? '<span class="material-icons manut" title="Manutenção">build</span>'
+        : q.situacao === 'BLOQUEADO' ? '<span class="material-icons bloq" title="Bloqueado">block</span>' : '';
+      h += '<div class="mp-linha' + (q.situacao === 'BLOQUEADO' ? ' bloqueado' : '') + '" data-q="' + q.id_quarto + '">' +
+        '<div class="mp-q"><b>' + esc(q.numero) + '</b><small>' + esc(q.sigla || q.tipo || '') + '</small>' + ic + '</div>' +
+        dias.map(d => { const dw = new Date(d + 'T12:00:00').getDay(); return '<div class="mp-d livre' + (dw === 0 || dw === 6 ? ' fds' : '') + (d === hoje ? ' hoje' : '') + '" data-d="' + d + '"></div>'; }).join('') +
+        '</div>';
+    });
+    el('grade').innerHTML = h + '<div class="mp-fantasma" id="fantasma"></div>';
+    el('grade').style.width = (COLQ + n * CEL) + 'px';
+
+    // barras
+    const fim = somar(dados.de, n);
+    dados.reservas.forEach(r => {
+      const linha = linhas.findIndex(q => q.id_quarto === r.id_quarto);
+      if (linha < 0 || r.saida <= dados.de || r.entrada >= fim) return;
+      const x0 = r.entrada < dados.de ? 0 : diff(dados.de, r.entrada) * CEL + CEL / 2;
+      const x1 = r.saida > fim ? n * CEL : diff(dados.de, r.saida) * CEL + CEL / 2;
+      const b = document.createElement('div');
+      b.className = 'mp-barra ' + r.situacao;
+      b.style.left = (COLQ + x0 + 1) + 'px';
+      b.style.top = (TOPO + linha * LIN + 4) + 'px';
+      b.style.width = Math.max(10, x1 - x0 - 2) + 'px';
+      b.dataset.id = r.id_reserva;
+      b.title = r.hospede_nome + ' · ' + r.codigo + '\n' + br(r.entrada) + ' → ' + br(r.saida) + ' · ' + r.noites + ' noite(s)\n' +
+        r.situacao.replace('_', '-').toLowerCase() + ' · ' + Number(r.valor_total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      b.innerHTML = esc(r.hospede_nome) + (['PRE_RESERVA', 'CONFIRMADA'].includes(r.situacao) ? '<span class="ponta" title="Arraste para mudar a saída"></span>' : '');
+      el('grade').appendChild(b);
+    });
+    // linha vermelha do "agora" (meio do dia de hoje)
+    const ih = diff(dados.de, hoje);
+    if (ih >= 0 && ih < n) { const l = document.createElement('div'); l.className = 'mp-hoje'; l.style.left = (COLQ + ih * CEL + CEL / 2) + 'px'; el('grade').appendChild(l); }
+
+    // ocupado em cada dia (para os gestos saberem o que está livre)
+    marcarOcupados();
+    const media = dados.ocupacao.length ? Math.round(dados.ocupacao.reduce((s, o) => s + o.pct, 0) / dados.ocupacao.length) : 0;
+    el('lblResumo').textContent = linhas.length + ' quarto(s) · ' + dados.reservas.length + ' reserva(s) no período · ocupação média ' + media + '%';
+  }
+
+  /** marcarOcupados() — tira o "livre" das células com reserva (a noite d está ocupada se entrada <= d < saída). */
+  function marcarOcupados() {
+    dados.reservas.filter(r => ['PRE_RESERVA', 'CONFIRMADA', 'HOSPEDADO'].includes(r.situacao)).forEach(r => {
+      const linha = el('grade').querySelector('.mp-linha[data-q="' + r.id_quarto + '"]');
+      if (!linha) return;
+      linha.querySelectorAll('.mp-d[data-d]').forEach(c => { if (c.dataset.d >= r.entrada && c.dataset.d < r.saida) c.classList.remove('livre'); });
+    });
+  }
+
+  // =================================================================================================
+  // GESTOS: clique/arrasto nos dias livres (reserva nova) e arrasto da barra (mover / mudar a saída)
+  // =================================================================================================
+  /** posicao(ev) — { idQuarto, dia } sob o ponteiro (ou null fora da grade). */
+  function posicao(ev) {
+    const g = el('grade').getBoundingClientRect();
+    const x = ev.clientX - g.left - COLQ, y = ev.clientY - g.top - TOPO;
+    if (x < 0 || y < 0) return null;
+    const i = Math.floor(y / LIN), k = Math.floor(x / CEL);
+    if (i >= linhas.length || k >= dados.dias) return null;
+    return { idQuarto: linhas[i].id_quarto, linha: i, dia: somar(dados.de, k), k: k };
+  }
+
+  let gesto = null;   // { tipo: 'novo'|'mover'|'ponta', ... }
+
+  el('grade').addEventListener('pointerdown', ev => {
+    if (ev.button > 0) return;
+    const barra = ev.target.closest('.mp-barra');
+    if (barra) {
+      const r = dados.reservas.find(x => x.id_reserva === Number(barra.dataset.id));
+      if (!['PRE_RESERVA', 'CONFIRMADA'].includes(r.situacao)) { gesto = { tipo: 'abrir', r: r, barra: barra }; return; }
+      const p = posicao(ev);
+      gesto = { tipo: ev.target.classList.contains('ponta') ? 'ponta' : 'mover', r: r, barra: barra, inicio: p, moveu: false };
+      barra.setPointerCapture(ev.pointerId);
+      ev.preventDefault();
+      return;
+    }
+    const c = ev.target.closest('.mp-d.livre');
+    if (!c || c.closest('.bloqueado')) return;
+    const p = posicao(ev);
+    if (!p) return;
+    gesto = { tipo: 'novo', idQuarto: p.idQuarto, de: p.dia, ate: p.dia };
+    pintarSelecao();
+    ev.preventDefault();
+  });
+
+  document.addEventListener('pointermove', ev => {
+    if (!gesto || gesto.tipo === 'abrir') return;
+    const p = posicao(ev);
+    if (!p) return;
+    if (gesto.tipo === 'novo') {
+      if (p.idQuarto !== gesto.idQuarto || p.dia === gesto.ate) return;
+      gesto.ate = p.dia;
+      pintarSelecao();
+      return;
+    }
+    // mover / ponta: mostra o fantasma onde a barra vai ficar
+    const desloc = diff(gesto.inicio.dia, p.dia);
+    if (desloc !== 0 || p.idQuarto !== gesto.r.id_quarto) gesto.moveu = true;
+    if (!gesto.moveu) return;
+    gesto.barra.classList.add('arrastando');
+    let ent = gesto.r.entrada, sai = gesto.r.saida, linha = linhas.findIndex(q => q.id_quarto === gesto.r.id_quarto);
+    if (gesto.tipo === 'mover') { ent = somar(ent, desloc); sai = somar(sai, desloc); linha = p.linha; }
+    else { sai = somar(gesto.r.saida, desloc); if (sai <= ent) sai = somar(ent, 1); }
+    gesto.alvo = { idQuarto: linhas[linha].id_quarto, entrada: ent, saida: sai };
+    const f = el('fantasma');
+    f.style.display = 'block';
+    f.style.left = (COLQ + diff(dados.de, ent) * CEL + CEL / 2) + 'px';
+    f.style.top = (TOPO + linha * LIN + 4) + 'px';
+    f.style.width = (diff(ent, sai) * CEL) + 'px';
+  });
+
+  document.addEventListener('pointerup', async ev => {
+    if (!gesto) return;
+    const g = gesto; gesto = null;
+    el('fantasma') && (el('fantasma').style.display = 'none');
+    if (g.tipo === 'abrir') { abrirReserva(g.r.id_reserva); return; }
+    if (g.tipo === 'novo') {
+      limparSelecao();
+      const [a, b] = g.de <= g.ate ? [g.de, g.ate] : [g.ate, g.de];
+      novaReserva(g.idQuarto, a, somar(b, 1));
+      return;
+    }
+    g.barra.classList.remove('arrastando');
+    if (!g.moveu) { abrirReserva(g.r.id_reserva); return; }        // foi só um clique na barra
+    const alvo = g.alvo, q = linhas.find(x => x.id_quarto === alvo.idQuarto);
+    const texto = g.tipo === 'ponta'
+      ? 'Mudar a saída de ' + g.r.hospede_nome + ' para ' + br(alvo.saida) + ' (' + diff(alvo.entrada, alvo.saida) + ' noites)?'
+      : 'Mover ' + g.r.hospede_nome + ' para o quarto ' + q.numero + ', de ' + br(alvo.entrada) + ' a ' + br(alvo.saida) + '?';
+    if (!(await FacilAppConfirmar(texto + '\nO valor é recalculado pelas tarifas.', { confirmar: 'Mover' }))) return;
+    try {
+      const r = await ApiCurso.reservaMover(g.r.id_reserva, alvo.idQuarto, alvo.entrada, alvo.saida);
+      aviso('Reserva movida. Novo total: ' + Number(r.valor_total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) +
+        (r.avisos && r.avisos.length ? ' — ' + r.avisos.join(' ') : ''));
+      await carregar();
+    } catch (erro) { aviso('Não foi possível mover: ' + erro.message); }
+  });
+
+  /** pintarSelecao() — destaca os dias livres entre o início e o fim do arrasto (para no primeiro dia ocupado). */
+  function pintarSelecao() {
+    limparSelecao();
+    const linha = el('grade').querySelector('.mp-linha[data-q="' + gesto.idQuarto + '"]');
+    const [a, b] = gesto.de <= gesto.ate ? [gesto.de, gesto.ate] : [gesto.ate, gesto.de];
+    let corte = false;
+    linha.querySelectorAll('.mp-d[data-d]').forEach(c => {
+      if (c.dataset.d < a || c.dataset.d > b || corte) return;
+      if (!c.classList.contains('livre')) { corte = true; if (gesto.de <= gesto.ate) gesto.ate = somar(c.dataset.d, -1); return; }
+      c.classList.add('marcado');
+    });
+  }
+  function limparSelecao() { el('grade').querySelectorAll('.mp-d.marcado').forEach(c => c.classList.remove('marcado')); }
+
+  // =================================================================================================
+  // JANELA DA RESERVA (mesmo formulário da lista)
+  // =================================================================================================
+  function abrirJanela(url, titulo) {
+    const caixa = el('caixaUpdate');
+    caixa.style.left = ''; caixa.style.top = ''; caixa.style.position = '';
+    el('tituloUpdate').textContent = titulo;
+    el('janelaUpdate').querySelector('iframe').src = url + '&_v=' + Date.now();
+    el('janelaUpdate').classList.add('aberta');
+  }
+  /** novaReserva(idQuarto, entrada, saida) — formulário já com quarto e datas (clique ou arrasto no mapa). */
+  function novaReserva(idQuarto, entrada, saida) {
+    abrirJanela('UpdateReservas.html?novo=1' + (idQuarto ? '&id_quarto=' + idQuarto : '') + (entrada ? '&entrada=' + entrada + '&saida=' + saida : ''), 'Nova reserva');
+  }
+  function abrirReserva(id) { abrirJanela('UpdateReservas.html?id=' + encodeURIComponent(id), 'Reserva'); }
+  window.abrirReserva = abrirReserva;
+  function fecharJanela() { el('janelaUpdate').classList.remove('aberta'); el('janelaUpdate').querySelector('iframe').src = 'about:blank'; }
+
+  window.addEventListener('message', e => {
+    const f = el('janelaUpdate').querySelector('iframe');
+    if (!f || e.source !== f.contentWindow) return;
+    const d = e.data || {};
+    if (d.origem === 'FACILAPP_MODELO_GRAVADO') { fecharJanela(); carregar(); aviso('Reserva gravada.'); }
+    if (d.origem === 'FACILAPP_MODELO_CANCELADO') fecharJanela();
+    if (d.origem === 'FACILAPP_MODELO_ALTURA' && d.altura > 0) el('caixaUpdate').style.height = Math.min(innerHeight - 24, 35 + Number(d.altura) + 1) + 'px';
+  });
+
+  // arrastar a janela da reserva pela barra
+  (function () {
+    const barra = el('barraUpdate'), caixa = el('caixaUpdate'); let ini = null;
+    barra.addEventListener('mousedown', e => {
+      if (e.target.closest('button')) return;
+      const r = caixa.getBoundingClientRect(); ini = { x: e.clientX - r.left, y: e.clientY - r.top };
+      caixa.style.position = 'fixed'; caixa.style.left = r.left + 'px'; caixa.style.top = r.top + 'px';
+      el('janelaUpdate').querySelector('iframe').style.pointerEvents = 'none'; e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!ini) return;
+      caixa.style.left = Math.max(0, Math.min(innerWidth - 80, e.clientX - ini.x)) + 'px';
+      caixa.style.top = Math.max(0, Math.min(innerHeight - 35, e.clientY - ini.y)) + 'px';
+    });
+    document.addEventListener('mouseup', () => { if (ini) { ini = null; el('janelaUpdate').querySelector('iframe').style.pointerEvents = ''; } });
+  })();
+
+  // =================================================================================================
+  // BARRA DE FERRAMENTAS
+  // =================================================================================================
+  el('btnAnt').onclick = () => { inicio = somar(inicio, -Math.max(7, Math.floor(Number(el('selDias').value) / 2))); carregar(); };
+  el('btnProx').onclick = () => { inicio = somar(inicio, Math.max(7, Math.floor(Number(el('selDias').value) / 2))); carregar(); };
+  el('btnHoje').onclick = () => { inicio = somar(iso(new Date()), -2); carregar(); };
+  el('selDias').onchange = carregar;
+  el('selTipo').onchange = desenhar;
+  el('btnNova').onclick = () => novaReserva();
+  el('btnLista').onclick = () => { location.href = 'BrowseReservas.html'; };
+  el('btnRecarregar').onclick = carregar;
+  el('btnFecharUpdate').onclick = fecharJanela;
+  el('btnFechar').onclick = () => {
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_MODELO' }, '*'); } catch (e) { /* sem pai */ }
+    if (window.parent === window) history.back();
+  };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && el('janelaUpdate').classList.contains('aberta')) fecharJanela(); });
+
+  window.addEventListener('DOMContentLoaded', carregar);
+  window.addEventListener('resize', () => { if (dados) desenhar(); });
+  // Luninha das reservas também no mapa (IA e VOZ)
+  window.addEventListener('load', async () => {
+    if (!window.BotaoIA || !window.IAReservas) return;
+    await BotaoIA.ligarNaTela({ manifesto: IAReservas, ancora: '#btnFechar' });
+    if (window.BotaoVoz) await BotaoVoz.ligarNaTela({ manifesto: IAReservas });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="verde-claro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relação de Hóspedes</title>
+<!--
+  RELATÓRIO DE HÓSPEDES — FastPousada (aula gravada de 08/11/2026)
+  Daniel: "... exportação XLS, CSV e Rpt dos hóspedes".
+  O QUE FAZ: filtros (tipo, situação, cidade, UF), PRÉVIA da folha A4 igual ao PDF, e os botões Gerar PDF, Imprimir,
+    CSV e XLSX com os mesmos dados.
+  COMO: os dados vêm da API (ApiCurso.listarHospedes com os filtros). O PDF é desenhado com o jsPDF
+    (dependencias/jspdf-2.5.1): cabeçalho, filtros usados, tabela com linhas zebradas, quebra de página repetindo o
+    cabeçalho da tabela, total no fim e "Página X de Y" no rodapé. Nada de SQL na tela.
+  PADRÃO VISUAL: cabeçalho 35px, ✕ à direita, cores --fa-*.
+-->
+<script>
+  (function () {
+    try { var t = localStorage.getItem('facilapp_tema_ativo'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    window.addEventListener('message', function (e) {
+      var m = e.data || {}; var t = String(m.tema || m.skinId || '');
+      if (m.origem === 'FACILAPP_TEMA_ALTERADO' && /^[a-z0-9-]+$/.test(t)) document.documentElement.setAttribute('data-theme', t);
+    });
+  })();
+</script>
+<script src="assets/js/avisos.js"></script>
+<link rel="stylesheet" href="assets/fonts/offline-fonts.css">
+<link rel="stylesheet" href="assets/css/TemaFacilApp.css">
+<script src="dependencias/jspdf-2.5.1/jspdf.umd.min.js"></script>
+<script src="dependencias/sheetjs-0.20.3/js/xlsx.full.min.js"></script>
+<script src="assets/js/ApiCurso.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: transparent !important; color: var(--fa-text, #1e293b); font: 12.5px 'Roboto', 'Segoe UI', sans-serif; }
+  .janela { position: fixed; inset: 6px; background: var(--fa-panel, #fff); border: 1px solid var(--fa-border, #d8ddcf); border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.18); display: flex; flex-direction: column; overflow: hidden; }
+  .cab { height: 35px; flex: 0 0 35px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 12px;
+    background: var(--fa-panel-alt, #f1f5f9); border-bottom: 1px solid var(--fa-border, #d8ddcf); }
+  .cab .tit { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+  .badge-ico { width: 24px; height: 24px; border-radius: 6px; background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); display: flex; align-items: center; justify-content: center; }
+  .badge-ico .material-icons { font-size: 16px; }
+  .btn-fechar { width: 26px; height: 26px; border: 1px solid var(--fa-primary-dark, #35470e); border-radius: 6px; background: var(--fa-primary, #4b5a32);
+    color: var(--fa-button-text, #fff); font: 700 16px/1 Arial, sans-serif; cursor: pointer; }
+  .filtros { display: flex; align-items: flex-end; gap: 8px; padding: 7px 12px; border-bottom: 1px solid var(--fa-border, #d8ddcf); flex-wrap: wrap; }
+  .filtros label { display: grid; gap: 2px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--fa-muted, #64748b); }
+  .campo { height: 22px; padding: 0 7px; font-size: 12px; border: 1px solid var(--fa-border, #d8ddcf); border-radius: 4px; background: var(--fa-field-bg, #fff); color: var(--fa-text, #1e293b); outline: none; }
+  .btn { height: 22px; padding: 0 10px; border: 0; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    background: var(--fa-primary, #4b5a32); color: var(--fa-button-text, #fff); white-space: nowrap; }
+  .btn .material-icons { font-size: 15px; }
+  .btn.alt { background: var(--fa-field-bg, #f8fafc); color: var(--fa-text, #1e293b); border: 1px solid var(--fa-border, #d8ddcf); }
+  .espaco { flex: 1; }
+  .previa { flex: 1; min-height: 0; overflow: auto; background: color-mix(in srgb, var(--fa-panel-alt, #e2e8f0) 70%, #888 8%); padding: 14px; }
+  /* folha A4 retrato: 210 x 297 mm */
+  /* largura A4; altura do conteúdo (Daniel, 08/11/2026: "se tem espaço na tela não use barra") — o PDF continua A4 */
+  .folha { width: 210mm; margin: 0 auto 14px; background: #fff; color: #111; box-shadow: 0 4px 18px rgba(0,0,0,.25);
+    padding: 12mm 12mm 14mm; font: 9pt Arial, sans-serif; display: flex; flex-direction: column; }
+  .folha .topo { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1.5px solid #222; padding-bottom: 4px; margin-bottom: 4px; }
+  .folha .marca { font-size: 13pt; font-weight: 700; }
+  .folha .titulo { font-size: 11pt; font-weight: 700; }
+  .folha .info { font-size: 8pt; color: #444; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .folha table { width: 100%; border-collapse: collapse; }
+  .folha th { background: #e5e7eb; font-size: 8pt; text-align: left; padding: 3px 4px; border-bottom: 1px solid #555; }
+  .folha td { font-size: 8.5pt; padding: 2.5px 4px; border-bottom: 1px solid #eee; vertical-align: top; }
+  .folha tr:nth-child(even) td { background: #f6f7f8; }
+  .folha .fant { display: block; font-size: 7.5pt; color: #666; }
+  .folha .total { margin-top: 6px; font-weight: 700; text-align: right; font-size: 9pt; }
+  .folha .vazio { padding: 20px; text-align: center; color: #666; }
+  .folha .rodape { margin-top: auto; padding-top: 6px; border-top: 1px solid #ccc; font-size: 7.5pt; color: #666; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+<div class="janela">
+  <header class="cab">
+    <div class="tit"><div class="badge-ico"><span class="material-icons">print</span></div>Relação de Hóspedes</div>
+    <button type="button" class="btn-fechar" title="Fechar" onclick="fechar()">×</button>
+  </header>
+  <div class="filtros">
+    <label>Tipo<select id="fTipo" class="campo"><option value="">Pessoas e empresas</option><option value="PF">Só pessoas</option><option value="PJ">Só empresas</option></select></label>
+    <label>Situação<select id="fAtivo" class="campo"><option value="">Todas</option><option value="1" selected>Ativos</option><option value="0">Inativos</option></select></label>
+    <label>Cidade<input id="fCidade" class="campo" placeholder="Todas" style="width:150px"></label>
+    <label>UF<input id="fUf" class="campo" maxlength="2" placeholder="--" style="width:46px;text-transform:uppercase"></label>
+    <button type="button" class="btn" id="btnGerar" onclick="gerar()"><span class="material-icons">play_arrow</span>Gerar</button>
+    <span class="espaco"></span>
+    <button type="button" class="btn" id="btnPdf" onclick="gerarPdf(false)"><span class="material-icons">picture_as_pdf</span>Gerar PDF</button>
+    <button type="button" class="btn alt" id="btnImprimir" onclick="gerarPdf(true)"><span class="material-icons">print</span>Imprimir</button>
+    <button type="button" class="btn alt" id="btnCsv" onclick="exportar('csv')"><span class="material-icons">description</span>CSV</button>
+    <button type="button" class="btn alt" id="btnXlsx" onclick="exportar('xlsx')"><span class="material-icons">table_view</span>XLSX</button>
+  </div>
+  <div class="previa" id="previa"></div>
+</div>
+<script>
+  const el = id => document.getElementById(id);
+  const aviso = m => (window.FacilAppAviso ? FacilAppAviso(m) : console.log(m));
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // Colunas do relatório (mesmas na prévia, no PDF, no CSV e no XLSX). larg = largura no PDF em mm (total 186 mm).
+  const COLUNAS = [
+    { titulo: 'Tipo', valor: h => h.tipo === 'PJ' ? 'Empresa' : 'Pessoa', larg: 16 },
+    { titulo: 'Nome / Razão social', valor: h => h.nome, larg: 62 },   // só a razão social (Daniel, 08/11/2026)
+    { titulo: 'CPF / CNPJ', valor: h => h.documento, larg: 32 },
+    { titulo: 'Telefone', valor: h => h.telefone, larg: 26 },
+    { titulo: 'Cidade / UF', valor: h => (h.cidade || '') + (h.uf ? ' / ' + h.uf : ''), larg: 34 },
+    { titulo: 'Situação', valor: h => h.ativo ? 'Ativo' : 'Inativo', larg: 16 }
+  ];
+  let dados = [], geradoEm = null;
+
+  /** filtros() — lê os filtros da tela no formato do ApiCurso.listarHospedes. */
+  function filtros() {
+    return { tipo: el('fTipo').value, ativo: el('fAtivo').value, cidade: el('fCidade').value.trim(), uf: el('fUf').value.trim().toUpperCase() };
+  }
+  /** textoFiltros() — os filtros usados, em português, para o cabeçalho do relatório. */
+  function textoFiltros() {
+    const f = filtros(), p = [];
+    p.push(f.tipo === 'PF' ? 'Só pessoas' : f.tipo === 'PJ' ? 'Só empresas' : 'Pessoas e empresas');
+    p.push(f.ativo === '1' ? 'Ativos' : f.ativo === '0' ? 'Inativos' : 'Todas as situações');
+    if (f.cidade) p.push('Cidade: ' + f.cidade);
+    if (f.uf) p.push('UF: ' + f.uf);
+    return p.join(' • ');
+  }
+  const dataHora = d => d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  /** gerar() — busca na API com os filtros e desenha a prévia (folha A4). */
+  async function gerar() {
+    el('btnGerar').disabled = true;
+    try {
+      dados = await ApiCurso.listarHospedes(filtros());
+      geradoEm = new Date();
+      desenharPrevia();
+    } catch (erro) { aviso('Não foi possível gerar: ' + erro.message); }
+    finally { el('btnGerar').disabled = false; }
+  }
+
+  /** desenharPrevia() — a folha A4 em HTML com o mesmo conteúdo do PDF. */
+  function desenharPrevia() {
+    const linhas = dados.map(h => '<tr>' + COLUNAS.map(c => '<td>' + esc(c.valor(h)) + (c.extra && c.extra(h) ? '<span class="fant">' + esc(c.extra(h)) + '</span>' : '') + '</td>').join('') + '</tr>').join('');
+    el('previa').innerHTML = '<div class="folha">' +
+      '<div class="topo"><span class="marca">FastPousada</span><span class="titulo">Relação de Hóspedes</span></div>' +
+      '<div class="info"><span>' + esc(textoFiltros()) + '</span><span>Emitido em ' + dataHora(geradoEm) + '</span></div>' +
+      (dados.length
+        ? '<table><thead><tr>' + COLUNAS.map(c => '<th>' + c.titulo + '</th>').join('') + '</tr></thead><tbody>' + linhas + '</tbody></table>'
+        : '<div class="vazio">Nenhum hóspede com esses filtros.</div>') +
+      '<div class="total">Total: ' + dados.length + ' hóspede(s)</div>' +
+      '<div class="rodape"><span>Curso Programação 100% IA — FacilApp</span><span>Prévia (o PDF numera as páginas)</span></div></div>';
+  }
+
+  /**
+   * gerarPdf(imprimir) — desenha o PDF com o jsPDF (A4 retrato, mm).
+   * O QUE FAZ: cabeçalho, filtros e data; tabela com cabeçalho repetido a cada página; linhas zebradas; total no fim;
+   *   "Página X de Y" no rodapé. imprimir=true abre o PDF e chama a impressão; false baixa o arquivo.
+   */
+  function gerarPdf(imprimir) {
+    if (!geradoEm) { aviso('Clique em Gerar antes.'); return; }
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+    const M = 12, L = 210 - M * 2, ALT_LINHA = 5.2, BASE = 297 - 16;
+    let y = 0;
+    const corte = (t, larg) => { t = String(t || ''); while (t && pdf.getTextWidth(t) > larg - 2) t = t.slice(0, -1); return t; };
+    function topo() {
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(13); pdf.text('FastPousada', M, M + 4);
+      pdf.setFontSize(11); pdf.text('Relação de Hóspedes', 210 - M, M + 4, { align: 'right' });
+      pdf.setLineWidth(0.4); pdf.line(M, M + 6, 210 - M, M + 6);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(70);
+      pdf.text(textoFiltros(), M, M + 10); pdf.text('Emitido em ' + dataHora(geradoEm), 210 - M, M + 10, { align: 'right' });
+      pdf.setTextColor(0);
+      y = M + 14;
+      pdf.setFillColor(229, 231, 235); pdf.rect(M, y, L, ALT_LINHA + 0.6, 'F');
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8);
+      let x = M; COLUNAS.forEach(c => { pdf.text(c.titulo, x + 1, y + 3.9); x += c.larg; });
+      y += ALT_LINHA + 0.6; pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5);
+    }
+    topo();
+    dados.forEach((h, i) => {
+      const altura = ALT_LINHA + (h.nome_fantasia ? 3 : 0);
+      if (y + altura > BASE - 8) { pdf.addPage(); topo(); }
+      if (i % 2) { pdf.setFillColor(246, 247, 248); pdf.rect(M, y, L, altura, 'F'); }
+      let x = M;
+      COLUNAS.forEach(c => {
+        pdf.text(corte(c.valor(h), c.larg), x + 1, y + 3.7);
+        if (c.extra && c.extra(h)) { pdf.setFontSize(7); pdf.setTextColor(100); pdf.text(corte(c.extra(h), c.larg), x + 1, y + 6.6); pdf.setFontSize(8.5); pdf.setTextColor(0); }
+        x += c.larg;
+      });
+      y += altura;
+    });
+    if (!dados.length) { pdf.setTextColor(100); pdf.text('Nenhum hóspede com esses filtros.', 105, y + 8, { align: 'center' }); pdf.setTextColor(0); y += 10; }
+    pdf.setFont('helvetica', 'bold'); pdf.text('Total: ' + dados.length + ' hóspede(s)', 210 - M, y + 5, { align: 'right' });
+    const paginas = pdf.getNumberOfPages();
+    for (let p = 1; p <= paginas; p++) {
+      pdf.setPage(p); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5); pdf.setTextColor(100);
+      pdf.setLineWidth(0.2); pdf.line(M, BASE, 210 - M, BASE);
+      pdf.text('Curso Programação 100% IA — FacilApp', M, BASE + 4);
+      pdf.text('Página ' + p + ' de ' + paginas, 210 - M, BASE + 4, { align: 'right' });
+    }
+    if (imprimir) { pdf.autoPrint(); window.open(pdf.output('bloburl'), '_blank'); }
+    else pdf.save('relacao_hospedes.pdf');
+  }
+
+  /** exportar(tipo) — CSV (;) ou XLSX com as mesmas colunas do relatório (fantasia em coluna própria). */
+  function exportar(tipo) {
+    if (!geradoEm) { aviso('Clique em Gerar antes.'); return; }
+    const cab = ['Tipo', 'Nome / Razão social', 'Fantasia', 'CPF / CNPJ', 'Telefone', 'E-mail', 'Cidade', 'UF', 'Situação'];
+    const linhas = dados.map(h => [h.tipo === 'PJ' ? 'Empresa' : 'Pessoa', h.nome, h.nome_fantasia, h.documento, h.telefone, h.email, h.cidade, h.uf, h.ativo ? 'Ativo' : 'Inativo']);
+    if (tipo === 'xlsx') {
+      const ws = XLSX.utils.aoa_to_sheet([cab].concat(linhas)); const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Hóspedes'); XLSX.writeFile(wb, 'relacao_hospedes.xlsx'); return;
+    }
+    const csv = [cab].concat(linhas).map(l => l.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'relacao_hospedes.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  /**
+   * fechar() — ✕ do relatório.
+   * REGRAS: aberto pelo botão Relatório da lista (?de=browse) → volta para o BrowseHospedes.html;
+   *         aberto pelo menu → fecha a tela no palco, como as demais.
+   * Daniel, 08/11/2026: "ao sair no X do report, sai do cadastro todo ao invés de voltar no browse".
+   */
+  function fechar() {
+    if (new URLSearchParams(location.search).get('de') === 'browse') { location.href = 'BrowseHospedes.html'; return; }
+    try { window.parent.postMessage({ origem: 'FACILAPP_FECHAR_BROWSE_MODELO' }, '*'); } catch (e) {}
+    if (window.parent === window) history.back();
+  }
+  ['fTipo', 'fAtivo'].forEach(id => el(id).addEventListener('change', gerar));
+  ['fCidade', 'fUf'].forEach(id => el(id).addEventListener('keydown', e => { if (e.key === 'Enter') gerar(); }));
+  window.addEventListener('DOMContentLoaded', gerar);
+</script>
+</body>
+</html>
